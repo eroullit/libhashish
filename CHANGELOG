@@ -1,0 +1,17 @@
+LibHashIsh CHANGELOG
+==============================================================================
+
+
+Tue May  8 23:37:12 CEST 2007  Hagen Paul Pfeifer <hagen@jauu.net>
+
+ * add lhi_hash_elf hashing function
+ * add CHAINING_HASHLIST chaining strategie
+ * some small bugfixes
+
+
+Fri Mar 16 20:24:02 CEST 2007  Hagen Paul Pfeifer <hagen@jauu.net>
+
+ * Initial version
+
+
+/* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet ft=changelog: */
