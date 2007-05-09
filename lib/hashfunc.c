@@ -43,6 +43,40 @@ uint32_t lhi_hash_elf(const uint8_t *key, uint32_t len)
 	return hash;
 }
 
+/**
+ * lhi_hash_torek  Chris Torek hash function.
+ */
+uint32_t lhi_hash_torek(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+	for (i = 0; i < len; i++) {
+		hash *= 33;
+		hash += key[i];
+	}
+
+	return hash;
+}
+
+
+/**
+ * lhi_hash_phongs  Phong Vo hash function.
+ */
+uint32_t lhi_hash_phongs(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+	for (i = 0; i < len; i++)
+		hash = hash * 129 + (uint32_t)(key[i]) + 987654321L;
+
+	return hash;
+}
+
+
+/**
+ * lhi_hash_weinb  P.J. Weinberger's hash function. Use a prime for range
+ * (e.g. 65599)
+ */
 uint32_t lhi_hash_weinb(const uint8_t *key, uint32_t len)
 {
 	uint32_t hash = 0, test = 0, i = 0;
@@ -56,6 +90,7 @@ uint32_t lhi_hash_weinb(const uint8_t *key, uint32_t len)
 
 		if ((test = hash & high_bits) != 0)
 			hash = (( hash ^ (test >> three_quarters)) & (~high_bits));
+			/* FIXME: should 24 be 28?  h ^= (g >> 24); h ^= g; */
 	}
 
 	return hash;

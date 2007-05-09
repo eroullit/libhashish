@@ -33,6 +33,8 @@ extern "C" {
 extern int lhi_errno;
 extern char *lhi_errbuf;
 
+uint32_t lhi_hash_phongs(const uint8_t *, uint32_t);
+uint32_t lhi_hash_torek(const uint8_t *, uint32_t);
 uint32_t lhi_hash_weinb(const uint8_t *, uint32_t);
 uint32_t lhi_hash_elf(const uint8_t *, uint32_t);
 
