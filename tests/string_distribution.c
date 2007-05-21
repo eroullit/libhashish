@@ -20,6 +20,7 @@
 
 #include "libhashish.h"
 #include "libhashish-local.h"
+#include "tests.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -35,34 +36,39 @@
 # include <gd.h>
 #endif
 
+#if __GNUC__ >= 3
+# define __noreturn __attribute__ ((noreturn))
+#else
+# define __noreturn
+#endif
+
 #define	MAX_STRING_LEN 30
 #define	MIN_STRING_LEN 5
 
 #define	DEFAULT_ENTRIES 5000
 #define	DEFAULT_HASHTABLE_SIZE 100
 
-#define	RANDOMFILE "/dev/urandom"
-
-
-static int random_string( uint32_t str_len, char **string)
+__noreturn static void usage(const int retval, const char * const me)
 {
-	uint32_t i, retval = 0;
-	char *newstring;
+	fprintf(stderr, "USAGE: %s options\n", me);
+	fputs("options:\n", stderr);
+	fputs("\t-h\t\tprint this help screen\n", stderr);
+	fputs("\t-f <function>\t\tselect the hashing function\n", stderr);
+	fputs("\t\t\telf   -> lhi_hash_elf\n", stderr);
+	fputs("\t\t\ttorek -> lhi_hash_torek\n", stderr);
+	fputs("\t\t\tdump1 -> lhi_hash_dump1\n", stderr);
+	fputs("\t\t\tphong -> lhi_hash_phong\n", stderr);
+	fputs("\t\t\tweinb -> lhi_hash_weinb\n", stderr);
+	fputs("\t-t <table-size>\n", stderr);
+	fputs("\t-p <prefix>\n", stderr);
+	fputs("\t-a <affix>\n", stderr);
+	fputs("\t-n <hash-keys>\t number of generated hash keys\n", stderr);
+	fputs("\t-g <filename>\tcreates a hashtable bucket allocation image\n", stderr);
+	fputs("\t-v\t\tverbose output\n", stderr);
+	fputs("\t-q\t\tno output to stdout, stderr\n", stderr);
 
-	newstring = malloc(str_len + 1);
-	if (newstring == NULL) {
-		fprintf(stderr, "malloc: %s\n", strerror(errno));
-		return -1;
-	}
 
-	for (i = 0; i <= str_len; i++) {
-		newstring[i] = (rand() % (122 - 97 + 1)) + 97;
-	}
-	newstring[str_len] = '\0';
-
-	*string = newstring;
-
-	return retval;
+	exit(retval);
 }
 
 
@@ -70,8 +76,7 @@ static int random_string( uint32_t str_len, char **string)
 int main(int argc, char **argv)
 {
 
-	int ufd, ret, verbose = 0; unsigned int i;
-	uint32_t rand_seed;
+	int ret, verbose = 0; unsigned int i;
 	char *affix = NULL;
 	char *prefix = NULL;
 	int opt = 0;
@@ -80,8 +85,12 @@ int main(int argc, char **argv)
 	unsigned int entries = DEFAULT_ENTRIES;
 	unsigned int table_size = DEFAULT_HASHTABLE_SIZE;
 	hi_handle_t *hi_handle;
+	uint32_t (*hashf)(const uint8_t *, uint32_t);
+	const char *hashfname;
 
-	while ((opt = getopt(argc, argv, "qn:l:p:t:a:g:v")) != -1) {
+	hashf = NULL;
+
+	while ((opt = getopt(argc, argv, "hqn:l:p:t:a:g:f:v")) != -1) {
 		switch (opt) {
 		case 'q':
 			{
@@ -96,6 +105,31 @@ int main(int argc, char **argv)
 			dup(std_fd);
 			dup(std_fd);
 			}
+			break;
+		case 'f':
+			if (!(strcasecmp(optarg, "elf"))) {
+				hashf = lhi_hash_elf;
+				hashfname = "lhi_hash_elf";
+			} else if (!(strcasecmp(optarg, "torek"))) {
+				hashf = lhi_hash_torek;
+				hashfname = "lhi_hash_torek";
+			} else if (!(strcasecmp(optarg, "dump1"))) {
+				hashf = lhi_hash_dump1;
+				hashfname = "lhi_hash_dump1";
+			} else if (!(strcasecmp(optarg, "phong"))) {
+				hashf = lhi_hash_phong;
+				hashfname = "lhi_hash_phong";
+			} else if (!(strcasecmp(optarg, "weinberger"))) {
+				hashf = lhi_hash_weinb;
+				hashfname = "lhi_hash_weinb";
+			} else {
+				fprintf(stderr, "Hashing function not supported: %s\n",
+						optarg);
+				usage(EXIT_FAILURE, argv[0]);
+			}
+			break;
+		case 'h':
+			usage(EXIT_SUCCESS, argv[0]);
 			break;
 		case 'n':
 			entries = atoi(optarg);
@@ -120,33 +154,28 @@ int main(int argc, char **argv)
 			png_filename = strdup(optarg);
 # else
 			fprintf(stderr, "sorry - you build without gd library support\n");
-			exit(1);
+			usage(EXIT_FAILURE, argv[0]);
 #endif
 			break;
 		case '?':
 			fprintf(stderr, "No such option: `%c'\n\n", optopt);
-			exit(1);
+			usage(EXIT_FAILURE, argv[0]);
 			break;
 		}
 	}
 
 	fputs("# String Distribution Hash Test\n", stderr);
 
-	ufd = open(RANDOMFILE, O_RDONLY);
-	if (ufd == -1) {
-		srand((((int)time(NULL)) & ((1 << 30) - 1)) + getpid());
-	} else {
-		if (sizeof(rand_seed) != read(ufd, &rand_seed, sizeof(rand_seed))) {
-			fprintf(stderr, "read(2) error: %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		close(ufd);
-		rand_seed = abs(rand_seed) + getpid();
-		srand(rand_seed);
-	}
+	/* initialize secure[tm] rand() seed */
+	init_seed();
 
 	/* initialize hash table */
 	ret = hi_init_str(&hi_handle, table_size);
+
+	if (hashf != NULL) {
+		lhi_sethashfunc(hi_handle, hashf);
+		fprintf(stderr, "# take %s as hash function\n", hashfname);
+	}
 
 	/* fill hash table */
 	for(i = 0; i < entries; i++) {
@@ -180,12 +209,14 @@ int main(int argc, char **argv)
 			sprintf(key, "%s", tmp_key);
 		}
 
-
 		free(tmp_key);
 		tmp_key = NULL;
 
 		if (affix)
 			strcat(key, affix);
+
+		if (verbose >= 1)
+			fprintf(stdout, "key: %s\n", key);
 
 		ret = hi_insert_str(hi_handle, (void *) key, NULL);
 		if (ret < 0)
@@ -231,11 +262,11 @@ int main(int argc, char **argv)
 			int bucket_size =  hi_bucket_size(hi_handle, i);
 			for (j = 0; j < bucket_size; j++) {
 				gdImageFilledRectangle(im, x + 1, y + 1, x + RECT_SIZE, y + RECT_SIZE, white);
-				gdImageRectangle(im, x, y, x + RECT_SIZE + RECT_BODER_SIZE * 2, y + RECT_SIZE + RECT_BODER_SIZE * 2, red);
-				x += RECT_SIZE + RECT_BODER_SIZE * 2;
+				gdImageRectangle(im, x, y, x + RECT_SIZE + (RECT_BODER_SIZE << 1), y + RECT_SIZE + (RECT_BODER_SIZE << 1), red);
+				x += RECT_SIZE + (RECT_BODER_SIZE << 1);
 			}
 			x = 1;
-			y += RECT_SIZE + RECT_BODER_SIZE * 2;
+			y += RECT_SIZE + (RECT_BODER_SIZE << 1);
 		}
 
 		pngout = fopen(png_filename, "wb");

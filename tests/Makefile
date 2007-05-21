@@ -19,19 +19,19 @@ endif
 
 export
 
-.PHONY: all clean install hashtest_simple string_distribution
+.PHONY: all clean install unit_test string_distribution
 
-all: hashtest_simple string_distribution
+all: unit_test string_distribution
 
-hashtest_simple: $(OBJ)
-	$(CC) $(CFLAGS) hashtest_simple.o $(LIBFLAGS) -o $@
+unit_test: $(OBJ)
+	$(CC) $(CFLAGS) unit_test.o xfuncs.o $(LIBFLAGS) -o $@
 
 string_distribution: $(OBJ)
-	$(CC) $(CFLAGS) string_distribution.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
+	$(CC) $(CFLAGS) string_distribution.o xfuncs.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
 
 clean:
 	@echo "### cleaning"; \
-	$(RM) -f $(OBJ) hashtest_simple string_distribution *.png core
+	$(RM) -f $(OBJ) unit_test string_distribution *.png core
 
 distclean:
 	@echo "### distclean testdir"

@@ -33,9 +33,9 @@
 
 
 /**
- * This is the default initialize function. It takes
- * RSHash as the default hash function and set compare
- * function for strings - so use it only for strings
+ * This is the default initialize function. It takes HI_HASH_DEFAULT as the
+ * default hash function and set compare function for strings - so use it only
+ * for strings
  *
  * @arg hi_hndl	this become out new hashish handle
  * @arg buckets	hash bucket size
@@ -156,26 +156,6 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 			hi_handle->listhash = hashf2;
 			break;
 
-		case CHAINING_ARRAY:
-			hi_handle->bucket_array = malloc(buckets * sizeof(hi_bucket_a_obj_t *));
-			if (hi_handle->bucket_table == NULL) {
-				return hi_errno(errno);
-			}
-			hi_handle->bucket_array_size = malloc(buckets * sizeof(uint32_t));
-			if (hi_handle->bucket_array_size == NULL) {
-				return hi_errno(errno);
-			}
-			/* initialize bucket list */
-			for (i = 0; i < buckets; i++) {
-				hi_handle->bucket_array[i] = malloc(DEFAULT_CHAINING_ARRAY_SIZE * sizeof(hi_bucket_a_obj_t));
-				if (hi_handle->bucket_array[i] == NULL) {
-					return hi_error(EINVAL, "hashfunction 2 must be different from thirst hashfunc");
-				}
-				hi_handle->bucket_size[i] = 0;
-				hi_handle->bucket_array_size[i] = DEFAULT_CHAINING_ARRAY_SIZE;
-			}
-			break;
-
 		default:
 			return hi_error(EINVAL, "chaining strategie not supported (values: %d)",
 					chaining_policy);
@@ -234,32 +214,6 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 			return FAILURE;
 			break;
 
-		case CHAINING_ARRAY:
-			{
-			uint32_t i;
-			for (i = 0; i < hi_handle->bucket_size[bucket]; i++) {
-			 if (hi_handle->compare(key,
-					(((hi_bucket_a_obj_t *)hi_handle->bucket_array[bucket])[i]).key)) {
-					return SUCCESS;
-			 }
-			}
-			}
-			return FAILURE;
-			break;
-
-#if 0
-		case CHAINING_HASHARRAY:
-			{
-				switch (i) {
-					case i:
-					case i + 1 * sizeof(int):
-					case i + 2 * sizeof(int):
-					case i + 3 * sizeof(int):
-					case i + 4 * sizeof(int):
-				}
-
-			}
-#endif
 		default:
 			return hi_error(EINVAL, "chaining strategie not supported (values: %d)",
 					hi_handle->chaining_policy);

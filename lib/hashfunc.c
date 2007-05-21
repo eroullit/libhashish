@@ -28,6 +28,22 @@
 
 #include "libhashish.h"
 
+
+/**
+ * lhi_hash_dump1 a really dump hash function which always
+ * return the value 1.
+ */
+uint32_t lhi_hash_dump1(const uint8_t *key, uint32_t len)
+{
+	(void) key;
+	(void) len;
+
+	return 1;
+}
+
+/** lhi_hash_elf is the currently used hashing function for resolving symbol
+ * names for the UNIX elf environment.
+ */
 uint32_t lhi_hash_elf(const uint8_t *key, uint32_t len)
 {
 	uint32_t hash = 0, x = 0, i = 0;
@@ -44,7 +60,8 @@ uint32_t lhi_hash_elf(const uint8_t *key, uint32_t len)
 }
 
 /**
- * lhi_hash_torek  Chris Torek hash function.
+ * lhi_hash_torek  Chris Torek and Dan Bernstein hash function.
+ * Degrades badly when size is divisible by 2
  */
 uint32_t lhi_hash_torek(const uint8_t *key, uint32_t len)
 {
@@ -62,7 +79,7 @@ uint32_t lhi_hash_torek(const uint8_t *key, uint32_t len)
 /**
  * lhi_hash_phongs  Phong Vo hash function.
  */
-uint32_t lhi_hash_phongs(const uint8_t *key, uint32_t len)
+uint32_t lhi_hash_phong(const uint8_t *key, uint32_t len)
 {
 	uint32_t i, hash = 0;
 
@@ -92,6 +109,57 @@ uint32_t lhi_hash_weinb(const uint8_t *key, uint32_t len)
 			hash = (( hash ^ (test >> three_quarters)) & (~high_bits));
 			/* FIXME: should 24 be 28?  h ^= (g >> 24); h ^= g; */
 	}
+
+	return hash;
+}
+
+/**
+ * lhi_hash_kr Brian W. Kernighan and Dennis M. Richie's hash function.
+ * Fast, but bad ;-)
+ */
+uint32_t lhi_hash_kr(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+	for (i = 0; i < len; i++)
+		hash += key[i];
+
+	return hash;
+}
+
+uint32_t lhi_hash_sdbm(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+
+	for (i = 0; i < len; i++)
+		hash = key[i] + (hash << 6) + (hash << 16) - hash;
+
+	return hash;
+}
+
+/* djb2
+ * This algorithm was first reported by Dan Bernstein
+ * many years ago in comp.lang.c
+ * hash * 33 + char
+ */
+uint32_t lhi_hash_djb2(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 5381;
+
+	for (i = 0; i < len; i++)
+		hash = ((hash << 5) + hash) + key[i];
+
+	return hash;
+}
+
+
+uint32_t lhi_hash_xor(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+	for (i = 0; i < len; i++)
+		hash = hash ^ key[i];
 
 	return hash;
 }

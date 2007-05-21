@@ -29,6 +29,7 @@
 
 #include "libhashish.h"
 #include "list.h"
+#include "tests.h"
 
 #undef xassert
 /* if 0 -> raise error */
@@ -43,6 +44,13 @@
 
 #define	TESTSTRING "SURVEILLANCE"
 
+#define	TEST_ITER_NO 2048
+#define	KEYLEN 50
+#define	DATALEN 100
+
+#define	KEY 0
+#define	DATA 1
+
 static void const_check(void)
 {
 	int i;
@@ -50,7 +58,9 @@ static void const_check(void)
 	void *data;
 	char xstrting[] = TESTSTRING;
 	hi_handle_t *hi_handle;
+	char *ptr_bucket[TEST_ITER_NO][2];
 
+	init_seed();
 
 	fprintf(stderr, " o trivial CHAINING_LIST tests ...");
 
@@ -84,13 +94,36 @@ static void const_check(void)
 	ret = hi_size(hi_handle);
 	xassert(!(ret));
 
+	/* some trivial memory leak tests ... */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+		char *key_ptr, *data_ptr;
+
+		random_string(KEYLEN, &key_ptr);
+		random_string(DATALEN, &data_ptr);
+
+		ptr_bucket[i][KEY] = key_ptr;
+		ptr_bucket[i][DATA] = data_ptr;
+
+		hi_insert_str(hi_handle, key_ptr, data_ptr);
+	}
+
+	/* verify storage and cleanup */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+
+		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
+		xassert(!!(data == ptr_bucket[i][DATA]));
+
+		free(ptr_bucket[i][KEY]);
+		free(ptr_bucket[i][DATA]);
+	}
+
 	hi_fini(hi_handle);
 
 	fprintf(stderr, " passed\n");
 
 #ifdef TABLE_SIZE
 # undef TABLE_SIZE
-# define TABLE_SIZE 4
+# define TABLE_SIZE 8
 #endif
 
 	fprintf(stderr, " o trivial CHAINING_HASHLIST tests ...");
@@ -133,15 +166,37 @@ static void const_check(void)
 	ret = hi_size(hi_handle);
 	xassert(!(ret));
 
+	/* some trivial memory leak tests ... */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+		char *key_ptr, *data_ptr;
+
+		random_string(KEYLEN, &key_ptr);
+		random_string(DATALEN, &data_ptr);
+
+		ptr_bucket[i][KEY] = key_ptr;
+		ptr_bucket[i][DATA] = data_ptr;
+
+		hi_insert_str(hi_handle, key_ptr, data_ptr);
+	}
+
+	/* verify storage and cleanup */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+
+		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
+		xassert(!!(data == ptr_bucket[i][DATA]));
+
+		free(ptr_bucket[i][KEY]);
+		free(ptr_bucket[i][DATA]);
+	}
 
 	hi_fini(hi_handle);
 
 	fprintf(stderr, " passed\n");
 
 
-#undef TABLE_SIZE
 }
 
+#undef TABLE_SIZE
 
 int
 main(void)

@@ -44,9 +44,11 @@
 # define __always_inline __inline
 #endif
 
+#if __GNUC__ >= 3
 #if !defined likely && !defined unlikely
 # define likely(x)   __builtin_expect(!!(x), 1)
 # define unlikely(x) __builtin_expect(!!(x), 0)
+#endif
 #endif
 
 #define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))

@@ -33,10 +33,15 @@ extern "C" {
 extern int lhi_errno;
 extern char *lhi_errbuf;
 
-uint32_t lhi_hash_phongs(const uint8_t *, uint32_t);
+uint32_t lhi_hash_dump1(const uint8_t *, uint32_t);
+uint32_t lhi_hash_phong(const uint8_t *, uint32_t);
 uint32_t lhi_hash_torek(const uint8_t *, uint32_t);
 uint32_t lhi_hash_weinb(const uint8_t *, uint32_t);
 uint32_t lhi_hash_elf(const uint8_t *, uint32_t);
+uint32_t lhi_hash_djb2(const uint8_t *, uint32_t);
+uint32_t lhi_hash_xor(const uint8_t *, uint32_t);
+uint32_t lhi_hash_kr(const uint8_t *, uint32_t);
+uint32_t lhi_hash_sdbm(const uint8_t *, uint32_t);
 
 #define	HI_HASH_DEFAULT lhi_hash_weinb
 #define	HI_HASH_DEFAULT_HL lhi_hash_elf
@@ -156,9 +161,10 @@ int hi_cmp_str(const void *key1, const void *key2);
 /* string macros */
 #define hi_init_str(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_LIST)
 #define hi_init_str_hl(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_HASHLIST)
+#define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_ARRAY)
 #define	hi_insert_str(hi_handle, key, data) hi_insert(hi_handle, (void *)key, strlen(key), data)
 #define	hi_get_str(hi_handle, key, data)  hi_get(hi_handle, (void *)key, strlen(key), data)
-#define	hi_remove_str(hi_handle, key, data)  hi_remove(hi_handle, key, strlen(key), data)
+#define	hi_remove_str(hi_handle, key, data)  hi_remove(hi_handle, (void *)key, strlen(key), data)
 
 /* miscellaneous helper macros */
 #define	hi_size(hi_handle) ((hi_handle)->size)
@@ -182,6 +188,7 @@ void lhi_bucket_obj_remove(hi_bucket_obj_t *);
 #define	lhi_set_mutable(hi_handle) ((hi_handle)->immutable = 0)
 
 #define	lhi_setsize(hi_handle, size) ((hi_handle)->size = size)
+#define	lhi_sethashfunc(hi_handle, hashfunc) ((hi_handle)->hash = hashfunc)
 
 #define	hi_setkeytype(hi_handle, keytype) ((hi_handle)->key_type = key_type)
 
