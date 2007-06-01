@@ -406,6 +406,36 @@ EOF
 	rmdir "$TMPDIR"
 }
 
+check_for_posix_memalign()
+{
+	echo -n "checking for posix_memalign support..."
+	TMPDIR=`mktemp -d`
+	cat > "$TMPDIR"/posix_memalign.c <<EOF
+#define _XOPEN_SOURCE 600
+#include <stdlib.h>
+
+int main(int argc, char **argv){
+void * ptr;
+int ret;
+ret = posix_memalign(&ptr, 16, 23);
+free(ptr);
+return 0;
+}
+EOF
+	$compiler -o /dev/null "$TMPDIR"/posix_memalign.c >&5 2>&1
+	if [ $? -eq 0 ];then
+		echo " yes"
+		echo "#define HAVE_POSIX_MEMALIGN 1" >>config.h
+	else
+		echo " no"
+		echo "#undef HAVE_POSIX_MEMALIGN" >>config.h
+
+	fi
+	rm -f "$TMPDIR"/posix_memalign.c
+	rmdir "$TMPDIR"
+}
+
+
 check_for_gd_lib()
 {
 	if [ "$eye_candy" = yes ] ; then
@@ -468,6 +498,7 @@ check_for_alloca
 check_for_rdtscll
 check_for_udplite
 check_for_splice
+check_for_posix_memalign
 check_for_gd_lib
 
 print_config_footer

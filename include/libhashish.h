@@ -80,35 +80,6 @@ enum chaining_policy {
 /* default number of entries in every array (bucket) */
 #define	DEFAULT_CHAINING_ARRAY_SIZE 20
 
-
-/**
- * @immutable if set (after hash initialization) this tag the changeableility of a hi_handle
- */
-typedef struct __hi_handle {
-
-	int	immutable;
-	enum chaining_policy chaining_policy;
-
-	uint32_t (*hash)(const uint8_t *, uint32_t);
-	int (*compare)(const uint8_t *, const void *);
-
-	/* if we use CHAINING_HASHLIST chaining we MUST add a second hashing
-	 * function
-	 */
-	uint32_t (*listhash)(const char *, uint32_t);
-
-	int	size;
-	unsigned int buckets;
-
-	unsigned int *bucket_size;
-	struct lhi_list_head *bucket_table;
-
-	/* CHAINING_ARRAY */
-	void **bucket_array;
-	unsigned int *bucket_array_size;
-} hi_handle_t;
-
-
 typedef struct __hi_bucket_obj {
 	uint32_t				 key_len; /* key length in bytes */
 	void					*key;
@@ -134,6 +105,36 @@ typedef struct __hi_bucket_a_obj {
 	uint32_t				 key_hash;
 	void					*data;
 } hi_bucket_a_obj_t;
+
+/**
+ * @immutable if set (after hash initialization) this tag the changeableility of a hi_handle
+ */
+typedef struct __hi_handle {
+
+	int	immutable;
+	enum chaining_policy chaining_policy;
+
+	uint32_t (*hash)(const uint8_t *, uint32_t);
+	int (*compare)(const uint8_t *, const void *);
+
+	/* if we use CHAINING_HASHLIST chaining we MUST add a second hashing
+	 * function
+	 */
+	uint32_t (*listhash)(const char *, uint32_t);
+
+	int	size;
+	unsigned int buckets;
+
+	unsigned int *bucket_size;
+	struct lhi_list_head *bucket_table;
+
+	/* CHAINING_ARRAY */
+	hi_bucket_a_obj_t **bucket_array;
+	unsigned int	   *bucket_array_slot_size;
+	unsigned int	   *bucket_array_slot_max;
+} hi_handle_t;
+
+
 
 /* public interface (with a leading hi_)*/
 
@@ -191,6 +192,11 @@ void lhi_bucket_obj_remove(hi_bucket_obj_t *);
 #define	lhi_sethashfunc(hi_handle, hashfunc) ((hi_handle)->hash = hashfunc)
 
 #define	hi_setkeytype(hi_handle, keytype) ((hi_handle)->key_type = key_type)
+
+/* align all standard XMALLOC calls on 8-byte aligned memory addresses
+ * This corresponds to the standard posix_memalign function */
+#define	XMALLOC(memptr, size) xalloc_align(memptr, 8, size)
+int xalloc_align(void **, size_t, size_t);
 
 
 #ifdef __cplusplus

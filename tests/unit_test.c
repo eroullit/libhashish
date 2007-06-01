@@ -62,7 +62,7 @@ static void const_check(void)
 
 	init_seed();
 
-	fprintf(stderr, " o trivial CHAINING_LIST tests ...");
+	fprintf(stderr, " o CHAINING_LIST trivial tests ...");
 
 #define	TABLE_SIZE 2
 
@@ -93,6 +93,10 @@ static void const_check(void)
 	}
 	ret = hi_size(hi_handle);
 	xassert(!(ret));
+
+	fprintf(stderr, " passed\n");
+
+	fprintf(stderr, " o CHAINING_LIST memory tests ...");
 
 	/* some trivial memory leak tests ... */
 	for (i = 0; i < TEST_ITER_NO; i++) {
@@ -126,7 +130,7 @@ static void const_check(void)
 # define TABLE_SIZE 8
 #endif
 
-	fprintf(stderr, " o trivial CHAINING_HASHLIST tests ...");
+	fprintf(stderr, " o CHAINING_HASHLIST trivial tests ...");
 
 	ret = hi_init_str_hl(&hi_handle, TABLE_SIZE);
 	xassert(!ret);
@@ -166,6 +170,10 @@ static void const_check(void)
 	ret = hi_size(hi_handle);
 	xassert(!(ret));
 
+	fprintf(stderr, " passed\n");
+
+	fprintf(stderr, " o CHAINING_HASHLIST memory tests ...");
+
 	/* some trivial memory leak tests ... */
 	for (i = 0; i < TEST_ITER_NO; i++) {
 		char *key_ptr, *data_ptr;
@@ -193,6 +201,62 @@ static void const_check(void)
 
 	fprintf(stderr, " passed\n");
 
+
+	fprintf(stderr, " o CHAINING_ARRAY trivial tests ...");
+
+	ret = hi_init_str_ar(&hi_handle, TABLE_SIZE);
+	xassert(!ret);
+
+	ret = hi_insert_str(hi_handle, "test", NULL);
+	xassert(!ret);
+
+	ret = hi_insert_str(hi_handle, "test1", NULL);
+	xassert(!ret);
+	ret = hi_insert_str(hi_handle, "test2", NULL);
+	xassert(!ret);
+	ret = hi_insert_str(hi_handle, "test3", NULL);
+	xassert(!ret);
+	ret = hi_insert_str(hi_handle, "test3", NULL);
+	xassert(!!ret);
+
+	ret = hi_insert_str(hi_handle, "test4", xstrting);
+
+	hi_get_str(hi_handle, "test4", &data);
+	xassert(!!(data == xstrting));
+
+	ret = hi_size(hi_handle);
+	xassert(!(ret - 5));
+
+	fprintf(stderr, " passed\n");
+
+	fprintf(stderr, " o CHAINING_ARRAY memory tests ...");
+
+	/* some trivial memory leak tests ... */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+		char *key_ptr, *data_ptr;
+
+		random_string(KEYLEN, &key_ptr);
+		random_string(DATALEN, &data_ptr);
+
+		ptr_bucket[i][KEY] = key_ptr;
+		ptr_bucket[i][DATA] = data_ptr;
+
+		hi_insert_str(hi_handle, key_ptr, data_ptr);
+	}
+
+	/* verify storage and cleanup */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+
+		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
+		xassert(!!(data == ptr_bucket[i][DATA]));
+
+		free(ptr_bucket[i][KEY]);
+		free(ptr_bucket[i][DATA]);
+	}
+
+	hi_fini(hi_handle);
+
+	fprintf(stderr, " passed\n");
 
 }
 

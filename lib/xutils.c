@@ -19,6 +19,7 @@
 */
 
 #define _GNU_SOURCE
+#define _XOPEN_SOURCE 600
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -34,6 +35,20 @@
 
 int lhi_errno;
 char *lhi_errbuf;
+
+
+int xalloc_align(void **memptr, size_t alignment, size_t size)
+{
+#ifdef HAVE_POSIX_MEMALIGN
+	return posix_memalign(memptr, alignment, size);
+#else
+	/* FIXME: here is a workaround necessary - but this needs more
+	 * work then my current time window grants (and tomorrow is GPN6 ;-)
+	 */
+	*memptr = malloc(size);
+	return (*memptr == NULL) ? -1 : 0;
+#endif
+}
 
 int __hi_error(int err, const char *file, unsigned int line, const char *func,
 		const char *fmt, ...)

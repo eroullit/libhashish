@@ -43,23 +43,25 @@
  */
 int hi_init(hi_handle_t **hi_hndl, int buckets)
 {
-	int i;
+	int i, ret;
 	hi_handle_t *hi_handle;
 
-	hi_handle = malloc(sizeof(hi_handle_t));
-	if (hi_handle == NULL) {
+	ret = XMALLOC((void **)&hi_handle, sizeof(hi_handle_t));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
 	memset(hi_handle, 0, sizeof(hi_handle_t));
 
-	hi_handle->bucket_table = malloc(buckets * sizeof(struct lhi_list_head));
-	if (hi_handle->bucket_table == NULL) {
+	ret = XMALLOC((void **) &hi_handle->bucket_table,
+			buckets * sizeof(struct lhi_list_head));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
-	hi_handle->bucket_size = malloc(buckets * sizeof(*hi_handle->bucket_size));
-	if (hi_handle->bucket_size == NULL) {
+	ret = XMALLOC((void **) &hi_handle->bucket_size,
+			buckets * sizeof(*hi_handle->bucket_size));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
@@ -90,10 +92,11 @@ int hi_init(hi_handle_t **hi_hndl, int buckets)
 
 int lhi_create_handle(hi_handle_t **hi_hndl)
 {
+	int ret;
 	hi_handle_t *hi_handle;
 
-	hi_handle = malloc(sizeof(hi_handle_t));
-	if (hi_handle == NULL) {
+	ret = XMALLOC((void **) &hi_handle, sizeof(hi_handle_t));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
@@ -110,26 +113,28 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 		unsigned int (*hashf2)(const void *key, unsigned int len),
 		enum chaining_policy chaining_policy)
 {
-	int i;
+	int i, ret;
 	hi_handle_t *hi_handle;
 
-	hi_handle = malloc(sizeof(hi_handle_t));
-	if (hi_handle == NULL) {
+	ret = XMALLOC((void **) &hi_handle, sizeof(hi_handle_t));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
 	memset(hi_handle, 0, sizeof(hi_handle_t));
 
-	hi_handle->bucket_size = malloc(buckets * sizeof(*hi_handle->bucket_size));
-	if (hi_handle->bucket_size == NULL) {
+	ret = XMALLOC((void **) &hi_handle->bucket_size,
+			buckets * sizeof(*hi_handle->bucket_size));
+	if (ret != 0) {
 		return hi_errno(errno);
 	}
 
 	switch (chaining_policy) {
 
 		case CHAINING_LIST:
-			hi_handle->bucket_table = malloc(buckets * sizeof(struct lhi_list_head));
-			if (hi_handle->bucket_table == NULL) {
+			ret = XMALLOC((void **) &hi_handle->bucket_table,
+					buckets * sizeof(struct lhi_list_head));
+			if (ret != 0) {
 				return hi_errno(errno);
 			}
 			/* initialize bucket list */
@@ -140,8 +145,9 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 			break;
 
 		case CHAINING_HASHLIST:
-			hi_handle->bucket_table = malloc(buckets * sizeof(struct lhi_list_head));
-			if (hi_handle->bucket_table == NULL) {
+			ret = XMALLOC((void **) &hi_handle->bucket_table,
+					buckets * sizeof(struct lhi_list_head));
+			if (ret != 0) {
 				return hi_errno(errno);
 			}
 			/* initialize bucket list */
@@ -154,6 +160,35 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 				return hi_error(EINVAL, "hashfunction 2 must be different from thirst hashfunc");
 			}
 			hi_handle->listhash = hashf2;
+			break;
+
+		case CHAINING_ARRAY:
+
+			ret = XMALLOC((void **) &hi_handle->bucket_array_slot_size,
+					sizeof(unsigned int) * buckets);
+			if (ret != 0)
+				return hi_errno(errno);
+
+			ret = XMALLOC((void **) &hi_handle->bucket_array_slot_max,
+					sizeof(unsigned int) * buckets);
+			if (ret != 0)
+				return hi_errno(errno);
+
+			ret = XMALLOC((void **) &hi_handle->bucket_array,
+					(sizeof(hi_bucket_a_obj_t *) * buckets));
+			if (ret != 0)
+				return hi_errno(errno);
+
+			for (i = 0; i < buckets; i++) {
+				/* align array on 16 byte boundaries */
+				ret = xalloc_align((void **) &hi_handle->bucket_array[i], 16,
+						(sizeof(hi_bucket_a_obj_t) * DEFAULT_CHAINING_ARRAY_SIZE));
+				if (ret != 0)
+					return hi_errno(errno);
+
+				hi_handle->bucket_array_slot_size[i] = 0;
+				hi_handle->bucket_array_slot_max[i] = DEFAULT_CHAINING_ARRAY_SIZE;
+			}
 			break;
 
 		default:
@@ -214,6 +249,17 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 			return FAILURE;
 			break;
 
+		case CHAINING_ARRAY:
+			{
+			unsigned int i;
+			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
+				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
+					return SUCCESS;
+				}
+			}
+			}
+			return FAILURE;
+			break;
 		default:
 			return hi_error(EINVAL, "chaining strategie not supported (values: %d)",
 					hi_handle->chaining_policy);
@@ -300,13 +346,12 @@ int lhi_bucket_remove(hi_handle_t *hi_handle, unsigned int bucket_index)
  */
 int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 {
-	int bucket;
+	int bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
 			{
 			hi_bucket_obj_t *b_obj;
-			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
@@ -320,11 +365,22 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 			{
 			hi_bucket_hl_obj_t *b_obj;
 			uint32_t key_hash = hi_handle->listhash(key, keylen);
-			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
 					hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
+					return SUCCESS;
+				}
+			}
+			}
+			return FAILURE;
+			break;
+		case CHAINING_ARRAY:
+			{
+			unsigned int i;
+			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
+				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
+					*data = hi_handle->bucket_array[bucket][i].data;
 					return SUCCESS;
 				}
 			}
@@ -350,13 +406,12 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
  */
 int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 {
-	int bucket;
+	int bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
 			{
 			hi_bucket_obj_t *b_obj, *p;
-			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
@@ -374,7 +429,6 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 			{
 			hi_bucket_hl_obj_t *b_obj, *p;
 			uint32_t key_hash = hi_handle->listhash(key, keylen);
-			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
 					hi_handle->compare(key, b_obj->key)) {
@@ -382,6 +436,20 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 					lhi_list_del(&b_obj->list);
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
+					--hi_handle->size;
+					return SUCCESS;
+				}
+			}
+			}
+			return FAILURE;
+			break;
+		case CHAINING_ARRAY:
+			{
+			unsigned int i;
+			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
+				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
+					*data = hi_handle->bucket_array[bucket][i].data;
+					--hi_handle->bucket_array_slot_size[bucket];
 					--hi_handle->size;
 					return SUCCESS;
 				}
@@ -405,7 +473,7 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
  */
 int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 {
-	int bucket;
+	int bucket, ret;
 
 	if (lhi_lookup(hi_handle, key, keylen) == SUCCESS) { /* already in hash or error */
 		return hi_error(EINVAL, "key already in hashtable");
@@ -417,10 +485,10 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 			{
 			hi_bucket_obj_t *obj;
 			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
-			obj = malloc(sizeof(hi_bucket_obj_t));
-			if (obj == NULL) {
+			ret = XMALLOC((void **) &obj, sizeof(hi_bucket_obj_t));
+			if (ret != 0)
 				return hi_errno(errno);
-			}
+
 			obj->hi_handle = &hi_handle->bucket_table[bucket];
 			lhi_list_add_tail(&obj->list, &hi_handle->bucket_table[bucket]);
 			obj->key = key;
@@ -435,10 +503,10 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 			hi_bucket_hl_obj_t *obj;
 
 			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
-			obj = malloc(sizeof(hi_bucket_hl_obj_t));
-			if (obj == NULL) {
+			ret = XMALLOC((void **) &obj, sizeof(hi_bucket_hl_obj_t));
+			if (ret != 0)
 				return hi_errno(errno);
-			}
+
 			obj->hi_handle = &hi_handle->bucket_table[bucket];
 			lhi_list_add_tail(&obj->list, &hi_handle->bucket_table[bucket]);
 			obj->key = key;
@@ -450,6 +518,29 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 			return SUCCESS;
 			}
 			break;
+		case CHAINING_ARRAY:
+			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
+			if (hi_handle->bucket_array_slot_size[bucket] >=
+					hi_handle->bucket_array_slot_max[bucket]) {
+
+				/* bucket size exhausted -> double it */
+				hi_handle->bucket_array_slot_max[bucket] =
+					hi_handle->bucket_array_slot_max[bucket] << 1;
+
+				hi_handle->bucket_array[bucket] = realloc(hi_handle->bucket_array[bucket],
+						sizeof(hi_bucket_a_obj_t) * hi_handle->bucket_array_slot_max[bucket]);
+				if (hi_handle->bucket_array[bucket] == NULL)
+					return hi_errno(errno);
+
+			}
+			/* add key/data add next free slot */
+			hi_handle->bucket_array[bucket][hi_handle->bucket_array_slot_size[bucket]].key = key;
+			hi_handle->bucket_array[bucket][hi_handle->bucket_array_slot_size[bucket]].data = data;
+
+			hi_handle->bucket_array_slot_size[bucket]++;
+			hi_handle->size++;
+
+			return SUCCESS;
 		default:
 			return hi_error(EINVAL, "chaining strategie not supported (values: %d)",
 					hi_handle->chaining_policy);
@@ -481,6 +572,8 @@ int hi_fini(hi_handle_t *hi_handle)
 				free(b_obj);
 			  }
 			}
+			free(hi_handle->bucket_table);
+			free(hi_handle->bucket_size);
 			}
 			break;
 
@@ -496,17 +589,26 @@ int hi_fini(hi_handle_t *hi_handle)
 				free(b_obj);
 			  }
 			}
+			free(hi_handle->bucket_table);
+			free(hi_handle->bucket_size);
 			}
 			break;
 
+		case CHAINING_ARRAY:
+			for (i = 0; i < hi_handle->buckets; i++) {
+				free(hi_handle->bucket_array[i]);
+			}
+			free(hi_handle->bucket_array);
+			free(hi_handle->bucket_array_slot_size);
+			free(hi_handle->bucket_array_slot_max);
+			free(hi_handle->bucket_size);
+			break;
+
 		default:
-			return FAILURE;
 			return hi_error(EINVAL, "chaining strategie not supported (values: %d)",
 					hi_handle->chaining_policy);
 			break;
 	};
-	free(hi_handle->bucket_size);
-	free(hi_handle->bucket_table);
 
 	free(hi_handle);
 
