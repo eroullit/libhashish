@@ -87,6 +87,13 @@ extern void hi_perror(const char *);
 
 #define hi_errno(E) hi_error(E, NULL)
 
+/* align all standard XMALLOC calls on 8-byte aligned memory addresses
+ * This corresponds to the standard posix_memalign function */
+#define	XMALLOC(memptr, size) xalloc_align(memptr, 8, size)
+int xalloc_align(void **, size_t, size_t);
+
+
+
 
 #endif /* _LIB_HASHISH_LOCAL_H */
 

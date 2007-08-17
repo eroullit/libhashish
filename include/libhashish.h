@@ -23,6 +23,7 @@
 #define	_LIB_HASHISH_H
 
 #include <inttypes.h> /* include stdint.h */
+#include <stdio.h>
 #include "list.h"
 #include "../config.h"
 
@@ -192,12 +193,6 @@ void lhi_bucket_obj_remove(hi_bucket_obj_t *);
 #define	lhi_sethashfunc(hi_handle, hashfunc) ((hi_handle)->hash = hashfunc)
 
 #define	hi_setkeytype(hi_handle, keytype) ((hi_handle)->key_type = key_type)
-
-/* align all standard XMALLOC calls on 8-byte aligned memory addresses
- * This corresponds to the standard posix_memalign function */
-#define	XMALLOC(memptr, size) xalloc_align(memptr, 8, size)
-int xalloc_align(void **, size_t, size_t);
-
 
 #ifdef __cplusplus
 }
