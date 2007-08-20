@@ -250,7 +250,7 @@ create_make_rules()
 	echo "CFLAGS += \$(WARNINGS) \$(XCFLAGS)" >> Make.Rules
 	
 	if [ "$threadclean" = yes ] ; then
-		echo "THREADFLAGS=-lphtread -DTHREADSAFE"  >> Make.Rules
+		echo "THREADFLAGS=-lpthread -DTHREADSAFE"  >> Make.Rules
 	else
 		echo "THREADFLAGS="            >> Make.Rules
 	fi

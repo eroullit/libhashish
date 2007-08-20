@@ -27,6 +27,10 @@
 #include "list.h"
 #include "../config.h"
 
+#ifdef THREADSAFE
+#include <pthread.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -133,6 +137,11 @@ typedef struct __hi_handle {
 	hi_bucket_a_obj_t **bucket_array;
 	unsigned int	   *bucket_array_slot_size;
 	unsigned int	   *bucket_array_slot_max;
+
+#ifdef THREADSAFE
+	pthread_mutex_t mutex_lock;
+#endif
+
 } hi_handle_t;
 
 
