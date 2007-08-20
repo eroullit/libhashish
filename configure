@@ -88,6 +88,7 @@ usage()
     --help                         print this message
     --prefix=PREFIX                install architecture-independent files in PREFIX (/usr)
     --enable-debug                 enable debug information (#define DEBUG and add CFLAGS -g)
+    --enable-perf-debug            inject timing gather code (#define PERFDEBUG)
     --enable-eye-candy             utilize GD library to enable hash distribution map image
     --with-features=huge           enable eye candy at the moment
     --compiler=/PATH/TO/COMPILER   use specific compiler as the primary compiler
@@ -116,6 +117,11 @@ parse_args()
 			--enable-debug | -enable-debug)
 			debug="yes"
 			;;
+
+			--enable-perf-debug | -enable-perf-debug)
+			perfdebug="yes"
+			;;
+
 
 			--enable-eye-candy | --eye-candy=yes)
 			eye_candy="yes"
@@ -238,6 +244,14 @@ create_make_rules()
 	fi
 	echo "WARNINGS = $WARNINGS"              >> Make.Rules
 	echo "CFLAGS += \$(WARNINGS) \$(XCFLAGS)" >> Make.Rules
+
+	# performance falgs
+	if [ "$perfdebug" = yes ] ; then
+		echo "PERFFLAGS=-DPERFDEBUG"          >> Make.Rules
+	else
+		echo "PERFFLAGS="            >> Make.Rules
+	fi
+	echo "CFLAGS += \$(PERFFLAGS)" >> Make.Rules
 
 	# check for executables
 	echo -n "checking for rm... "

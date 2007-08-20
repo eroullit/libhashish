@@ -31,7 +31,6 @@
 #include "libhashish.h"
 #include "list.h"
 
-
 /**
  * This is the default initialize function. It takes HI_HASH_DEFAULT as the
  * default hash function and set compare function for strings - so use it only
@@ -132,6 +131,7 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 	switch (chaining_policy) {
 
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			ret = XMALLOC((void **) &hi_handle->bucket_table,
 					buckets * sizeof(struct lhi_list_head));
 			if (ret != 0) {
@@ -225,6 +225,7 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
@@ -302,6 +303,7 @@ int lhi_bucket_remove(hi_handle_t *hi_handle, unsigned int bucket_index)
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj, *p;
 			/* iterate over list and remove all entries and free hi_bucket_obj_t */
@@ -361,6 +363,36 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 			}
 			return FAILURE;
 			break;
+			/* CHAINING_LIST_MTF is nearly equal to the CHAINING_LIST
+			 * strategy except to the hi_get routine:
+			 * This strategy favors often used elements by doing a swapping
+			 * of elements (key and data) to the beginning of the list.
+			 * Therefore if the searched elements are underlie no normal
+			 * distribution this strategy may have an advantage. The
+			 * disadvantage of the algorithm is the swap routine - of
+			 * course.
+			 */
+		case CHAINING_LIST_MTF:
+			{
+				/* Key and data are pointers - therefore we store
+				 * the pointer to the first set, search the right set and
+				 * reorder the set.
+				 */
+			hi_bucket_obj_t *b_obj, *p;
+
+			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
+				if (hi_handle->compare(key, b_obj->key)) {
+
+					lhi_list_del(&b_obj->list);
+					lhi_list_add_head(&b_obj->list, &(hi_handle->bucket_table[bucket]));
+					*data = b_obj->data;
+
+					return SUCCESS;
+				}
+			}
+			}
+			return FAILURE;
+			break;
 		case CHAINING_HASHLIST:
 			{
 			hi_bucket_hl_obj_t *b_obj;
@@ -410,6 +442,7 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj, *p;
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
@@ -482,6 +515,7 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 	switch (hi_handle->chaining_policy) {
 
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *obj;
 			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
@@ -561,6 +595,7 @@ int hi_fini(hi_handle_t *hi_handle)
 
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
+		case CHAINING_LIST_MTF:
 			{
 			struct lhi_list_head *pos;
 			for (i = 0; i < hi_handle->buckets; i++) {

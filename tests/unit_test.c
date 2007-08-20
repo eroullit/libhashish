@@ -130,6 +130,8 @@ static void const_check(void)
 # define TABLE_SIZE 8
 #endif
 
+	/* TEST START ***/
+
 	fprintf(stderr, " o CHAINING_HASHLIST trivial tests ...");
 
 	ret = hi_init_str_hl(&hi_handle, TABLE_SIZE);
@@ -201,6 +203,8 @@ static void const_check(void)
 
 	fprintf(stderr, " passed\n");
 
+	/* TEST END */
+
 
 	fprintf(stderr, " o CHAINING_ARRAY trivial tests ...");
 
@@ -257,6 +261,97 @@ static void const_check(void)
 	hi_fini(hi_handle);
 
 	fprintf(stderr, " passed\n");
+
+
+	/* TEST START ***/
+
+#ifdef TABLE_SIZE
+# undef TABLE_SIZE
+# define TABLE_SIZE 2
+#endif
+
+	fprintf(stderr, " o CHAINING_LIST_MTF trivial tests ...");
+
+	ret = hi_init_str_lmtf(&hi_handle, TABLE_SIZE);
+	xassert(!ret);
+
+	ret = hi_insert_str(hi_handle, "test", NULL);
+	xassert(!ret);
+
+	/* same string, set associative -> MUST fail ;-) */
+	ret = hi_insert_str(hi_handle, "test", NULL);
+	xassert(ret);
+
+	ret = hi_insert_str(hi_handle, "test1", NULL);
+	ret = hi_insert_str(hi_handle, "test2", NULL);
+	ret = hi_insert_str(hi_handle, "test3", NULL);
+	ret = hi_insert_str(hi_handle, "test4", xstrting);
+
+	hi_get_str(hi_handle, "test4", &data);
+	/* No! Don't touch this if you don't know why double negate ;) */
+	xassert(!!(data == xstrting));
+
+	/* This triggers only the "not to reorder routine".
+	 * Because we already fetched it
+	 */
+	hi_get_str(hi_handle, "test4", &data);
+	hi_get_str(hi_handle, "test4", &data);
+	hi_get_str(hi_handle, "test4", &data);
+	hi_get_str(hi_handle, "test3", &data);
+	hi_get_str(hi_handle, "test3", &data);
+
+	ret = hi_size(hi_handle);
+	xassert(!(ret - 5));
+
+
+	data = NULL;
+	ret = hi_remove_str(hi_handle, "test4", &data);
+	xassert(ret == SUCCESS);
+	xassert(!!(data == xstrting));
+
+	ret = hi_size(hi_handle);
+	xassert(!(ret - 4));
+
+
+	for (i = 0; i < TABLE_SIZE; i++) {
+		lhi_bucket_remove(hi_handle, i);
+	}
+	ret = hi_size(hi_handle);
+	xassert(!(ret));
+
+	fprintf(stderr, " passed\n");
+
+	fprintf(stderr, " o CHAINING_LIST_MTF memory tests ...");
+
+	/* some trivial memory leak tests ... */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+		char *key_ptr, *data_ptr;
+
+		random_string(KEYLEN, &key_ptr);
+		random_string(DATALEN, &data_ptr);
+
+		ptr_bucket[i][KEY] = key_ptr;
+		ptr_bucket[i][DATA] = data_ptr;
+
+		hi_insert_str(hi_handle, key_ptr, data_ptr);
+	}
+
+	/* verify storage and cleanup */
+	for (i = 0; i < TEST_ITER_NO; i++) {
+
+		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
+		xassert(!!(data == ptr_bucket[i][DATA]));
+
+		free(ptr_bucket[i][KEY]);
+		free(ptr_bucket[i][DATA]);
+	}
+
+	hi_fini(hi_handle);
+
+	fprintf(stderr, " passed\n");
+
+	/* TEST END */
+
 
 }
 

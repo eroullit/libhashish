@@ -58,6 +58,9 @@ static inline int lhi_list_empty(struct lhi_list_head *head)
 #define lhi_LIST_HEAD(name) \
 	struct lhi_list_head name = { &(name), &(name) }
 
+#define lhi_list_first(pos, head, member) \
+	pos = lhi_list_entry((head)->next, typeof(*pos), member);
+
 #define lhi_list_for_each_entry(pos, head, member)				\
 	for (pos = lhi_list_entry((head)->next, typeof(*pos), member);	\
 	     &(pos)->member != (head);	\

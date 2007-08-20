@@ -31,7 +31,7 @@
 #include "libhashish.h"
 #include "list.h"
 
-int hi_cmp_str(const void *key1, const void *key2)
+int hi_cmp_str(const uint8_t *key1, const uint8_t *key2)
 {
 	 return (!strcmp(key1, key2));
 }

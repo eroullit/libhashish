@@ -154,7 +154,7 @@ int hi_remove(hi_handle_t *, void *, uint32_t, void **);
 int lhi_bucket_remove(hi_handle_t *, unsigned int);
 
 /* compare functions */
-int hi_cmp_str(const void *key1, const void *key2);
+int hi_cmp_str(const uint8_t *key1, const uint8_t *key2);
 
 
 #define	HI_CMP_STR hi_cmp_str
@@ -163,6 +163,7 @@ int hi_cmp_str(const void *key1, const void *key2);
 /* string macros */
 #define hi_init_str(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_LIST)
 #define hi_init_str_hl(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_HASHLIST)
+#define hi_init_str_lmtf(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_LIST_MTF)
 #define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_ARRAY)
 #define	hi_insert_str(hi_handle, key, data) hi_insert(hi_handle, (void *)key, strlen(key), data)
 #define	hi_get_str(hi_handle, key, data)  hi_get(hi_handle, (void *)key, strlen(key), data)
