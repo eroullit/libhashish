@@ -207,6 +207,10 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 
 	hi_handle->size = 0;
 
+#ifdef THREADSAFE
+	pthread_mutex_init(&hi_handle->mutex_lock, NULL);
+#endif
+
 	/* our hash table isn't mutable since here */
 	lhi_set_immutable(hi_handle);
 
@@ -228,11 +232,20 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -240,12 +253,21 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 			{
 			hi_bucket_hl_obj_t *b_obj;
 			uint32_t key_hash = hi_handle->listhash(key, keylen);
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
 					hi_handle->compare(key, b_obj->key)) {
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -253,11 +275,20 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 		case CHAINING_ARRAY:
 			{
 			unsigned int i;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
 				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -278,10 +309,13 @@ int lhi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
  */
 void lhi_bucket_obj_remove(hi_bucket_obj_t *hi_bucket_obj)
 {
-	struct lhi_list_head *hi_handle = hi_bucket_obj->hi_handle;
+	struct lhi_list_head *hi_handle;
 
-	if (hi_handle == NULL)
+	hi_handle = hi_bucket_obj->hi_handle;
+
+	if (hi_handle == NULL) {
 		return;
+	}
 
 	lhi_list_del(&hi_bucket_obj->list);
 	hi_bucket_obj->hi_handle = NULL;
@@ -307,18 +341,27 @@ int lhi_bucket_remove(hi_handle_t *hi_handle, unsigned int bucket_index)
 			{
 			hi_bucket_obj_t *b_obj, *p;
 			/* iterate over list and remove all entries and free hi_bucket_obj_t */
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_for_each_entry_safe(b_obj, p, pos, list) {
 				lhi_list_del(&b_obj->list);
 				free(b_obj);
 				--hi_handle->bucket_size[bucket_index];
 				--hi_handle->size;
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			return SUCCESS;
 			}
 			break;
 		case CHAINING_HASHLIST:
 			{
 			hi_bucket_hl_obj_t *b_obj, *p;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			/* iterate over list and remove all entries and free hi_bucket_obj_t */
 			lhi_list_for_each_entry_safe(b_obj, p, pos, list) {
 				lhi_list_del(&b_obj->list);
@@ -326,6 +369,9 @@ int lhi_bucket_remove(hi_handle_t *hi_handle, unsigned int bucket_index)
 				--hi_handle->bucket_size[bucket_index];
 				--hi_handle->size;
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			return SUCCESS;
 			}
 			break;
@@ -353,13 +399,22 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 	switch (hi_handle->chaining_policy) {
 		case CHAINING_LIST:
 			{
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			hi_bucket_obj_t *b_obj;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -380,42 +435,69 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 				 */
 			hi_bucket_obj_t *b_obj, *p;
 
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
 
 					lhi_list_del(&b_obj->list);
 					lhi_list_add_head(&b_obj->list, &(hi_handle->bucket_table[bucket]));
 					*data = b_obj->data;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
 		case CHAINING_HASHLIST:
 			{
 			hi_bucket_hl_obj_t *b_obj;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			uint32_t key_hash = hi_handle->listhash(key, keylen);
 			lhi_list_for_each_entry(b_obj, &(hi_handle->bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
 					hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
 		case CHAINING_ARRAY:
 			{
 			unsigned int i;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
 				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
 					*data = hi_handle->bucket_array[bucket][i].data;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -445,6 +527,9 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 		case CHAINING_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj, *p;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
 				if (hi_handle->compare(key, b_obj->key)) {
 					*data = b_obj->data;
@@ -452,15 +537,24 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
 					--hi_handle->size;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
 		case CHAINING_HASHLIST:
 			{
 			hi_bucket_hl_obj_t *b_obj, *p;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			uint32_t key_hash = hi_handle->listhash(key, keylen);
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
@@ -470,23 +564,38 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
 					--hi_handle->size;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
 		case CHAINING_ARRAY:
 			{
 			unsigned int i;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
 				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
 					*data = hi_handle->bucket_array[bucket][i].data;
 					--hi_handle->bucket_array_slot_size[bucket];
 					--hi_handle->size;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return SUCCESS;
 				}
 			}
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			}
 			return FAILURE;
 			break;
@@ -523,12 +632,18 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 			if (ret != 0)
 				return hi_errno(errno);
 
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			obj->hi_handle = &hi_handle->bucket_table[bucket];
 			lhi_list_add_tail(&obj->list, &hi_handle->bucket_table[bucket]);
 			obj->key = key;
 			obj->data = data;
 			hi_handle->bucket_size[bucket]++;
 			hi_handle->size++;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			return SUCCESS;
 			}
 			break;
@@ -542,6 +657,9 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 				return hi_errno(errno);
 
 			obj->hi_handle = &hi_handle->bucket_table[bucket];
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			lhi_list_add_tail(&obj->list, &hi_handle->bucket_table[bucket]);
 			obj->key = key;
 			obj->data = data;
@@ -549,11 +667,17 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 			obj->key_hash = hi_handle->listhash(key, keylen);
 			hi_handle->bucket_size[bucket]++;
 			hi_handle->size++;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			return SUCCESS;
 			}
 			break;
 		case CHAINING_ARRAY:
 			bucket = hi_handle->hash(key, keylen) % hi_handle->buckets;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			if (hi_handle->bucket_array_slot_size[bucket] >=
 					hi_handle->bucket_array_slot_max[bucket]) {
 
@@ -563,8 +687,12 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 
 				hi_handle->bucket_array[bucket] = realloc(hi_handle->bucket_array[bucket],
 						sizeof(hi_bucket_a_obj_t) * hi_handle->bucket_array_slot_max[bucket]);
-				if (hi_handle->bucket_array[bucket] == NULL)
+				if (hi_handle->bucket_array[bucket] == NULL) {
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 					return hi_errno(errno);
+				}
 
 			}
 			/* add key/data add next free slot */
@@ -573,6 +701,9 @@ int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 
 			hi_handle->bucket_array_slot_size[bucket]++;
 			hi_handle->size++;
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 
 			return SUCCESS;
 		default:
@@ -598,6 +729,9 @@ int hi_fini(hi_handle_t *hi_handle)
 		case CHAINING_LIST_MTF:
 			{
 			struct lhi_list_head *pos;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->buckets; i++) {
 			  hi_bucket_obj_t *b_obj, *p;
 			  pos = &hi_handle->bucket_table[i];
@@ -609,12 +743,18 @@ int hi_fini(hi_handle_t *hi_handle)
 			}
 			free(hi_handle->bucket_table);
 			free(hi_handle->bucket_size);
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			break;
 
 		case CHAINING_HASHLIST:
 			{
 			struct lhi_list_head *pos;
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->buckets; i++) {
 			  hi_bucket_hl_obj_t *b_obj, *p;
 			  pos = &hi_handle->bucket_table[i];
@@ -626,10 +766,16 @@ int hi_fini(hi_handle_t *hi_handle)
 			}
 			free(hi_handle->bucket_table);
 			free(hi_handle->bucket_size);
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			}
 			break;
 
 		case CHAINING_ARRAY:
+#ifdef THREADSAFE
+			pthread_mutex_lock(&hi_handle->mutex_lock);
+#endif
 			for (i = 0; i < hi_handle->buckets; i++) {
 				free(hi_handle->bucket_array[i]);
 			}
@@ -637,6 +783,9 @@ int hi_fini(hi_handle_t *hi_handle)
 			free(hi_handle->bucket_array_slot_size);
 			free(hi_handle->bucket_array_slot_max);
 			free(hi_handle->bucket_size);
+#ifdef THREADSAFE
+			pthread_mutex_unlock(&hi_handle->mutex_lock);
+#endif
 			break;
 
 		default:

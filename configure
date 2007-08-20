@@ -523,9 +523,9 @@ int main(void) {
 	return (int) i;
 }
 EOF
-	$compiler -o cpu "$TMPDIR"/cpus.c >&5 2>&1
+	$compiler -o "$TMPDIR"/cpu "$TMPDIR"/cpus.c >&5 2>&1
 		if [ $? -eq 0 ] ; then
-			./cpu 1>/dev/null 2>&1
+			"$TMPDIR"/cpu 1>/dev/null 2>&1
 			cpus=$?
 			if [ $cpus -gt 0 ] ; then
 				echo " $cpus"
