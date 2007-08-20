@@ -90,6 +90,7 @@ usage()
     --enable-debug                 enable debug information (#define DEBUG and add CFLAGS -g)
     --enable-perf-debug            inject timing gather code (#define PERFDEBUG)
     --enable-eye-candy             utilize GD library to enable hash distribution map image
+    --enable-thread-locking        default behaviour is a not thread clean behaviour (no mutex locks)
     --with-features=huge           enable eye candy at the moment
     --compiler=/PATH/TO/COMPILER   use specific compiler as the primary compiler
 EOF
@@ -122,6 +123,9 @@ parse_args()
 			perfdebug="yes"
 			;;
 
+			--enable-thread-locking | -enable-thread-locking)
+			threadclean="yes"
+			;;
 
 			--enable-eye-candy | --eye-candy=yes)
 			eye_candy="yes"
@@ -244,6 +248,14 @@ create_make_rules()
 	fi
 	echo "WARNINGS = $WARNINGS"              >> Make.Rules
 	echo "CFLAGS += \$(WARNINGS) \$(XCFLAGS)" >> Make.Rules
+	
+	if [ "$threadclean" = yes ] ; then
+		echo "THREADFLAGS=-lphtread -DTHREADSAFE"  >> Make.Rules
+	else
+		echo "THREADFLAGS="            >> Make.Rules
+	fi
+	echo "CFLAGS += \$(THREADFLAGS) " >> Make.Rules
+
 
 	# performance falgs
 	if [ "$perfdebug" = yes ] ; then
@@ -489,6 +501,44 @@ EOF
 	rm -rf "$TMPDIR"
 }
 
+check_no_cpus()
+{
+	# see http://ndevilla.free.fr/threads/index.html
+	# for a more portable check
+		echo -n "checking for number of cpus..."
+	TMPDIR=`mktemp -d`
+	cat > "$TMPDIR"/cpus.c <<EOF
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stddef.h>
+#include <gd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+int main(void) {
+	long i = sysconf(_SC_NPROCESSORS_CONF);
+	return (int) i;
+}
+EOF
+	$compiler -o cpu "$TMPDIR"/cpus.c >&5 2>&1
+		if [ $? -eq 0 ] ; then
+			./cpu 1>/dev/null 2>&1
+			cpus=$?
+			if [ $cpus -gt 0 ] ; then
+				echo " $cpus"
+				echo "#define NOCPUS $cpus" >>config.h
+			else
+				echo "#define NOCPUS 0" >>config.h
+			fi
+		else
+			echo "#define NOCPUS 0" >>config.h
+		fi
+	rm -rf "$TMPDIR"
+}
+
 
 
 # if we reach this function everything seems fine ;-)
@@ -514,6 +564,7 @@ check_for_udplite
 check_for_splice
 check_for_posix_memalign
 check_for_gd_lib
+check_no_cpus
 
 print_config_footer
 
