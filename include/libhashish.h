@@ -24,12 +24,9 @@
 
 #include <inttypes.h> /* include stdint.h */
 #include <stdio.h>
+#include <pthread.h>
 #include "list.h"
 #include "../config.h"
-
-#ifdef THREADSAFE
-#include <pthread.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -138,9 +135,7 @@ typedef struct __hi_handle {
 	unsigned int	   *bucket_array_slot_size;
 	unsigned int	   *bucket_array_slot_max;
 
-#ifdef THREADSAFE
 	pthread_mutex_t mutex_lock;
-#endif
 
 } hi_handle_t;
 
