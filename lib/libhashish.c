@@ -442,7 +442,7 @@ int hi_get(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 			for (i = 0; i < hi_handle->bucket_array_slot_size[bucket]; i++) {
 				if (hi_handle->compare(key, hi_handle->bucket_array[bucket][i].key)) {
 					*data = hi_handle->bucket_array[bucket][i].data;
-			lhi_pthread_unlock(&hi_handle->mutex_lock);
+					lhi_pthread_unlock(&hi_handle->mutex_lock);
 					return SUCCESS;
 				}
 			}
