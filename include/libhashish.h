@@ -143,7 +143,6 @@ typedef struct __hi_handle {
 
 /* public interface (with a leading hi_)*/
 
-int hi_init(hi_handle_t **, int);
 int hi_fini(hi_handle_t *);
 int hi_create(hi_handle_t **, int,
 		int (*compare)(const void *, const void *),
@@ -168,7 +167,8 @@ int hi_cmp_str(const uint8_t *key1, const uint8_t *key2);
 #define hi_init_str(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_LIST)
 #define hi_init_str_hl(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_HASHLIST)
 #define hi_init_str_lmtf(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_LIST_MTF)
-#define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_ARRAY)
+#define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_ARRAY)
+
 #define	hi_insert_str(hi_handle, key, data) hi_insert(hi_handle, (void *)key, strlen(key), data)
 #define	hi_get_str(hi_handle, key, data)  hi_get(hi_handle, (void *)key, strlen(key), data)
 #define	hi_remove_str(hi_handle, key, data)  hi_remove(hi_handle, (void *)key, strlen(key), data)

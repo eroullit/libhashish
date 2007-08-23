@@ -32,64 +32,6 @@
 #include "list.h"
 #include "threads.h"
 
-/**
- * This is the default initialize function. It takes HI_HASH_DEFAULT as the
- * default hash function and set compare function for strings - so use it only
- * for strings
- *
- * @arg hi_hndl	this become out new hashish handle
- * @arg buckets	hash bucket size
- * @returns negativ error value or zero on success
- */
-int hi_init(hi_handle_t **hi_hndl, int buckets)
-{
-	int i, ret;
-	hi_handle_t *hi_handle;
-
-	ret = XMALLOC((void **)&hi_handle, sizeof(hi_handle_t));
-	if (ret != 0) {
-		return hi_errno(errno);
-	}
-
-	memset(hi_handle, 0, sizeof(hi_handle_t));
-
-	ret = XMALLOC((void **) &hi_handle->bucket_table,
-			buckets * sizeof(struct lhi_list_head));
-	if (ret != 0) {
-		return hi_errno(errno);
-	}
-
-	ret = XMALLOC((void **) &hi_handle->bucket_size,
-			buckets * sizeof(*hi_handle->bucket_size));
-	if (ret != 0) {
-		return hi_errno(errno);
-	}
-
-	/* initialize bucket list */
-	for (i = 0; i < buckets; i++) {
-		lhi_init_list_head(&(hi_handle->bucket_table[i]));
-		hi_handle->bucket_size[i] = 0;
-	}
-
-	hi_handle->buckets = buckets;
-
-	/* set default hash algorithm */
-	hi_handle->hash = HI_HASH_DEFAULT;
-
-	/* set default compare function - string */
-	hi_handle->compare = hi_cmp_str;
-
-	hi_handle->size = 0;
-
-	/* our hash table isn't mutable since here */
-	lhi_set_immutable(hi_handle);
-
-	/* last but not least: bend our pointer */
-	*hi_hndl = hi_handle;
-
-	return SUCCESS;
-}
-
 int lhi_create_handle(hi_handle_t **hi_hndl)
 {
 	int ret;
@@ -107,6 +49,15 @@ int lhi_create_handle(hi_handle_t **hi_hndl)
 	return SUCCESS;
 }
 
+/**
+ * This is the default initialize function. It takes HI_HASH_DEFAULT as the
+ * default hash function and set compare function for strings - so use it only
+ * for strings
+ *
+ * @arg hi_hndl	this become out new hashish handle
+ * @arg buckets	hash bucket size
+ * @returns negativ error value or zero on success
+ */
 int hi_create(hi_handle_t **hi_hndl, int buckets,
 		int (*compare)(const void *key1, const void *key2),
 		unsigned int (*hashf1)(const void *key, unsigned int len),
