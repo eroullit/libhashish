@@ -62,6 +62,8 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 		int (*compare)(const void *key1, const void *key2),
 		unsigned int (*hashf1)(const void *key, unsigned int len),
 		unsigned int (*hashf2)(const void *key, unsigned int len),
+		struct my_stuff * (*rb_search)(struct rb_root *rb_root, void *key),
+		void (*rb_insert)(struct rb_root *rb_root, void *new_data),
 		enum chaining_policy chaining_policy)
 {
 	int i, ret;
@@ -112,6 +114,14 @@ int hi_create(hi_handle_t **hi_hndl, int buckets,
 				return hi_error(EINVAL, "hashfunction 2 must be different from thirst hashfunc");
 			}
 			hi_handle->listhash = hashf2;
+			break;
+
+		case CHAINING_RBTREE:
+			ret =  XMALLOC((void **) &hi_handle->rb_root,
+					buckets * sizeof(struct rb_root));
+			if (ret != 0) {
+				return hi_errno(errno);
+			}
 			break;
 
 		case CHAINING_ARRAY:

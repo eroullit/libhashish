@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include "list.h"
+#include "rbtree.h"
 #include "../config.h"
 
 #ifdef __cplusplus
@@ -128,12 +129,19 @@ typedef struct __hi_handle {
 	unsigned int buckets;
 
 	unsigned int *bucket_size;
+
+	/* CHAINING_LIST */
 	struct lhi_list_head *bucket_table;
 
 	/* CHAINING_ARRAY */
 	hi_bucket_a_obj_t **bucket_array;
 	unsigned int	   *bucket_array_slot_size;
 	unsigned int	   *bucket_array_slot_max;
+
+	/* CHAINING_RBTREE */
+	struct rb_root *rb_root;
+	struct my_stuff * (*rb_search)(struct rb_root *, void *);
+	void (*rb_insert)(struct rb_root *, void *);
 
 	pthread_mutex_t mutex_lock;
 
@@ -148,6 +156,8 @@ int hi_create(hi_handle_t **, int,
 		int (*compare)(const void *, const void *),
 		unsigned int (*hashf)(const void *, unsigned int),
 		unsigned int (*hashf2)(const void *, unsigned int),
+		struct my_stuff * (*rb_search)(struct rb_root *, void *),
+		void (*rb_insert)(struct rb_root *, void *),
 		enum chaining_policy);
 
 int hi_insert(hi_handle_t *, void *, uint32_t, void *);
@@ -164,10 +174,10 @@ int hi_cmp_str(const uint8_t *key1, const uint8_t *key2);
 
 
 /* string macros */
-#define hi_init_str(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_LIST)
-#define hi_init_str_hl(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_HASHLIST)
-#define hi_init_str_lmtf(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, CHAINING_LIST_MTF)
-#define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, CHAINING_ARRAY)
+#define hi_init_str(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, NULL, NULL, CHAINING_LIST)
+#define hi_init_str_hl(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, NULL, NULL, CHAINING_HASHLIST)
+#define hi_init_str_lmtf(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, HI_HASH_DEFAULT_HL, NULL, NULL, CHAINING_LIST_MTF)
+#define hi_init_str_ar(hi_hndl, buckets)  hi_create(hi_hndl, buckets, HI_CMP_STR, HI_HASH_DEFAULT, NULL, NULL, NULL, CHAINING_ARRAY)
 
 #define	hi_insert_str(hi_handle, key, data) hi_insert(hi_handle, (void *)key, strlen(key), data)
 #define	hi_get_str(hi_handle, key, data)  hi_get(hi_handle, (void *)key, strlen(key), data)
