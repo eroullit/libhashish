@@ -34,10 +34,10 @@ void lhi_pthread_lock(pthread_mutex_t *);
 void lhi_pthread_unlock(pthread_mutex_t *);
 # else
 static void lhi_pthread_init(pthread_mutex_t *a,
-		const pthread_mutexattr_t *b) { }
-static void lhi_pthread_destroy(pthread_mutex_t *a) { }
-static void lhi_pthread_lock(pthread_mutex_t * a) { }
-static void lhi_pthread_unlock(pthread_mutex_t * a) { }
+		const pthread_mutexattr_t *b) { (void)a; (void)b; }
+static void lhi_pthread_destroy(pthread_mutex_t *a) { (void)a; }
+static void lhi_pthread_lock(pthread_mutex_t * a) { (void)a; }
+static void lhi_pthread_unlock(pthread_mutex_t * a) { (void)a; }
 
 #endif
 

@@ -91,6 +91,7 @@ extern void hi_perror(const char *);
  * This corresponds to the standard posix_memalign function */
 #define	XMALLOC(memptr, size) xalloc_align(memptr, 8, size)
 int xalloc_align(void **, size_t, size_t);
+size_t strlcpy(char *, const char *, size_t);
 
 
 

@@ -97,6 +97,18 @@ void hi_perror(const char *s)
 		fprintf(stderr, "%s\n", hi_geterror());
 }
 
+size_t strlcpy(char *dest, const char *src, size_t size)
+{
+	size_t ret = strlen(src);
+
+	if (size) {
+		size_t len = (ret >= size) ? size - 1 : ret;
+		memcpy(dest, src, len);
+		dest[len] = '\0';
+	}
+	return ret;
+}
+
 
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */
