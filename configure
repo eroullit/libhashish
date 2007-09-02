@@ -37,9 +37,13 @@ PACKAGE_NAME="libhashish"
 
 # compiler flags
 
+# -W -Wall -> enable most relevant warnings
+# -Wundef  -> undefined but used macros
+# -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
+#          -> check for good prototyping 
 WARNINGS="-pipe -Wall -W -Wwrite-strings -Wsign-compare \
 -Wpointer-arith -Wcast-align \
--Wstrict-prototypes -Wmissing-prototypes \
+-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 -Wnested-externs -Winline -Wshadow -Wformat=2"
 
 
