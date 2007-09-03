@@ -21,7 +21,7 @@ endif
 
 export
 
-.PHONY: all clean install unit_test string_distribution
+.PHONY: all clean install 
 
 all: unit_test string_distribution concurrent_test
 
