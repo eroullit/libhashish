@@ -51,317 +51,414 @@
 #define	KEY 0
 #define	DATA 1
 
-static void const_check(void)
+static uint32_t dump_hash_func(const uint8_t *key,
+		uint32_t len)
 {
-	int i;
+	(void) key;
+	(void) len;
+
+	return 1;
+}
+
+
+static void check_list_remove(void)
+{
 	int ret;
-	void *data;
-	char xstrting[] = TESTSTRING;
-	hi_handle_t *hi_handle;
-	char *ptr_bucket[TEST_ITER_NO][2];
+	hi_handle_t *hi_hndl;
+	struct hi_init_set hi_set;
+	void *data_ret;
 
-	init_seed();
+	/** COLL_ENG_LIST **/
+	fprintf(stderr, " o list remove test (COLL_ENG_LIST) ...");
 
-	fprintf(stderr, " o CHAINING_LIST trivial tests ...");
+	hi_set_zero(&hi_set);
+	hi_set_bucket_size(&hi_set, 100);
+	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 
-#define	TABLE_SIZE 2
-
-	ret = hi_init_str(&hi_handle, TABLE_SIZE);
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		hi_perror("hi_create");
 	xassert(!ret);
 
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(!ret);
-
-	/* same string, set associative -> MUST fail ;-) */
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(ret);
-
-	ret = hi_insert_str(hi_handle, "test1", NULL);
-	ret = hi_insert_str(hi_handle, "test2", NULL);
-	ret = hi_insert_str(hi_handle, "test3", NULL);
-	ret = hi_insert_str(hi_handle, "test4", xstrting);
-
-	hi_get_str(hi_handle, "test4", &data);
-	/* No! Don't touch this if you don't know why double negate ;) */
-	xassert(!!(data == xstrting));
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 5));
-
-	for (i = 0; i < TABLE_SIZE; i++) {
-		lhi_bucket_remove(hi_handle, i);
+	if (hi_hndl->no_objects != 0) {
+		fprintf(stderr, "failed! Wront number of objects ...");
+		exit(1);
 	}
-	ret = hi_size(hi_handle);
-	xassert(!(ret));
+
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	xassert(!ret);
+
+	/* key already in data structure -> must return 0 (SUCCESS) */
+	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	if (hi_hndl->no_objects != 2) {
+		fprintf(stderr, "failed! Wront number of objects ...");
+		exit(1);
+	}
 
 	fprintf(stderr, " passed\n");
 
-	fprintf(stderr, " o CHAINING_LIST memory tests ...");
+	/** COLL_ENG_LIST_MTF **/
 
-	/* some trivial memory leak tests ... */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-		char *key_ptr, *data_ptr;
+	hi_handle_t *hi_hndl2;
+	struct hi_init_set hi_set2;
+	void *data_ret2;
 
-		random_string(KEYLEN, &key_ptr);
-		random_string(DATALEN, &data_ptr);
+	fprintf(stderr, " o list remove tests (COLL_ENG_LIST_MTF) ...");
 
-		ptr_bucket[i][KEY] = key_ptr;
-		ptr_bucket[i][DATA] = data_ptr;
+	hi_set_zero(&hi_set2);
+	hi_set_bucket_size(&hi_set2, 100);
+	hi_set_hash_alg(&hi_set2, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set2, COLL_ENG_LIST_MTF);
+	hi_set_key_cmp_func(&hi_set2, hi_cmp_str);
 
-		hi_insert_str(hi_handle, key_ptr, data_ptr);
+	ret = hi_create(&hi_hndl2, &hi_set2);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	if (hi_hndl2->no_objects != 0) {
+		fprintf(stderr, "failed! Wront number of objects ...");
+		exit(1);
 	}
 
-	/* verify storage and cleanup */
-	for (i = 0; i < TEST_ITER_NO; i++) {
+	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
 
-		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
-		xassert(!!(data == ptr_bucket[i][DATA]));
+	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), "DATAX");
+	xassert(!ret);
 
-		free(ptr_bucket[i][KEY]);
-		free(ptr_bucket[i][DATA]);
+	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+
+	if (hi_hndl2->no_objects != 3) {
+		fprintf(stderr, "failed! Wront number of objects ...");
+		exit(1);
 	}
 
-	hi_fini(hi_handle);
+	ret = hi_remove(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	if (hi_hndl2->no_objects != 2) {
+		fprintf(stderr, "failed! Wront number of objects ...");
+		exit(1);
+	}
+
 
 	fprintf(stderr, " passed\n");
-
-#ifdef TABLE_SIZE
-# undef TABLE_SIZE
-# define TABLE_SIZE 8
-#endif
-
-	/* TEST START ***/
-
-	fprintf(stderr, " o CHAINING_HASHLIST trivial tests ...");
-
-	ret = hi_init_str_hl(&hi_handle, TABLE_SIZE);
-	xassert(!ret);
-
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(!ret);
-
-	/* same string, set associative -> MUST fail ;-) */
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(ret);
-
-	ret = hi_insert_str(hi_handle, "test1", NULL);
-	ret = hi_insert_str(hi_handle, "test2", NULL);
-	ret = hi_insert_str(hi_handle, "test3", NULL);
-	ret = hi_insert_str(hi_handle, "test4", xstrting);
-
-	hi_get_str(hi_handle, "test4", &data);
-	/* No! Don't touch this if you don't know why double negate ;) */
-	xassert(!!(data == xstrting));
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 5));
-
-
-	data = NULL;
-	ret = hi_remove_str(hi_handle, "test4", &data);
-	xassert(ret == SUCCESS);
-	xassert(!!(data == xstrting));
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 4));
-
-
-	for (i = 0; i < TABLE_SIZE; i++) {
-		lhi_bucket_remove(hi_handle, i);
-	}
-	ret = hi_size(hi_handle);
-	xassert(!(ret));
-
-	fprintf(stderr, " passed\n");
-
-	fprintf(stderr, " o CHAINING_HASHLIST memory tests ...");
-
-	/* some trivial memory leak tests ... */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-		char *key_ptr, *data_ptr;
-
-		random_string(KEYLEN, &key_ptr);
-		random_string(DATALEN, &data_ptr);
-
-		ptr_bucket[i][KEY] = key_ptr;
-		ptr_bucket[i][DATA] = data_ptr;
-
-		hi_insert_str(hi_handle, key_ptr, data_ptr);
-	}
-
-	/* verify storage and cleanup */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-
-		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
-		xassert(!!(data == ptr_bucket[i][DATA]));
-
-		free(ptr_bucket[i][KEY]);
-		free(ptr_bucket[i][DATA]);
-	}
-
-	hi_fini(hi_handle);
-
-	fprintf(stderr, " passed\n");
-
-	/* TEST END */
-
-
-	fprintf(stderr, " o CHAINING_ARRAY trivial tests ...");
-
-	ret = hi_init_str_ar(&hi_handle, TABLE_SIZE);
-	xassert(!ret);
-
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(!ret);
-
-	ret = hi_insert_str(hi_handle, "test1", NULL);
-	xassert(!ret);
-	ret = hi_insert_str(hi_handle, "test2", NULL);
-	xassert(!ret);
-	ret = hi_insert_str(hi_handle, "test3", NULL);
-	xassert(!ret);
-	ret = hi_insert_str(hi_handle, "test3", NULL);
-	xassert(!!ret);
-
-	ret = hi_insert_str(hi_handle, "test4", xstrting);
-
-	hi_get_str(hi_handle, "test4", &data);
-	xassert(!!(data == xstrting));
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 5));
-
-	fprintf(stderr, " passed\n");
-
-	fprintf(stderr, " o CHAINING_ARRAY memory tests ...");
-
-	/* some trivial memory leak tests ... */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-		char *key_ptr, *data_ptr;
-
-		random_string(KEYLEN, &key_ptr);
-		random_string(DATALEN, &data_ptr);
-
-		ptr_bucket[i][KEY] = key_ptr;
-		ptr_bucket[i][DATA] = data_ptr;
-
-		hi_insert_str(hi_handle, key_ptr, data_ptr);
-	}
-
-	/* verify storage and cleanup */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-
-		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
-		xassert(!!(data == ptr_bucket[i][DATA]));
-
-		free(ptr_bucket[i][KEY]);
-		free(ptr_bucket[i][DATA]);
-	}
-
-	hi_fini(hi_handle);
-
-	fprintf(stderr, " passed\n");
-
-
-	/* TEST START ***/
-
-#ifdef TABLE_SIZE
-# undef TABLE_SIZE
-# define TABLE_SIZE 2
-#endif
-
-	fprintf(stderr, " o CHAINING_LIST_MTF trivial tests ...");
-
-	ret = hi_init_str_lmtf(&hi_handle, TABLE_SIZE);
-	xassert(!ret);
-
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(!ret);
-
-	/* same string, set associative -> MUST fail ;-) */
-	ret = hi_insert_str(hi_handle, "test", NULL);
-	xassert(ret);
-
-	ret = hi_insert_str(hi_handle, "test1", NULL);
-	ret = hi_insert_str(hi_handle, "test2", NULL);
-	ret = hi_insert_str(hi_handle, "test3", NULL);
-	ret = hi_insert_str(hi_handle, "test4", xstrting);
-
-	hi_get_str(hi_handle, "test4", &data);
-	/* No! Don't touch this if you don't know why double negate ;) */
-	xassert(!!(data == xstrting));
-
-	/* This triggers only the "not to reorder routine".
-	 * Because we already fetched it
-	 */
-	hi_get_str(hi_handle, "test4", &data);
-	hi_get_str(hi_handle, "test4", &data);
-	hi_get_str(hi_handle, "test4", &data);
-	hi_get_str(hi_handle, "test3", &data);
-	hi_get_str(hi_handle, "test3", &data);
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 5));
-
-
-	data = NULL;
-	ret = hi_remove_str(hi_handle, "test4", &data);
-	xassert(ret == SUCCESS);
-	xassert(!!(data == xstrting));
-
-	ret = hi_size(hi_handle);
-	xassert(!(ret - 4));
-
-
-	for (i = 0; i < TABLE_SIZE; i++) {
-		lhi_bucket_remove(hi_handle, i);
-	}
-	ret = hi_size(hi_handle);
-	xassert(!(ret));
-
-	fprintf(stderr, " passed\n");
-
-	fprintf(stderr, " o CHAINING_LIST_MTF memory tests ...");
-
-	/* some trivial memory leak tests ... */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-		char *key_ptr, *data_ptr;
-
-		random_string(KEYLEN, &key_ptr);
-		random_string(DATALEN, &data_ptr);
-
-		ptr_bucket[i][KEY] = key_ptr;
-		ptr_bucket[i][DATA] = data_ptr;
-
-		hi_insert_str(hi_handle, key_ptr, data_ptr);
-	}
-
-	/* verify storage and cleanup */
-	for (i = 0; i < TEST_ITER_NO; i++) {
-
-		hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
-		xassert(!!(data == ptr_bucket[i][DATA]));
-
-		free(ptr_bucket[i][KEY]);
-		free(ptr_bucket[i][DATA]);
-	}
-
-	hi_fini(hi_handle);
-
-	fprintf(stderr, " passed\n");
-
-	/* TEST END */
-
 
 }
 
-#undef TABLE_SIZE
+
+static void check_list_get(void)
+{
+	int ret;
+	hi_handle_t *hi_hndl;
+	struct hi_init_set hi_set;
+	void *data_ret;
+
+	/** COLL_ENG_LIST **/
+	fprintf(stderr, " o list get test (COLL_ENG_LIST) ...");
+
+	hi_set_zero(&hi_set);
+	hi_set_bucket_size(&hi_set, 100);
+	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	xassert(!ret);
+
+	/* key already in data structure -> must return 0 (SUCCESS) */
+	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	fprintf(stderr, " passed\n");
+
+	/** COLL_ENG_LIST_MTF **/
+
+	hi_handle_t *hi_hndl2;
+	struct hi_init_set hi_set2;
+	void *data_ret2;
+
+	fprintf(stderr, " o list get tests (COLL_ENG_LIST_MTF) ...");
+
+	hi_set_zero(&hi_set2);
+	hi_set_bucket_size(&hi_set2, 100);
+	hi_set_hash_alg(&hi_set2, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set2, COLL_ENG_LIST_MTF);
+	hi_set_key_cmp_func(&hi_set2, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl2, &hi_set2);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_get(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	fprintf(stderr, " passed\n");
+
+
+	/** COLL_ENG_LIST_HASH **/
+	hi_handle_t *hi_hndl3;
+	struct hi_init_set hi_set3;
+	void *data_ret3;
+
+	fprintf(stderr, " o list get tests (COLL_ENG_LIST_HASH) ...");
+
+	hi_set_zero(&hi_set3);
+	hi_set_bucket_size(&hi_set3, 100);
+	hi_set_hash_alg(&hi_set3, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set3, COLL_ENG_LIST_MTF);
+	hi_set_key_cmp_func(&hi_set3, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl3, &hi_set3);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl3, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl3, (void *) "key1", strlen("key1"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl3, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_get(hi_hndl3, (void *) "key", strlen("key"), &data_ret3);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret3)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	fprintf(stderr, " passed\n");
+
+
+	/** COLL_ENG_LIST_MTF_HASH: **/
+	hi_handle_t *hi_hndl4;
+	struct hi_init_set hi_set4;
+	void *data_ret4;
+
+	fprintf(stderr, " o list get tests (COLL_ENG_LIST_MTF_HASH) ...");
+
+	hi_set_zero(&hi_set4);
+	hi_set_bucket_size(&hi_set4, 100);
+	hi_set_hash_alg(&hi_set4, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set4, COLL_ENG_LIST_MTF);
+	hi_set_key_cmp_func(&hi_set4, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl4, &hi_set4);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl4, (void *) "key", strlen("key"), "DATA");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl4, (void *) "key1", strlen("key1"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl4, (void *) "key2", strlen("key2"), "DATAX");
+	xassert(!ret);
+
+	ret = hi_get(hi_hndl4, (void *) "key", strlen("key"), &data_ret4);
+	if (ret != 0)
+		hi_perror("hi_get");
+	if (strcmp("DATA", data_ret4)) {
+		fprintf(stderr, "failed! Can't get key ...");
+		exit(1);
+	}
+
+	fprintf(stderr, " passed\n");
+}
+
+static void check_list_insert(void)
+{
+	int ret;
+	hi_handle_t *hi_hndl;
+	struct hi_init_set hi_set;
+
+	fprintf(stderr, " o list collision engine insertion  tests ...");
+
+	hi_set_zero(&hi_set);
+	hi_set_bucket_size(&hi_set, 100);
+	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	xassert(!ret);
+
+	/* same key -> must fail */
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	xassert(ret);
+
+	/* key already in data structure -> must return 0 (SUCCESS) */
+	ret = hi_lookup(hi_hndl, (void *) "key", strlen("key"));
+	xassert(!ret);
+
+	fprintf(stderr, " passed\n");
+}
+
+static void check_array_insert(void)
+{
+	int ret;
+	hi_handle_t *hi_hndl;
+	struct hi_init_set hi_set;
+
+	/** COLL_ENG_ARRAY **/
+	fprintf(stderr, " o array collision engine insertion  tests ...");
+
+	hi_set_zero(&hi_set);
+	hi_set_bucket_size(&hi_set, 100);
+	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set, COLL_ENG_ARRAY);
+	hi_set_coll_eng_array_size(&hi_set, 5);
+	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		hi_perror("hi_create");
+	xassert(!ret);
+
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	xassert(!ret);
+
+	/* same key -> must fail */
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	xassert(ret);
+
+	/* key already in data structure -> must return 0 (SUCCESS) */
+	ret = hi_lookup(hi_hndl, (void *) "key", strlen("key"));
+	xassert(!ret);
+
+
+
+	fprintf(stderr, " passed\n");
+}
+
+static void check_set_init(void)
+{
+	int ret;
+	struct hi_init_set hi_set;
+
+	fprintf(stderr, " o struct set initialize tests ...");
+
+	hi_set_zero(&hi_set);
+
+	/* test if a hash table size of 100
+	 * return the right values */
+	ret = hi_set_bucket_size(&hi_set, 100);
+	xassert(!ret);
+
+	/* trigger a failure - hash table size of
+	 * 0 is invalid */
+	ret = hi_set_bucket_size(&hi_set, 0);
+	xassert(hi_geterror());
+	xassert(ret);
+
+	/* test for standard hashing algorithm - must pass */
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	xassert(!ret);
+
+	ret = hi_set_hash_func(&hi_set, dump_hash_func);
+	xassert(!ret);
+
+	/* hash algorithm not supported test - must fail */
+	ret = hi_set_hash_alg(&hi_set, (unsigned int) -1);
+	xassert(hi_geterror());
+	xassert(ret);
+
+	/* test for standard collision engine - must pass */
+	ret = hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	xassert(!ret);
+
+	/* collision engine not supported test - must fail */
+	ret = hi_set_coll_eng(&hi_set, (unsigned int) -1);
+	xassert(hi_geterror());
+	xassert(ret);
+
+	/* test compare functions - must pass */
+	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	xassert(!ret);
+
+	/* test compare functions - must fail */
+	ret = hi_set_key_cmp_func(&hi_set, NULL);
+	xassert(hi_geterror());
+	xassert(!!ret);
+
+	fprintf(stderr, " passed\n");
+}
+
 
 int
 main(void)
 {
+	init_seed();
+
 	fputs("Start test sequence\n", stderr);
-	const_check();
+
+	check_set_init();
+
+	check_list_insert();
+	check_array_insert();
+
+	check_list_get();
+	check_list_remove();
 
 	return 0;
 }

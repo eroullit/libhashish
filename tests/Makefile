@@ -6,10 +6,10 @@ endif
 
 CIN      := $(wildcard *.c)
 
-OBJ      := $(CIN:%.c=%.o)
+OBJ      := unit_test.o xfuncs.o memory_leak_inspector.o #$(CIN:%.c=%.o)
 CFLAGS   += -I../include
 LIBFLAGS := -lm 
-LIBFLAGS += -L../lib -lhashish
+LIBFLAGS += -L../lib -lhashish_s
 GRAPHFALGS :=
 
 THREADFLAGSX = -lpthread
@@ -21,9 +21,9 @@ endif
 
 export
 
-.PHONY: all clean install 
+.PHONY: all clean install unit_test string_distribution memory_leak_inspector
 
-all: unit_test string_distribution concurrent_test
+all: unit_test memory_leak_inspector # string_distribution concurrent_test
 
 unit_test: $(OBJ)
 	$(CC) $(CFLAGS) unit_test.o xfuncs.o $(LIBFLAGS) -o $@
@@ -34,9 +34,12 @@ concurrent_test: $(OBJ)
 string_distribution: $(OBJ)
 	$(CC) $(CFLAGS) string_distribution.o xfuncs.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
 
+memory_leak_inspector: $(OBJ)
+	$(CC) $(CFLAGS) memory_leak_inspector.o xfuncs.o $(LIBFLAGS) -o $@
+
 clean:
 	@echo "### cleaning"; \
-	$(RM) -f $(OBJ) unit_test string_distribution concurrent_test *.png core*
+	$(RM) -f $(OBJ) unit_test string_distribution concurrent_test memory_leak_inspector *.png core*
 
 distclean:
 	@echo "### distclean testdir"
