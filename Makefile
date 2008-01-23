@@ -49,12 +49,11 @@ show: Make.Rules
 	@echo "MAJOR_REL:    $(MAJOR_REL)"
 	@echo "MINOR_REL:    $(MINOR_REL)"
 	@echo
-	@echo "RM:           $(RM)"
 	@echo "AR:           $(AR)"
+	@echo "LD:           $(LD)"
 	@echo "RANLIB:       $(RANLIB)"
 	@echo "MKDIR:        $(MKDIR)"
 	@echo "INSTALL:      $(INSTALL)"
-	@echo
 	@echo "CC:           $(CC)"
 	@echo "CFLAGS:       $(CFLAGS)"
 	@echo "LIBGDFLAGS:   $(LIBGDFLAGS)"
