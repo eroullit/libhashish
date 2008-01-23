@@ -87,11 +87,11 @@ static void check_list_remove(void)
 		exit(1);
 	}
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), (void *) "DATAX");
 	xassert(!ret);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
@@ -134,13 +134,13 @@ static void check_list_remove(void)
 		exit(1);
 	}
 
-	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), "DATAX");
+	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), (void *) "DATAX");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
 
 	if (hi_hndl2->no_objects != 3) {
@@ -188,11 +188,11 @@ static void check_list_get(void)
 		hi_perror("hi_create");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), (void *) "DATAX");
 	xassert(!ret);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
@@ -225,13 +225,13 @@ static void check_list_get(void)
 		hi_perror("hi_create");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), "DATAX");
+	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), (void *) "DATAX");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
 
 	ret = hi_get(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
@@ -263,13 +263,13 @@ static void check_list_get(void)
 		hi_perror("hi_create");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl3, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl3, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl3, (void *) "key1", strlen("key1"), "DATAX");
+	ret = hi_insert(hi_hndl3, (void *) "key1", strlen("key1"), (void *) "DATAX");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl3, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl3, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
 
 	ret = hi_get(hi_hndl3, (void *) "key", strlen("key"), &data_ret3);
@@ -301,13 +301,13 @@ static void check_list_get(void)
 		hi_perror("hi_create");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl4, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl4, (void *) "key", strlen("key"), (void *) "DATA");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl4, (void *) "key1", strlen("key1"), "DATAX");
+	ret = hi_insert(hi_hndl4, (void *) "key1", strlen("key1"), (void *) "DATAX");
 	xassert(!ret);
 
-	ret = hi_insert(hi_hndl4, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl4, (void *) "key2", strlen("key2"), (void *) "DATAX");
 	xassert(!ret);
 
 	ret = hi_get(hi_hndl4, (void *) "key", strlen("key"), &data_ret4);
