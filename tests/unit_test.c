@@ -130,7 +130,7 @@ static void check_list_remove(void)
 	xassert(!ret);
 
 	if (hi_hndl2->no_objects != 0) {
-		fprintf(stderr, "failed! Wront number of objects ...");
+		fprintf(stderr, "failed! Wrong number of objects ...");
 		exit(1);
 	}
 
@@ -144,7 +144,7 @@ static void check_list_remove(void)
 	xassert(!ret);
 
 	if (hi_hndl2->no_objects != 3) {
-		fprintf(stderr, "failed! Wront number of objects ...");
+		fprintf(stderr, "failed! Wrong number of objects ...");
 		exit(1);
 	}
 
@@ -157,13 +157,12 @@ static void check_list_remove(void)
 	}
 
 	if (hi_hndl2->no_objects != 2) {
-		fprintf(stderr, "failed! Wront number of objects ...");
+		fprintf(stderr, "failed! Wrong number of objects ...");
 		exit(1);
 	}
 
 
 	fprintf(stderr, " passed\n");
-
 }
 
 
