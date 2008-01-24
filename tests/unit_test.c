@@ -51,7 +51,7 @@
 #define	KEY 0
 #define	DATA 1
 
-static uint32_t dump_hash_func(const uint8_t *key,
+static uint32_t dumb_hash_func(const uint8_t *key,
 		uint32_t len)
 {
 	(void) key;
@@ -415,7 +415,7 @@ static void check_set_init(void)
 	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
 	xassert(!ret);
 
-	ret = hi_set_hash_func(&hi_set, dump_hash_func);
+	ret = hi_set_hash_func(&hi_set, dumb_hash_func);
 	xassert(!ret);
 
 	/* hash algorithm not supported test - must fail */

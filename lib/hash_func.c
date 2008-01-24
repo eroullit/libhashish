@@ -31,10 +31,10 @@
 
 
 /**
- * lhi_hash_dump1 a really dump hash function which always
- * return the value 1.
+ * lhi_hash_dumb1 a really dumb function which always
+ * returns 1.
  */
-uint32_t lhi_hash_dump1(const uint8_t *key, uint32_t len)
+uint32_t lhi_hash_dumb1(const uint8_t *key, uint32_t len)
 {
 	(void) key;
 	(void) len;

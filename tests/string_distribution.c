@@ -56,7 +56,7 @@ __noreturn static void usage(const int retval, const char * const me)
 	fputs("\t-f <function>\t\tselect the hashing function\n", stderr);
 	fputs("\t\t\telf   -> lhi_hash_elf\n", stderr);
 	fputs("\t\t\ttorek -> lhi_hash_torek\n", stderr);
-	fputs("\t\t\tdump1 -> lhi_hash_dump1\n", stderr);
+	fputs("\t\t\tdumb1 -> lhi_hash_dumb1\n", stderr);
 	fputs("\t\t\tphong -> lhi_hash_phong\n", stderr);
 	fputs("\t\t\tweinb -> lhi_hash_weinb\n", stderr);
 	fputs("\t-t <table-size>\n", stderr);
@@ -113,9 +113,9 @@ int main(int argc, char **argv)
 			} else if (!(strcasecmp(optarg, "torek"))) {
 				hashf = lhi_hash_torek;
 				hashfname = "lhi_hash_torek";
-			} else if (!(strcasecmp(optarg, "dump1"))) {
-				hashf = lhi_hash_dump1;
-				hashfname = "lhi_hash_dump1";
+			} else if (!(strcasecmp(optarg, "dumb1"))) {
+				hashf = lhi_hash_dumb1;
+				hashfname = "lhi_hash_dumb1";
 			} else if (!(strcasecmp(optarg, "phong"))) {
 				hashf = lhi_hash_phong;
 				hashfname = "lhi_hash_phong";
