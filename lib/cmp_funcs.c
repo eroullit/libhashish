@@ -37,8 +37,8 @@ int hi_cmp_int32(const uint8_t *key1, const uint8_t *key2)
 {
 	uint32_t *a, *b;
 
-	*a = (uint32_t*) key1;
-	*b = (uint32_t*) key2;
+	a = (uint32_t*) key1;
+	b = (uint32_t*) key2;
 
 	return *a - *b;
 }
