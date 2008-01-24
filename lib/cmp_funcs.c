@@ -35,12 +35,12 @@ int hi_cmp_str(const uint8_t *key1, const uint8_t *key2)
 
 int hi_cmp_int32(const uint8_t *key1, const uint8_t *key2)
 {
-	if (*key1 == *key2)
-		return 0;
-	if (*key1 < *key2)
-		return -1;
-	else
-		return 1;
+	uint32_t *a, *b;
+
+	*a = (uint32_t*) key1;
+	*b = (uint32_t*) key2;
+
+	return *a - *b;
 }
 
 
