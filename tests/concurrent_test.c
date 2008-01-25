@@ -55,10 +55,7 @@
 		}	\
 	} while (0)
 
-hi_handle_t *hi_handle;
-
-pthread_mutex_t lock;
-
+hi_handle_t *hi_hndl;
 
 /* concurrent_test do the following:
  *  o It creates and removes randomly entries
@@ -89,8 +86,9 @@ static void concurrent_test(int num)
 			ptr_bucket[i][KEY] = key_ptr;
 			ptr_bucket[i][DATA] = data_ptr;
 
-			ret = hi_insert_str(hi_handle, key_ptr, data_ptr);
-			if (ret != SUCCESS) {
+			ret = hi_insert(hi_hndl, (void *) key_ptr,
+					strlen(key_ptr), (void *) data_ptr);
+			if (ret != 0) {
 				sucess = 0;
 			}
 
@@ -101,20 +99,22 @@ static void concurrent_test(int num)
 	for (i = 0; i < TEST_ITER_NO; i++) {
 
 
-		ret = hi_get_str(hi_handle, ptr_bucket[i][KEY], &data);
-		if (ret == SUCCESS) {
+		ret = hi_get(hi_hndl, ptr_bucket[i][KEY],
+				strlen(ptr_bucket[i][KEY]), &data);
+		if (ret == 0) {
 			if (data != ptr_bucket[i][DATA]) {
 				fprintf(stderr, "Failed: should %s - is %s\n",
-						ptr_bucket[i][DATA], data);
+						ptr_bucket[i][DATA], (char *) data);
 			}
 
 			free(ptr_bucket[i][KEY]);
 			free(ptr_bucket[i][DATA]);
 		} else {
-			fprintf(stderr, "#  already deleted\n");
+			fprintf(stderr, "# already deleted\n");
 		}
 	}
 
+	fprintf(stderr, "# %d finished\n", num);
 
 	return;
 }
@@ -144,6 +144,7 @@ int main(int ac, char **av)
 {
 	int ret = 0, i;
 	pthread_t thread_id[MAXTHREAD];
+	struct hi_init_set hi_set;
 
 	(void) ac; (void) av;
 
@@ -151,10 +152,16 @@ int main(int ac, char **av)
 
 	init_seed();
 
-	pthread_mutex_init(&lock, NULL);
-
 	/* create one hash */
-	hi_init_str(&hi_handle, TABLE_SIZE);
+	hi_set_zero(&hi_set);
+	hi_set_bucket_size(&hi_set, 100);
+	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		hi_perror("hi_create");
 
 	for	(i = 0; i < MAXTHREAD; i++) {
 		int *num = malloc(sizeof(int *));
@@ -171,9 +178,7 @@ int main(int ac, char **av)
 		pthread_join(thread_id[i], NULL);
 	}
 
-	pthread_mutex_destroy(&lock);
-
-	hi_fini(hi_handle);
+	hi_fini(hi_hndl);
 
 	fprintf(stderr, " passed\n");
 

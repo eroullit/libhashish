@@ -4,7 +4,7 @@ ifeq ($(shell test \! -f Make.Rules || echo yes),yes)
 		include Make.Rules
 endif
 
-SUBDIRS := include lib tests doc man
+SUBDIRS := include lib tests bench doc man
 .PHONY: all clean distclean install release releasebz2 $(SUBDIRS)
 
 all: Make.Rules

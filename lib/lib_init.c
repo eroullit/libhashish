@@ -282,7 +282,10 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 
 	/* Initiate mutex lock if build with thread
 	 * support. */
-	lhi_pthread_init(&hi_handle->mutex_lock, NULL);
+	ret = lhi_pthread_init(&hi_handle->mutex_lock, NULL);
+	if (ret != 0) {
+		return hi_errno(errno);
+	}
 
 	/* Create internal data structure for
 	 * list, array or rbtree */

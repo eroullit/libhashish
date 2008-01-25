@@ -31,7 +31,8 @@
 
 #include "threads.h"
 
-/* hi_lookup search for a given key and return SUCCESS
+/**
+ * hi_lookup search for a given key and return SUCCESS
  * when found in the hash and FAILURE if not found.
  *
  * @arg hi_handle the hashish handle

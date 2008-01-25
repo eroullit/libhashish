@@ -27,15 +27,23 @@
 
 #ifdef THREADSAFE
 
-#error no
-
 /** Initialize a mutex and perform no
  * error checking.
  */
-void lhi_pthread_init(pthread_mutex_t *mutex,
+int lhi_pthread_init(pthread_mutex_t **mutex,
 		const pthread_mutexattr_t *attr)
 {
-	pthread_mutex_init(mutex, attr);
+	pthread_mutex_t *lm;
+
+	lm = malloc(sizeof(pthread_mutex_t));
+	if (!lm)
+		return hi_errno(errno);
+
+	pthread_mutex_init(lm, attr);
+
+	*mutex = lm;
+
+	return 0;
 }
 
 /** Destroy a mutex lock
@@ -43,6 +51,7 @@ void lhi_pthread_init(pthread_mutex_t *mutex,
 void lhi_pthread_destroy(pthread_mutex_t *mutex)
 {
 	pthread_mutex_destroy(mutex);
+	free(mutex);
 }
 
 

@@ -110,7 +110,7 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 {
 	uint32_t i;
 
-	lhi_pthread_lock(&hi_handle->mutex_lock);
+	lhi_pthread_lock(hi_handle->mutex_lock);
 	for (i = 0; i < hi_handle->table_size; i++) {
 		free(hi_handle->eng_array.bucket_array[i]);
 	}
@@ -118,7 +118,7 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 	free(hi_handle->eng_array.bucket_array_slot_size);
 	free(hi_handle->eng_array.bucket_array_slot_max);
 	free(hi_handle->bucket_size);
-	lhi_pthread_unlock(&hi_handle->mutex_lock);
+	lhi_pthread_unlock(hi_handle->mutex_lock);
 
 	return SUCCESS;
 }

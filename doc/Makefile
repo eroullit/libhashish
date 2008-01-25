@@ -9,17 +9,22 @@ endif
 all:
 	@true
 
+gendoc:
+	mkdir html
+	doxygen Doxyfile
+
+distclean:
+	$(RM) -f html/*
+
 clean:
 	@true
-	rm -rf $(DESTDIR)$(includedir)/libhashish
+	rm -rf html
 
 distclean: clean
 	@true
 
 install:
-	mkdir -p $(DESTDIR)$(includedir)/libhashish
-	install -m 0644 libhashish.h $(DESTDIR)$(includedir)/libhashish/
+	@true
 
 uninstall:
 	@true
-	rm -rf $(DESTDIR)$(includedir)/libhashish

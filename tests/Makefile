@@ -6,7 +6,7 @@ endif
 
 CIN      := $(wildcard *.c)
 
-OBJ      := unit_test.o xfuncs.o memory_leak_inspector.o #$(CIN:%.c=%.o)
+OBJ      := unit_test.o xfuncs.o memory_leak_inspector.o concurrent_test.o #$(CIN:%.c=%.o)
 CFLAGS   += -I../include
 LIBFLAGS := -lm 
 LIBFLAGS += -L../lib -lhashish_s
@@ -21,9 +21,9 @@ endif
 
 export
 
-.PHONY: all clean install unit_test string_distribution memory_leak_inspector
+.PHONY: all clean install unit_test string_distribution memory_leak_inspector concurrent_test
 
-all: unit_test memory_leak_inspector # string_distribution concurrent_test
+all: unit_test memory_leak_inspector concurrent_test # string_distribution concurrent_test
 
 unit_test: $(OBJ)
 	$(CC) $(CFLAGS) unit_test.o xfuncs.o $(LIBFLAGS) -o $@
