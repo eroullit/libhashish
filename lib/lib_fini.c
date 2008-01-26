@@ -62,8 +62,7 @@ int hi_fini(hi_handle_t *hi_handle)
 			break;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 
 	}
 

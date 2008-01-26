@@ -45,7 +45,7 @@ int lhi_create_vanilla_hdnl(hi_handle_t **hi_hndl)
 
 	ret = XMALLOC((void **) &hi_handle, sizeof(hi_handle_t));
 	if (ret != 0) {
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 	}
 
 	memset(hi_handle, 0, sizeof(hi_handle_t));
@@ -58,12 +58,10 @@ int lhi_create_vanilla_hdnl(hi_handle_t **hi_hndl)
 static int lhi_set_sanity_hash2(struct hi_init_set *hi_set)
 {
 	if (hi_set->hash2_func == NULL)
-		return hi_error(EINVAL,
-				"COLL_ENG_LIST_HASH  requires a second hash function");
+		return HI_ERR_NODATA;
 
 	if (hi_set->hash_func == hi_set->hash2_func)
-		return hi_error(EINVAL,
-				"COLL_ENG_LIST_HASH requires two distinct hash functions");
+		return HI_ERR_NODATA;
 
 	return SUCCESS;
 }
@@ -71,8 +69,7 @@ static int lhi_set_sanity_hash2(struct hi_init_set *hi_set)
 static int lhi_set_sanity_array(struct hi_init_set *hi_set)
 {
 	if (hi_set->coll_eng_array_size == 0)
-		return hi_error(EINVAL,
-				"coll_eng_array_size must be greater then 0");
+		return HI_ERR_NODATA;
 
 	return SUCCESS;
 }
@@ -82,13 +79,13 @@ static int lhi_set_sanity_check(struct hi_init_set *hi_set)
 	int ret;
 
 	if (hi_set->table_size == 0)
-		return hi_error(EINVAL, "hash table size of 0 isn't supported");
+		return HI_ERR_NODATA;
 
 	if (hi_set->key_cmp == NULL)
-		return hi_error(EINVAL, "no key compare function set");
+		return HI_ERR_NODATA;
 
 	if (hi_set->hash_func == NULL)
-		return hi_error(EINVAL, "no valid hash function selected");
+		return HI_ERR_NODATA;
 
 	switch (hi_set->coll_eng) {
 
@@ -138,8 +135,7 @@ static int lhi_set_sanity_check(struct hi_init_set *hi_set)
 		case COLL_ENG_RBTREE:
 			break;
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 			break;
 
 	}
@@ -185,7 +181,7 @@ static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 	ret = XMALLOC((void **) &hi_hndl->eng_list.bucket_table,
 			hi_hndl->table_size * sizeof(struct lhi_list_head));
 	if (ret != 0) {
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 	}
 
 	/* initialize bucket list */
@@ -204,7 +200,7 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 	ret =  XMALLOC((void **) &hi_hndl->eng_rbtree.rb_root,
 			hi_hndl->table_size * sizeof(struct rb_root));
 	if (ret != 0) {
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 	}
 
 
@@ -218,17 +214,17 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_size,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_max,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array,
 			(sizeof(hi_bucket_a_obj_t *) * hi_hndl->table_size));
 	if (ret != 0)
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 
 	for (i = 0; i < hi_hndl->table_size; i++) {
 		/* align array on 16 byte boundaries */
@@ -236,7 +232,7 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 				LHI_DEFAULT_MEMORY_ALIGN,
 				(sizeof(hi_bucket_a_obj_t) * hi_hndl->coll_eng_array_size));
 		if (ret != 0)
-			return hi_errno(errno);
+			return HI_ERR_SYSTEM;
 
 		hi_hndl->eng_array.bucket_array_slot_size[i] = 0;
 		hi_hndl->eng_array.bucket_array_slot_max[i]  = hi_hndl->coll_eng_array_size;
@@ -274,7 +270,7 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 	ret = XMALLOC((void **) &hi_handle->bucket_size,
 			hi_handle->table_size * sizeof(hi_handle->bucket_size));
 	if (ret != 0) {
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 	}
 
 	/* 0 objects in the list at start-up */
@@ -284,7 +280,7 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 	 * support. */
 	ret = lhi_pthread_init(&hi_handle->mutex_lock, NULL);
 	if (ret != 0) {
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 	}
 
 	/* Create internal data structure for
@@ -313,8 +309,7 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 				return ret;
 			break;
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 			break;
 	}
 

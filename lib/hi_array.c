@@ -61,8 +61,7 @@ int lhi_lookup_array(const hi_handle_t *hi_handle,
 			break;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 
@@ -91,7 +90,7 @@ int lhi_insert_array(hi_handle_t *hi_handle, void *key,
 		hi_handle->eng_array.bucket_array[bucket] = realloc(hi_handle->eng_array.bucket_array[bucket],
 				sizeof(hi_bucket_a_obj_t) * hi_handle->eng_array.bucket_array_slot_max[bucket]);
 		if (hi_handle->eng_array.bucket_array[bucket] == NULL) {
-			return hi_errno(errno);
+			return HI_ERR_SYSTEM;
 		}
 
 	}

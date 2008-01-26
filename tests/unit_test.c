@@ -79,7 +79,8 @@ static void check_list_remove(void)
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	if (hi_hndl->no_objects != 0) {
@@ -97,7 +98,8 @@ static void check_list_remove(void)
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -126,7 +128,8 @@ static void check_list_remove(void)
 
 	ret = hi_create(&hi_hndl2, &hi_set2);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	if (hi_hndl2->no_objects != 0) {
@@ -150,7 +153,8 @@ static void check_list_remove(void)
 
 	ret = hi_remove(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -184,7 +188,8 @@ static void check_list_get(void)
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), (void *) "DATA");
@@ -197,7 +202,8 @@ static void check_list_get(void)
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -221,7 +227,8 @@ static void check_list_get(void)
 
 	ret = hi_create(&hi_hndl2, &hi_set2);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), (void *) "DATA");
@@ -235,7 +242,8 @@ static void check_list_get(void)
 
 	ret = hi_get(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -259,7 +267,8 @@ static void check_list_get(void)
 
 	ret = hi_create(&hi_hndl3, &hi_set3);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl3, (void *) "key", strlen("key"), (void *) "DATA");
@@ -273,7 +282,8 @@ static void check_list_get(void)
 
 	ret = hi_get(hi_hndl3, (void *) "key", strlen("key"), &data_ret3);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret3)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -297,7 +307,8 @@ static void check_list_get(void)
 
 	ret = hi_create(&hi_hndl4, &hi_set4);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl4, (void *) "key", strlen("key"), (void *) "DATA");
@@ -311,7 +322,8 @@ static void check_list_get(void)
 
 	ret = hi_get(hi_hndl4, (void *) "key", strlen("key"), &data_ret4);
 	if (ret != 0)
-		hi_perror("hi_get");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	if (strcmp("DATA", data_ret4)) {
 		fprintf(stderr, "failed! Can't get key ...");
 		exit(1);
@@ -336,7 +348,8 @@ static void check_list_insert(void)
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
@@ -371,7 +384,8 @@ static void check_array_insert(void)
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 	xassert(!ret);
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
@@ -407,7 +421,6 @@ static void check_set_init(void)
 	/* trigger a failure - hash table size of
 	 * 0 is invalid */
 	ret = hi_set_bucket_size(&hi_set, 0);
-	xassert(hi_geterror());
 	xassert(ret);
 
 	/* test for standard hashing algorithm - must pass */
@@ -419,7 +432,6 @@ static void check_set_init(void)
 
 	/* hash algorithm not supported test - must fail */
 	ret = hi_set_hash_alg(&hi_set, (unsigned int) -1);
-	xassert(hi_geterror());
 	xassert(ret);
 
 	/* test for standard collision engine - must pass */
@@ -428,7 +440,6 @@ static void check_set_init(void)
 
 	/* collision engine not supported test - must fail */
 	ret = hi_set_coll_eng(&hi_set, (unsigned int) -1);
-	xassert(hi_geterror());
 	xassert(ret);
 
 	/* test compare functions - must pass */
@@ -437,7 +448,6 @@ static void check_set_init(void)
 
 	/* test compare functions - must fail */
 	ret = hi_set_key_cmp_func(&hi_set, NULL);
-	xassert(hi_geterror());
 	xassert(!!ret);
 
 	fprintf(stderr, " passed\n");

@@ -30,7 +30,7 @@ LIBHASHSTATIC = $(LIBNAME).a
 all: $(LIBHASH) $(LIBHASHSTATIC) $(CIN)
 
 $(LIBHASH): $(OBJ) ../Make.Rules
-	@echo "### build dynamic library"
+	@echo "### build dynamic library (libhashish.{so,a})"
 	$(LD) $(LDFLAGS) --as-needed -soname=$(LIBHASHNAME) -lpthread -x -shared -o $@ $(OBJ)
 
 $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
@@ -47,11 +47,11 @@ $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
 	ln -sf $@ $(LIBNAME)_s.a
 
 clean:
-	@echo "### clean lib"; \
+	@echo "### clean-up library directory"; \
 	$(RM) -f $(OBJ) $(OUT_SLIB) $(OUT_DLIB) $(LIBNAME)_s.a
  
 distclean:
-	@echo "### distclean lib"
+	@echo "### distclean library directory"
 	@true
  
 install:

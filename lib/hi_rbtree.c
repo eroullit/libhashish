@@ -45,8 +45,8 @@ int lhi_lookup_rbtree(const hi_handle_t *hi_handle,
 	(void) key;
 	(void) keylen;
 
-	return hi_error(EINVAL,
-			"Function not implemented yet");
+	return HI_ERR_NOTIMPL;
+
 }
 
 /* lhi_insert_array insert a key/data pair into our hashhandle
@@ -63,19 +63,14 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, void *key,
 	(void) keylen;
 	(void) data;
 
-	return hi_error(EINVAL,
-			"Function not implemented yet");
+	return HI_ERR_NOTIMPL;
 }
 
 int lhi_fini_rbtree(hi_handle_t *hi_handle)
 {
 	(void) hi_handle;
 
-
-	fprintf(stderr, "NOT IMPLEMENTED YET\n");
-	exit(1);
-
-	return SUCCESS;
+	return HI_ERR_NOTIMPL;
 }
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */

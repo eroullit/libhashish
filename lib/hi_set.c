@@ -54,7 +54,7 @@ void hi_set_zero(struct hi_init_set *hi_set)
 int hi_set_bucket_size(struct hi_init_set *hi_set, uint32_t size)
 {
 	if (size == 0)
-		return hi_error(EINVAL, "size must greater then 0");
+		return HI_ERR_RANGE;
 
 	hi_set->table_size = size;
 
@@ -76,7 +76,7 @@ int hi_set_bucket_size(struct hi_init_set *hi_set, uint32_t size)
 int hi_set_coll_eng_array_size(struct hi_init_set *hi_set, uint32_t size)
 {
 	if (size == 0)
-		return hi_error(EINVAL, "coll_eng_array_size must greater then 0");
+		return HI_ERR_RANGE;
 
 	hi_set->coll_eng_array_size = size;
 
@@ -94,16 +94,14 @@ int hi_set_hash_alg(struct hi_init_set *hi_set, enum hash_alg hash_alg)
 			return SUCCESS;
 		}
 	}
-
-	return hi_error(EINVAL, "Algorithm not registered or supported: %d",
-			hash_alg);
+	return HI_ERR_NOFUNC;
 }
 
 int hi_set_hash_func(struct hi_init_set *hi_set,
 		uint32_t (*hash_func)(const uint8_t*, uint32_t))
 {
 	if (hash_func == NULL)
-		return hi_error(EINVAL, "hi_set_hash_func() requires a hashing function");
+		return HI_ERR_NODATA;
 
 	hi_set->hash_func = hash_func;
 
@@ -121,16 +119,15 @@ int hi_set_hash2_alg(struct hi_init_set *hi_set, enum hash_alg hash_alg)
 			return SUCCESS;
 		}
 	}
+	return HI_ERR_NOFUNC;
 
-	return hi_error(EINVAL, "Algorithm not registered or supported: %d",
-			hash_alg);
 }
 
 int hi_set_hash2_func(struct hi_init_set *hi_set,
 		uint32_t (*hash_func)(const uint8_t*, uint32_t))
 {
 	if (hash_func == NULL)
-		return hi_error(EINVAL, "hi_set_hash_func() requires a hashing function");
+		return HI_ERR_NODATA;
 
 	hi_set->hash2_func = hash_func;
 
@@ -140,7 +137,7 @@ int hi_set_hash2_func(struct hi_init_set *hi_set,
 int hi_set_coll_eng(struct hi_init_set *hi_set, enum coll_eng coll_eng)
 {
 	if (coll_eng > COLL_ENG_MAX)
-		return hi_error(EINVAL, "Collision engine not supported");
+		return HI_ERR_NOFUNC;
 
 	hi_set->coll_eng = coll_eng;
 
@@ -156,7 +153,7 @@ int hi_set_key_cmp_func(struct hi_init_set *hi_set,
 		int (*cmp)(const uint8_t *, const uint8_t *))
 {
 	if (cmp == NULL)
-		return hi_error(EINVAL, "hi_set_cmp_func() requires a compare function");
+		return HI_ERR_NODATA;
 
 	hi_set->key_cmp = cmp;
 

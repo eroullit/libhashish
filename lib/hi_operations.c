@@ -61,12 +61,11 @@ int hi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 			return lhi_lookup_rbtree(hi_handle, key, keylen);
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 	/* catch rule */
-	return FAILURE;
+	return HI_ERR_INTERNAL;
 }
 
 /**
@@ -113,19 +112,20 @@ int hi_get(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data
 		case COLL_ENG_LIST_MTF:
 		case COLL_ENG_LIST_MTF_HASH:
 			return lhi_get_list(hi_handle, key, keylen, data);
+			break;
 
+		/* FIXME */
 		case COLL_ENG_ARRAY:
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
 		case COLL_ENG_RBTREE:
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 	/* catch rule */
-	return FAILURE;
+	return HI_ERR_INTERNAL;
 
 }
 
@@ -154,12 +154,11 @@ int hi_remove(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **d
 		case COLL_ENG_ARRAY_DYN_HASH:
 		case COLL_ENG_RBTREE:
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 	/* catch rule */
-	return FAILURE;
+	return HI_ERR_INTERNAL;
 }
 
 /**
@@ -176,7 +175,7 @@ int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *da
 
 	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) { /* already in hash or error */
 		lhi_pthread_unlock(hi_handle->mutex_lock);
-		return hi_error(EINVAL, "key already in hashtable");
+		return HI_ERR_DUPKEY;
 	}
 
 	switch (hi_handle->coll_eng) {
@@ -203,13 +202,12 @@ int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *da
 			return ret;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 	lhi_pthread_unlock(hi_handle->mutex_lock);
 
-	return FAILURE;
+	return HI_ERR_INTERNAL;
 }
 
 

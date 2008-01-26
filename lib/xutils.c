@@ -32,9 +32,29 @@
 #include "libhashish.h"
 #include "list.h"
 
+static struct {
+	int code;
+	const char *msg;
+} lhi_error_values[] = {
+	{ HI_ERR_SYSTEM,    "System error" },
+	{ HI_ERR_NODATA,    "The given data (argument) is insufficient or wrong - check the arguments!"},
+	{ HI_ERR_INTERNAL,  "Internal library error, send a bug report" },
+	{ HI_ERR_NOKEY,     "The given key isn't in the data structure" },
+	{ HI_ERR_DUPKEY,     "The given key is already in the data structure" },
+	{ HI_ERR_NOTIMPL,     "The given functionality isn't implemented in this version" },
+	{ HI_ERR_RANGE,     "The given argument is out of range for this function" },
+	{ HI_ERR_NOFUNC,     "Functionality not supported" },
+};
 
-int lhi_errno;
-char *lhi_errbuf;
+const char *hi_strerror(int code) {
+  register unsigned int i;
+  for (i = 0; i < sizeof(lhi_error_values) / sizeof(lhi_error_values[0]); ++i)
+    if (lhi_error_values[i].code == code)
+      return lhi_error_values[i].msg;
+
+  return "Unknown error";
+
+}
 
 
 int xalloc_align(void **memptr, size_t alignment, size_t size)
@@ -48,53 +68,6 @@ int xalloc_align(void **memptr, size_t alignment, size_t size)
 	*memptr = malloc(size);
 	return (*memptr == NULL) ? -1 : 0;
 #endif
-}
-
-int __hi_error(int err, const char *file, unsigned int line, const char *func,
-		const char *fmt, ...)
-{
-	char *user_err;
-	va_list args;
-
-	if (lhi_errbuf) {
-		free(lhi_errbuf);
-		lhi_errbuf = NULL;
-	}
-
-	lhi_errno = err;
-
-	if (fmt) {
-		va_start(args, fmt);
-		vasprintf(&user_err, fmt, args);
-		va_end(args);
-	}
-
-	asprintf(&lhi_errbuf, "%s:%u:%s: %s (errno = %s)",
-			file, line, func, fmt ? user_err : "", strerror(err));
-
-	if (fmt)
-		free(user_err);
-
-	return -err;
-}
-
-const char *hi_geterror(void)
-{
-	if (lhi_errbuf)
-		return lhi_errbuf;
-
-	if (lhi_errno)
-		return strerror(lhi_errno);
-
-	return "Sucess\n";
-}
-
-void hi_perror(const char *s)
-{
-	if (s && *s)
-		fprintf(stderr, "%s: %s\n", s, hi_geterror());
-	else
-		fprintf(stderr, "%s\n", hi_geterror());
 }
 
 size_t strlcpy(char *dest, const char *src, size_t size)

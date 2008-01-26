@@ -161,7 +161,8 @@ int main(int ac, char **av)
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		hi_perror("hi_create");
+		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+				strerror(errno) : hi_strerror(ret));
 
 	for	(i = 0; i < MAXTHREAD; i++) {
 		int *num = malloc(sizeof(int *));

@@ -59,7 +59,7 @@ int lhi_lookup_list(const hi_handle_t *hi_handle,
 					return SUCCESS;
 				}
 			}
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 			break;
 
@@ -76,15 +76,14 @@ int lhi_lookup_list(const hi_handle_t *hi_handle,
 				}
 			}
 			}
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			break;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
-	return FAILURE;
+	return HI_ERR_NOKEY;
 }
 
 
@@ -124,7 +123,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 			}
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 			break;
 
@@ -151,13 +150,12 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 				}
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 			break;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 
@@ -193,7 +191,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 				}
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
             /* CHAINING_LIST_MTF is nearly equal to the CHAINING_LIST
              * strategy except to the hi_get routine:
@@ -224,7 +222,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 			break;
 
@@ -248,7 +246,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 
 		case COLL_ENG_LIST_MTF_HASH:
@@ -273,17 +271,16 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 
 			}
 			lhi_pthread_unlock(hi_handle->mutex_lock);
-			return FAILURE;
+			return HI_ERR_NOKEY;
 			}
 			break;
 
 		default:
-			return hi_error(EINVAL,
-					"Internal library error - send a bug report! ;-)");
+			return HI_ERR_INTERNAL;
 	}
 
 
-	return FAILURE;
+	return HI_ERR_NOKEY;
 }
 
 /* lhi_insert_list insert a key/data pair into our hashhandle
@@ -301,7 +298,7 @@ int lhi_insert_list(hi_handle_t *hi_handle, void *key,
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 	ret = XMALLOC((void **) &obj, sizeof(hi_bucket_obj_t));
 	if (ret != 0)
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 
 	obj->hi_handle = &hi_handle->eng_list.bucket_table[bucket];
 	lhi_list_add_tail(&obj->list, &hi_handle->eng_list.bucket_table[bucket]);

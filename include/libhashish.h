@@ -21,19 +21,32 @@
 #ifndef _LIB_HASHISH_H
 #define	_LIB_HASHISH_H
 
+#include "../config.h"
+
 #include <inttypes.h> /* include stdint.h */
 #include <stdio.h>
 #include <pthread.h>
 #include "list.h"
 #include "rbtree.h"
-#include "../config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int lhi_errno;
-extern char *lhi_errbuf;
+/* Error handling stuf */
+
+#define	HI_ERR_SYSTEM       -1
+#define	HI_ERR_NODATA       -2
+#define	HI_ERR_INTERNAL     -3
+#define	HI_ERR_NOKEY        -4
+#define	HI_ERR_DUPKEY       -5
+#define	HI_ERR_NOTIMPL      -6
+#define	HI_ERR_RANGE        -7
+#define HI_ERR_NOFUNC       -8
+
+#define HI_ERR_SUCCESS       0
+#define	HI_SUCCESS HI_ERR_SUCCESS
+
 
 
 struct hashfunc_map_t
@@ -164,8 +177,7 @@ void hi_set_self_resizing(struct hi_init_set *, int);
 int hi_set_coll_eng_array_size(struct hi_init_set *, uint32_t);
 
 /* xutils.c */
-void hi_perror(const char *);
-const char *hi_geterror(void);
+const char *hi_strerror(const int);
 
 /* cmp_funcs.c */
 int hi_cmp_str(const uint8_t *, const uint8_t *);

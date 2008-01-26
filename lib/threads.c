@@ -37,13 +37,13 @@ int lhi_pthread_init(pthread_mutex_t **mutex,
 
 	lm = malloc(sizeof(pthread_mutex_t));
 	if (!lm)
-		return hi_errno(errno);
+		return HI_ERR_SYSTEM;
 
 	pthread_mutex_init(lm, attr);
 
 	*mutex = lm;
 
-	return 0;
+	return SUCCESS;
 }
 
 /** Destroy a mutex lock
