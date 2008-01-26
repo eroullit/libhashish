@@ -107,10 +107,6 @@ size_t strlcpy(char *, const char *, size_t);
 int lhi_create_vanilla_hdnl(hi_handle_t **);
 
 
-#ifdef __cplusplus
-}
-#endif
-
 /* hashfunc.c */
 uint32_t LHI_NO_EXPORT lhi_hash_dumb1(const uint8_t *, uint32_t);
 uint32_t LHI_NO_EXPORT lhi_hash_hsieh(const uint8_t *, uint32_t);
@@ -141,6 +137,10 @@ int LHI_NO_EXPORT lhi_remove_list(hi_handle_t *, void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_lookup_rbtree(const hi_handle_t *, void *, uint32_t);
 int LHI_NO_EXPORT lhi_fini_rbtree(hi_handle_t *);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LIB_PRIVHASHISH_H */
 
