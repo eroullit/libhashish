@@ -175,6 +175,7 @@ int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *da
 	lhi_pthread_lock(hi_handle->mutex_lock);
 
 	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) { /* already in hash or error */
+		lhi_pthread_unlock(hi_handle->mutex_lock);
 		return hi_error(EINVAL, "key already in hashtable");
 	}
 
