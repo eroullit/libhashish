@@ -34,7 +34,7 @@
 #include "tests.h"
 
 
-#define MAXTHREAD 10
+#define MAXTHREAD 100
 
 #define	TABLE_SIZE 23
 #define	TEST_ITER_NO 2048
@@ -114,7 +114,7 @@ static void concurrent_test(int num)
 		}
 	}
 
-	fprintf(stderr, "# %d finished\n", num);
+	fprintf(stderr, "-%d", num);
 
 	return;
 }
@@ -122,7 +122,7 @@ static void concurrent_test(int num)
 static void *thread_main(void *args)
 {
 	int num = (int) *((int *) args);
-	fprintf(stderr, "# spawned thread %d\n", num);
+	fprintf(stderr, "+%d", num);
 
 	switch(num % 2) {
 		case 1:
