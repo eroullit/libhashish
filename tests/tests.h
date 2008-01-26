@@ -22,9 +22,11 @@
 #ifndef _TESTS_H
 #define	_TESTS_H
 
+#include <pthread.h>
+
 /* xfuncs.c */
-void init_seed(void);
-int random_string(uint32_t, char **);
+unsigned int get_proper_seed(void);
+int random_string(uint32_t, char **, struct drand48_data *);
 
 
 

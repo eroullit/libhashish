@@ -36,28 +36,28 @@
 #define	RANDOMFILE "/dev/urandom"
 
 
-void init_seed(void)
+unsigned int get_proper_seed(void)
 {
 	uint32_t rand_seed;
 	int ufd = open(RANDOMFILE, O_RDONLY);
 	if (ufd == -1) {
-		srand((((int)time(NULL)) & ((1 << 30) - 1)) + getpid());
+		return ((((int)time(NULL)) & ((1 << 30) - 1)) + getpid());
 	} else {
 		if (sizeof(rand_seed) != read(ufd, &rand_seed, sizeof(rand_seed))) {
 			fprintf(stderr, "read(2) error: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		close(ufd);
-		rand_seed = abs(rand_seed) + getpid();
-		srand(rand_seed);
+		return rand_seed;
 	}
 }
 
 
-int random_string(uint32_t str_len, char **string)
+int random_string(uint32_t str_len, char **string, struct drand48_data *r_d)
 {
 	uint32_t i, retval = 0;
 	char *newstring;
+	long int result;
 
 	newstring = malloc(str_len + 1);
 	if (newstring == NULL) {
@@ -65,8 +65,10 @@ int random_string(uint32_t str_len, char **string)
 		return -1;
 	}
 
+
 	for (i = 0; i <= str_len; i++) {
-		newstring[i] = (rand() % (122 - 97 + 1)) + 97;
+		lrand48_r(r_d, &result);
+		newstring[i] = (((int)result) % (122 - 97 + 1)) + 97;
 	}
 	newstring[str_len] = '\0';
 

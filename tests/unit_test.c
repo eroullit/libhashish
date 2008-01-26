@@ -457,7 +457,7 @@ static void check_set_init(void)
 int
 main(void)
 {
-	init_seed();
+	//init_seed();
 
 	fputs("Start test sequence\n", stderr);
 

@@ -38,7 +38,7 @@
 
 #define	TABLE_SIZE 23
 #define	TEST_ITER_NO 2048
-#define	KEYLEN  5
+#define	KEYLEN  100
 #define	DATALEN 100
 
 #define	KEY 0
@@ -57,6 +57,9 @@
 
 hi_handle_t *hi_hndl;
 
+pthread_mutex_t mutex;
+
+
 /* concurrent_test do the following:
  *  o It creates and removes randomly entries
  *    whithin the hash table. At the end the count
@@ -67,7 +70,13 @@ static void concurrent_test(int num)
 	int i, ret;
 	void *data;
 	char *ptr_bucket[TEST_ITER_NO][2];
+	struct drand48_data seed_data;
+	unsigned long seed;
 
+	seed = get_proper_seed();
+
+	/* init per thread seed */
+	srand48_r(seed, &seed_data);
 
 	for (i =0; i < TEST_ITER_NO; i++) {
 
@@ -80,17 +89,25 @@ static void concurrent_test(int num)
 		do {
 			sucess = 1;
 
-			random_string(KEYLEN, &key_ptr);
-			random_string(DATALEN, &data_ptr);
+			pthread_mutex_lock(&mutex);
+
+			random_string(KEYLEN, &key_ptr, &seed_data);
+			random_string(DATALEN, &data_ptr, &seed_data);
 
 			ptr_bucket[i][KEY] = key_ptr;
 			ptr_bucket[i][DATA] = data_ptr;
 
+
 			ret = hi_insert(hi_hndl, (void *) key_ptr,
 					strlen(key_ptr), (void *) data_ptr);
-			if (ret != 0) {
+			if (ret < 0) {
+				fprintf(stderr, "# Key (%s) already in hash\n", key_ptr);
+				fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
+						strerror(errno) : hi_strerror(ret));
 				sucess = 0;
 			}
+
+			pthread_mutex_unlock(&mutex);
 
 		} while (!sucess);
 	}
@@ -98,6 +115,8 @@ static void concurrent_test(int num)
 	/* verify storage and cleanup */
 	for (i = 0; i < TEST_ITER_NO; i++) {
 
+
+		pthread_mutex_lock(&mutex);
 
 		ret = hi_get(hi_hndl, ptr_bucket[i][KEY],
 				strlen(ptr_bucket[i][KEY]), &data);
@@ -112,6 +131,8 @@ static void concurrent_test(int num)
 		} else {
 			fprintf(stderr, "# already deleted\n");
 		}
+
+		pthread_mutex_unlock(&mutex);
 	}
 
 	fprintf(stderr, "-%d", num);
@@ -122,6 +143,7 @@ static void concurrent_test(int num)
 static void *thread_main(void *args)
 {
 	int num = (int) *((int *) args);
+
 	fprintf(stderr, "+%d", num);
 
 	switch(num % 2) {
@@ -150,7 +172,7 @@ int main(int ac, char **av)
 
 	fputs("# concurrent test\n", stderr);
 
-	init_seed();
+	pthread_mutex_init(&mutex, NULL);
 
 	/* create one hash */
 	hi_set_zero(&hi_set);

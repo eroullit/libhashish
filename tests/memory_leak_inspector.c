@@ -106,8 +106,8 @@ static void insert_much_and_free_loop(void)
 		do {
 			sucess = 1;
 
-			random_string(KEYLEN, &key_ptr);
-			random_string(DATALEN, &data_ptr);
+			//random_string(KEYLEN, &key_ptr);
+			//random_string(DATALEN, &data_ptr);
 
 			ptr_bucket[i][KEY] = key_ptr;
 			ptr_bucket[i][DATA] = data_ptr;
@@ -155,7 +155,7 @@ int main(int ac, char **av)
 
 	fputs("# memory leak inspector\n", stderr);
 
-	init_seed();
+	//init_seed();
 
 	while (--i)
 		insert_much_and_free_loop();
