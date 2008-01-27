@@ -57,6 +57,24 @@
 
 hi_handle_t *hi_hndl;
 
+
+static void msleep(unsigned long milisec)
+{
+    struct timespec req;
+
+	memset(&req, 0, sizeof(struct timespec));
+
+    time_t sec = milisec / 1000;
+
+    milisec = milisec - ( sec * 1000);
+    req.tv_sec = sec;
+    req.tv_nsec = milisec * 1000000L;
+
+    while (nanosleep(&req, &req) == -1)
+         continue;
+    return;
+}
+
 /* concurrent_test do the following:
  *  o It creates and removes randomly entries
  *    whithin the hash table. At the end the count
@@ -69,11 +87,19 @@ static void concurrent_test(int num)
 	char *ptr_bucket[TEST_ITER_NO][2];
 	struct drand48_data seed_data;
 	unsigned long seed;
+	long int rand_res;
 
 	seed = get_proper_seed();
 
 	/* init per thread seed */
 	srand48_r(seed, &seed_data);
+
+
+	/* sleep for some amount of time */
+	lrand48_r(&seed_data, &rand_res);
+	msleep(rand_res % 40000); /* max 4s */
+
+	fprintf(stderr, "+%d", num);
 
 	for (i =0; i < TEST_ITER_NO; i++) {
 
@@ -106,6 +132,9 @@ static void concurrent_test(int num)
 		} while (!sucess);
 	}
 
+	lrand48_r(&seed_data, &rand_res);
+	msleep(rand_res % 4000); /* max 4s */
+
 	/* verify storage and cleanup */
 	for (i = 0; i < TEST_ITER_NO; i++) {
 		ret = hi_remove(hi_hndl, ptr_bucket[i][KEY],
@@ -132,8 +161,6 @@ static void concurrent_test(int num)
 static void *thread_main(void *args)
 {
 	int num = (int) *((int *) args);
-
-	fprintf(stderr, "+%d", num);
 
 	switch(num % 2) {
 		case 1:
@@ -183,7 +210,7 @@ int main(int ac, char **av)
 		pthread_create(&thread_id[i], NULL, thread_main, num);
 	}
 
-	fputs("# parent waiting for threads ...\n", stderr);
+	fputs("# + -> thread startup; - -> thread shutdown\n", stderr);
 	for(i = 0; i < MAXTHREAD; i++) {
 		pthread_join(thread_id[i], NULL);
 	}
