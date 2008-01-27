@@ -57,9 +57,6 @@
 
 hi_handle_t *hi_hndl;
 
-pthread_mutex_t mutex;
-
-
 /* concurrent_test do the following:
  *  o It creates and removes randomly entries
  *    whithin the hash table. At the end the count
@@ -89,14 +86,11 @@ static void concurrent_test(int num)
 		do {
 			sucess = 1;
 
-			pthread_mutex_lock(&mutex);
-
 			random_string(KEYLEN, &key_ptr, &seed_data);
 			random_string(DATALEN, &data_ptr, &seed_data);
 
 			ptr_bucket[i][KEY] = key_ptr;
 			ptr_bucket[i][DATA] = data_ptr;
-
 
 			ret = hi_insert(hi_hndl, (void *) key_ptr,
 					strlen(key_ptr), (void *) data_ptr);
@@ -105,20 +99,16 @@ static void concurrent_test(int num)
 				fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
 						strerror(errno) : hi_strerror(ret));
 				sucess = 0;
+				free(key_ptr);
+				free(data_ptr);
 			}
-
-			pthread_mutex_unlock(&mutex);
 
 		} while (!sucess);
 	}
 
 	/* verify storage and cleanup */
 	for (i = 0; i < TEST_ITER_NO; i++) {
-
-
-		pthread_mutex_lock(&mutex);
-
-		ret = hi_get(hi_hndl, ptr_bucket[i][KEY],
+		ret = hi_remove(hi_hndl, ptr_bucket[i][KEY],
 				strlen(ptr_bucket[i][KEY]), &data);
 		if (ret == 0) {
 			if (data != ptr_bucket[i][DATA]) {
@@ -132,7 +122,6 @@ static void concurrent_test(int num)
 			fprintf(stderr, "# already deleted\n");
 		}
 
-		pthread_mutex_unlock(&mutex);
 	}
 
 	fprintf(stderr, "-%d", num);
@@ -171,8 +160,6 @@ int main(int ac, char **av)
 	(void) ac; (void) av;
 
 	fputs("# concurrent test\n", stderr);
-
-	pthread_mutex_init(&mutex, NULL);
 
 	/* create one hash */
 	hi_set_zero(&hi_set);
