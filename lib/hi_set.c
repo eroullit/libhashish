@@ -29,8 +29,6 @@
 #include "libhashish.h"
 #include "list.h"
 
-extern struct hashfunc_map_t hashfunc_map[];
-
 
 /**
  * Initialize the hi_init_set structure. This function
@@ -89,8 +87,8 @@ int hi_set_hash_alg(struct hi_init_set *hi_set, enum hash_alg hash_alg)
 
 	/* loop until we found the right one */
 	for (i = 0; i <= HI_HASH_MAX; ++i) {
-		if (hash_alg == hashfunc_map[i].no) {
-			hi_set->hash_func = hashfunc_map[i].hashfunc;
+		if (hash_alg == lhi_hashfunc_map[i].no) {
+			hi_set->hash_func = lhi_hashfunc_map[i].hashfunc;
 			return SUCCESS;
 		}
 	}
@@ -114,8 +112,8 @@ int hi_set_hash2_alg(struct hi_init_set *hi_set, enum hash_alg hash_alg)
 
 	/* loop until we found the right one */
 	for (i = 0; i <= HI_HASH_MAX; ++i) {
-		if (hash_alg == hashfunc_map[i].no) {
-			hi_set->hash2_func = hashfunc_map[i].hashfunc;
+		if (hash_alg == lhi_hashfunc_map[i].no) {
+			hi_set->hash2_func = lhi_hashfunc_map[i].hashfunc;
 			return SUCCESS;
 		}
 	}

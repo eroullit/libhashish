@@ -32,9 +32,16 @@
 #include "list.h"
 #include "threads.h"
 
-struct hashfunc_map_t hashfunc_map[] = {
-	{HI_HASH_WEINB, lhi_hash_weinb},
-	{ 0, NULL }
+const struct hashfunc_map_t lhi_hashfunc_map[] = {
+	{HI_HASH_DJB2, "djb2", lhi_hash_djb2},
+	{HI_HASH_DUMB1, "dumb1", lhi_hash_dumb1},
+	{HI_HASH_ELF, "elf", lhi_hash_elf},
+	{HI_HASH_GOULBURN, "goulburn", lhi_hash_goulburn},
+	{HI_HASH_HSIEH, "hsieh", lhi_hash_hsieh},
+	{HI_HASH_PHONG, "phong", lhi_hash_phong},
+	{HI_HASH_TOREK, "torek", lhi_hash_torek},
+	{HI_HASH_XOR, "xor", lhi_hash_xor},
+	{HI_HASH_WEINB, "weinberger", lhi_hash_weinb}
 };
 
 

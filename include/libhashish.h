@@ -49,16 +49,29 @@ extern "C" {
 
 
 
-struct hashfunc_map_t
-{
+struct hashfunc_map_t {
 	const unsigned int no;
+	const char *name;
 	uint32_t (*hashfunc)(const uint8_t*, uint32_t);
 };
 
+extern const struct hashfunc_map_t lhi_hashfunc_map[];
+
+
 enum hash_alg {
-	HI_HASH_WEINB = 0,
+	HI_HASH_DJB2 = 0,
+	HI_HASH_DUMB1,
+	HI_HASH_ELF,
+	HI_HASH_GOULBURN,
+	HI_HASH_HSIEH,
+	HI_HASH_JENKINS,
+	HI_HASH_PHONG,
+	HI_HASH_TOREK,
+	HI_HASH_XOR,
+	HI_HASH_WEINB,
 	__HI_HASH_MAX
 };
+
 
 #define	HI_HASH_MAX (__HI_HASH_MAX - 1)
 
@@ -157,6 +170,18 @@ typedef struct __hi_handle {
 
 } hi_handle_t;
 
+/* hashfunc.c */
+uint32_t lhi_hash_dumb1(const uint8_t *, uint32_t);
+uint32_t lhi_hash_hsieh(const uint8_t *, uint32_t);
+uint32_t lhi_hash_goulburn(const uint8_t *, uint32_t);
+uint32_t lhi_hash_phong(const uint8_t *, uint32_t);
+uint32_t lhi_hash_torek(const uint8_t *, uint32_t);
+uint32_t lhi_hash_weinb(const uint8_t *, uint32_t);
+uint32_t lhi_hash_elf(const uint8_t *, uint32_t);
+uint32_t lhi_hash_djb2(const uint8_t *, uint32_t);
+uint32_t lhi_hash_xor(const uint8_t *, uint32_t);
+uint32_t lhi_hash_kr(const uint8_t *, uint32_t);
+uint32_t lhi_hash_sdbm(const uint8_t *, uint32_t);
 
 /* hi_fini.c */
 int hi_fini(hi_handle_t *);

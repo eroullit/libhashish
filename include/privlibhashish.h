@@ -107,19 +107,6 @@ size_t strlcpy(char *, const char *, size_t);
 int lhi_create_vanilla_hdnl(hi_handle_t **);
 
 
-/* hashfunc.c */
-uint32_t LHI_NO_EXPORT lhi_hash_dumb1(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_hsieh(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_goulburn(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_phong(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_torek(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_weinb(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_elf(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_djb2(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_xor(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_kr(const uint8_t *, uint32_t);
-uint32_t LHI_NO_EXPORT lhi_hash_sdbm(const uint8_t *, uint32_t);
-
 /* private array manipulation functions */
 
 int LHI_NO_EXPORT lhi_lookup_array(const hi_handle_t *, void *, uint32_t);
