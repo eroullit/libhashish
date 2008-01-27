@@ -67,6 +67,33 @@ int random_string(uint32_t str_len, char **string,
 	return retval;
 }
 
+/**
+ * gaussian provides a normal distribution based
+ * on random values. The parameters change the standard
+ * behaviour from gaussian distribution to normal one.
+ *
+ * @deviation is the deviation of the distribution
+ * @mean denotes to the mean
+ * @r_d is the used seed (to guarantee thread safety)
+ *
+ * @returns the normal distribution
+ */
+double gaussian(double deviation, double mean,
+		struct drand48_data *r_d)
+{
+	double u1, u2, g1, g2, w;
 
+	do {
+		u1 = (drand48() * 2) - 1;
+		u2 = (drand48() * 2) - 1;
+		w = u1 * u1 + u2 *u2;
+	} while ( w >= 1);
+
+	w = sqrt((-2.0 * log(w)) / w);
+	g2 = u1 * w;
+	g1 = u2 * w;
+
+	return g1 * deviation + mean;
+}
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */
