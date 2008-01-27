@@ -46,6 +46,7 @@
 #include <assert.h>
 
 #include "libhashish.h"
+#include "localhash.h"
 #include "list.h"
 #include "tests.h"
 
@@ -90,10 +91,9 @@ static void insert_much_and_free_loop(void)
 	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 
 	ret = hi_create(&hi_hndl, &hi_set);
-	if (ret != 0)
+	if (ret < 0)
 		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
 				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
 
 	for (i =0; i < TEST_ITER_NO; i++) {
 

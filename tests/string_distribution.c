@@ -19,6 +19,7 @@
 */
 
 #include "libhashish.h"
+#include "locallib.h"
 #include "libhashish-local.h"
 #include "tests.h"
 

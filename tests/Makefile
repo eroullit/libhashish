@@ -6,10 +6,10 @@ endif
 
 CIN      := $(wildcard *.c)
 
-OBJ      := unit_test.o xfuncs.o memory_leak_inspector.o concurrent_test.o #$(CIN:%.c=%.o)
+OBJ      := unit_test.o memory_leak_inspector.o concurrent_test.o #$(CIN:%.c=%.o)
 CFLAGS   += -I../include
 LIBFLAGS := -lm 
-LIBFLAGS += -L../lib -lhashish_s
+LIBFLAGS += -L../lib -L../localhash -lhashish_s -llocalhash
 GRAPHFALGS :=
 
 THREADFLAGSX = -lpthread
@@ -26,16 +26,16 @@ export
 all: unit_test memory_leak_inspector concurrent_test # string_distribution concurrent_test
 
 unit_test: $(OBJ)
-	$(CC) $(CFLAGS) unit_test.o xfuncs.o $(LIBFLAGS) -o $@
+	$(CC) $(CFLAGS) unit_test.o $(LIBFLAGS) -o $@
 
 concurrent_test: $(OBJ)
-	$(CC) $(CFLAGS) concurrent_test.o xfuncs.o $(LIBFLAGS) $(THREADFLAGSX) -o $@
+	$(CC) $(CFLAGS) concurrent_test.o $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
 string_distribution: $(OBJ)
-	$(CC) $(CFLAGS) string_distribution.o xfuncs.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
+	$(CC) $(CFLAGS) string_distribution.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
 
 memory_leak_inspector: $(OBJ)
-	$(CC) $(CFLAGS) memory_leak_inspector.o xfuncs.o $(LIBFLAGS) -o $@
+	$(CC) $(CFLAGS) memory_leak_inspector.o $(LIBFLAGS) -o $@
 
 clean:
 	@echo "### cleaning"; \

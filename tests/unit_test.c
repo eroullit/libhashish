@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "libhashish.h"
+#include "localhash.h"
 #include "list.h"
 #include "tests.h"
 
