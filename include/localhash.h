@@ -23,6 +23,8 @@
 
 #include "../config.h"
 
+#include <stdlib.h>
+
 /* localhash/datagen.c */
 int random_string(uint32_t, char **, struct drand48_data *);
 double gaussian(double, double, struct drand48_data *);
