@@ -38,8 +38,8 @@ void lhi_pthread_unlock(pthread_mutex_t *);
 /* if this package isn't compiled with
  * THREADSAFE that this NULL macros are expanded
  */
-static int __attribute__((unused)) lhi_pthread_init(pthread_mutex_t **a,
-		const pthread_mutexattr_t *b)  { (void)a; (void)b; }
+static inline int lhi_pthread_init(pthread_mutex_t **a,
+		const pthread_mutexattr_t *b)  { (void)a; (void)b; return 0; }
 static void __attribute__((unused)) lhi_pthread_destroy(pthread_mutex_t *a) { (void)a; }
 static void lhi_pthread_lock(pthread_mutex_t * a) { (void)a; }
 static void lhi_pthread_unlock(pthread_mutex_t * a) { (void)a; }
