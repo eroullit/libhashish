@@ -19,9 +19,6 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "libhashish.h"
-#include "localhash.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -29,31 +26,49 @@
 #include <unistd.h>
 #include <inttypes.h>
 
+#include "libhashish.h"
+#include "localhash.h"
 
-static uint32_t jenkins32_mix(uint32_t state)
+typedef uint32_t (*hash_function_t)(const uint8_t*, uint32_t);
+
+
+static void die_usage(void)
 {
-
-	state += (state << 12);
-	state ^= (state << 22);
-	state += (state << 4);
-	state ^= (state >> 9);
-	state += (state << 10);
-	state ^= (state >> 2);
-	state += (state << 7);
-	state ^= (state >> 12);
-
-	return state;
+	fputs("Usage: avalance algorithm\n"
+		"Try: avalance --list for a list of supported algorithms\n", stderr);
+	exit(1);
 }
 
 
+static void die_list(void)
+{
+	unsigned int i;
 
-static int avalance(uint32_t (*func)(uint32_t state),
-		int trials, int repetitions)
+	fputs("Known hash algorithms:\n", stderr);
+	for (i=0; i < HI_HASH_MAX; i++)
+		fprintf(stderr, "\t%s\n", lhi_hashfunc_map[i].name);
+
+	exit(1);
+}
+
+
+static hash_function_t get_hashfunc_by_name(const char *name)
+{
+	unsigned int i;
+
+	for (i=0; i < HI_HASH_MAX; i++)
+		if (strcasecmp(name, lhi_hashfunc_map[i].name) == 0)
+			return lhi_hashfunc_map[i].hashfunc;
+	return NULL;
+}
+
+
+static int avalance(hash_function_t func, unsigned int trials, unsigned int repetitions)
 {
 	uint32_t state;
 
-	int i, r, j;
-	int size = 32;
+	unsigned int i, r, j;
+	unsigned int size = 32;
 	uint32_t save, inb, outb;
 	double dTrials = trials;
 	char bytes[4];
@@ -79,9 +94,8 @@ static int avalance(uint32_t (*func)(uint32_t state),
 				+ 65536U * bytes[2]
 				+ 16777216U * bytes[3]);
 
-		for (r = 0; r < repetitions; r++) {
-			state = func(state);
-		}
+		for (r = 0; r < repetitions; r++)
+			state = func((const uint8_t*) &state, sizeof(state));
 
 		inb = state;
 
@@ -89,9 +103,8 @@ static int avalance(uint32_t (*func)(uint32_t state),
 
 			state = save ^ (1U << i);
 
-			for (r = 0; r < repetitions; r++) {
-				state = func(state);
-			}
+			for (r = 0; r < repetitions; r++)
+				state = func((const uint8_t*) &state, sizeof(state));
 
 			/* FIXME: implement something smart */
 			outb = state ^ inb;
@@ -118,11 +131,19 @@ static int avalance(uint32_t (*func)(uint32_t state),
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
-	srandom(getpid());
+	hash_function_t func;
 
-	avalance(jenkins32_mix, 1000000, 1);
+	if (argc != 2)
+		die_usage();
+
+	func = get_hashfunc_by_name(argv[1]);
+
+	if (!func)
+		die_list();
+
+	avalance(func, 1000000, 1);
 
 	return 0;
 }
