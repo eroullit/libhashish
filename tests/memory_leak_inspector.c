@@ -79,6 +79,9 @@ static void insert_much_and_free_loop(void)
 	int i, ret;
 	void *data;
 	char *ptr_bucket[TEST_ITER_NO][2];
+	struct drand48_data seed_data;
+	unsigned long seed;
+	long int rand_res;
 
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
@@ -89,6 +92,11 @@ static void insert_much_and_free_loop(void)
 	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
 	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
 	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+
+
+	/* init per thread seed */
+	seed = get_proper_seed();
+	srand48_r(seed, &seed_data);
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret < 0)
@@ -106,8 +114,8 @@ static void insert_much_and_free_loop(void)
 		do {
 			sucess = 1;
 
-			//random_string(KEYLEN, &key_ptr);
-			//random_string(DATALEN, &data_ptr);
+			random_string(KEYLEN, &key_ptr, &seed_data);
+			random_string(DATALEN, &data_ptr, &seed_data);
 
 			ptr_bucket[i][KEY] = key_ptr;
 			ptr_bucket[i][DATA] = data_ptr;
