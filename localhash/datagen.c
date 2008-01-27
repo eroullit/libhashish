@@ -23,12 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <assert.h>
-#include <time.h>
+#include <math.h>
 
 #include "libhashish.h"
 #include "localhash.h"
@@ -81,12 +77,17 @@ int random_string(uint32_t str_len, char **string,
 double gaussian(double deviation, double mean,
 		struct drand48_data *r_d)
 {
-	double u1, u2, g1, g2, w;
+	double rand_res, u1, u2, g1, g2, w;
 
 	do {
-		u1 = (drand48() * 2) - 1;
-		u2 = (drand48() * 2) - 1;
+		drand48_r(r_d, &rand_res);
+		u1 = (rand_res * 2) - 1;
+
+		drand48_r(r_d, &rand_res);
+		u2 = (rand_res * 2) - 1;
+
 		w = u1 * u1 + u2 *u2;
+
 	} while ( w >= 1);
 
 	w = sqrt((-2.0 * log(w)) / w);
