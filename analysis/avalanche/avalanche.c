@@ -29,8 +29,7 @@
 #include "libhashish.h"
 #include "localhash.h"
 
-typedef uint32_t (*hash_function_t)(const uint8_t*, uint32_t);
-
+#include "analysis_common.h"
 
 static void die_usage(void)
 {
@@ -38,30 +37,6 @@ static void die_usage(void)
 		"Try: avalance --list for a list of supported algorithms\n", stderr);
 	exit(1);
 }
-
-
-static void die_list(void)
-{
-	unsigned int i;
-
-	fputs("Known hash algorithms:\n", stderr);
-	for (i=0; i < HI_HASH_MAX; i++)
-		fprintf(stderr, "\t%s\n", lhi_hashfunc_map[i].name);
-
-	exit(1);
-}
-
-
-static hash_function_t get_hashfunc_by_name(const char *name)
-{
-	unsigned int i;
-
-	for (i=0; i < HI_HASH_MAX; i++)
-		if (strcasecmp(name, lhi_hashfunc_map[i].name) == 0)
-			return lhi_hashfunc_map[i].hashfunc;
-	return NULL;
-}
-
 
 static int avalance(hash_function_t func, unsigned int trials, unsigned int repetitions)
 {

@@ -6,7 +6,7 @@ endif
 
 CIN      := $(wildcard *.c)
 OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -I../../include -Wall -W
+CFLAGS   += -I.. -I../../include -Wall -W
 LIBFLAGS := -lm -L../../lib -L../../localhash -lhashish_s -llocalhash
 
 export
