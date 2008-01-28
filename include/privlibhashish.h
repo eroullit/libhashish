@@ -114,14 +114,16 @@ int LHI_NO_EXPORT lhi_fini_array(hi_handle_t *);
 int LHI_NO_EXPORT lhi_insert_array(hi_handle_t *, void *, uint32_t , void *);
 
 /* private list manipulation functions */
-int LHI_NO_EXPORT lhi_lookup_list(const hi_handle_t *, void *, uint32_t);
+int LHI_NO_EXPORT lhi_lookup_list(hi_handle_t *, void *, uint32_t);
 int LHI_NO_EXPORT lhi_insert_list(hi_handle_t *, void *, uint32_t , void *);
 int LHI_NO_EXPORT lhi_fini_list(hi_handle_t *);
 int LHI_NO_EXPORT lhi_get_list(hi_handle_t *, void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_remove_list(hi_handle_t *, void *, uint32_t , void **);
 
 /* private rbtree manipulation functions */
-int LHI_NO_EXPORT lhi_lookup_rbtree(const hi_handle_t *, void *, uint32_t);
+int LHI_NO_EXPORT lhi_insert_rbtree(hi_handle_t *, void *, uint32_t , void *);
+int LHI_NO_EXPORT lhi_get_rbtree(const hi_handle_t *, const void *, uint32_t, void **);
+int LHI_NO_EXPORT lhi_remove_rbtree(const hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_fini_rbtree(hi_handle_t *);
 
 
