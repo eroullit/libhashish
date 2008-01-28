@@ -184,6 +184,8 @@ uint32_t lhi_hash_djb2(const uint8_t *, uint32_t);
 uint32_t lhi_hash_xor(const uint8_t *, uint32_t);
 uint32_t lhi_hash_kr(const uint8_t *, uint32_t);
 uint32_t lhi_hash_sdbm(const uint8_t *, uint32_t);
+uint32_t lhi_hash_korzendorfer1(const uint8_t *, uint32_t);
+uint32_t lhi_hash_korzendorfer2(const uint8_t *, uint32_t);
 
 /* hi_fini.c */
 int hi_fini(hi_handle_t *);
