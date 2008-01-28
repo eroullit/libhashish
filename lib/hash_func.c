@@ -154,6 +154,43 @@ uint32_t lhi_hash_djb2(const uint8_t *key, uint32_t len)
 	return hash;
 }
 
+/**
+ * korzendorfer1, a visual feast
+ * This great pleasure of hashing algorithms are
+ * subtle by Markus Korzendorfer - a fellow student
+ * of mine
+ */
+uint32_t lhi_hash_korzendorfer1(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, hash = 0;
+
+	for (i = 0; i < len; i++) {
+		hash += key[i];
+	}
+
+	return hash;
+
+}
+
+/**
+ * The same as above, korzendorfer2 an ueber hash
+ * algorithm. Only for the purpose of demonstrating
+ */
+uint32_t lhi_hash_korzendorfer2(const uint8_t *key, uint32_t len)
+{
+	uint32_t i, j, size, hash = 0;
+
+	size = 1;
+
+	for (i = 0; i < len; i++) {
+		j = key[i];
+		j *= size++;
+		hash += j;
+	}
+
+	return hash;
+}
+
 
 uint32_t lhi_hash_xor(const uint8_t *key, uint32_t len)
 {
