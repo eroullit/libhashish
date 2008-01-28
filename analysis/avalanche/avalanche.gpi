@@ -6,7 +6,7 @@ set xrange [0:31]
 set yrange [0:31]
 set pm3d map
 set size 2
-splot "avalanche.data" title "Jenkins MIX Avalanche Behavior"
+splot "avalanche.data" title "Jenkins Avalanche Behavior"
 !epstopdf --outfile=avalanche.pdf avalanche.eps
 !rm -rf avalanche.eps
 
