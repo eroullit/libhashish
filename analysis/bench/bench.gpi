@@ -1,0 +1,19 @@
+set terminal postscript eps enhanced color "Times" 30
+set output "bench.eps"
+set title "Speed of Hash functions with increasing input length"
+set size 2
+set ylabel "time in seconds"
+set xlabel "input size per call"
+
+plot "bench-goulburn.data" using 1:3 title "goulburn" with linespoints,\
+	"bench-hsieh.data" using 1:3 title "hsieh" with linespoints,\
+	"bench-jenkins.data" using 1:3 title "jenkins" with linespoints,\
+	"bench-phong.data" using 1:3 title "phong" with linespoints
+
+!epstopdf --outfile=bench.pdf bench.eps
+!rm -rf bench.eps
+
+set term x11
+set size 1
+replot
+pause 10
