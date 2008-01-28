@@ -175,6 +175,7 @@ typedef struct __hi_handle {
 /* hashfunc.c */
 uint32_t lhi_hash_dumb1(const uint8_t *, uint32_t);
 uint32_t lhi_hash_hsieh(const uint8_t *, uint32_t);
+uint32_t lhi_hash_jenkins(const uint8_t *, uint32_t);
 uint32_t lhi_hash_goulburn(const uint8_t *, uint32_t);
 uint32_t lhi_hash_phong(const uint8_t *, uint32_t);
 uint32_t lhi_hash_torek(const uint8_t *, uint32_t);
