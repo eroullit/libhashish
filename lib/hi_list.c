@@ -55,7 +55,7 @@ int lhi_lookup_list(hi_handle_t *hi_handle,
 			hi_bucket_obj_t *b_obj;
 			lhi_list_for_each_entry(b_obj,
 					&(hi_handle->eng_list.bucket_table[bucket]), list) {
-				if (hi_handle->key_cmp(key, b_obj->key)) {
+				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
 					fprintf(stderr, "\nDEBUG new: %s old: %s\n\n", b_obj->key, key);
 					return SUCCESS;
 				}
@@ -72,7 +72,7 @@ int lhi_lookup_list(hi_handle_t *hi_handle,
 			lhi_list_for_each_entry(b_obj,
 					&(hi_handle->eng_list.bucket_table[bucket]), list) {
 				if (key_hash == b_obj->key_hash &&
-						hi_handle->key_cmp(key, b_obj->key)) {
+						hi_handle->key_cmp(key, b_obj->key) == 0) {
 					return SUCCESS;
 				}
 			}
@@ -110,20 +110,19 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 		case COLL_ENG_LIST_MTF:
 			{
 			hi_bucket_obj_t *b_obj, *p;
-
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
-				if (hi_handle->key_cmp(key, b_obj->key)) {
+				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
 					*data = b_obj->data;
 					lhi_list_del(&b_obj->list);
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
 					--hi_handle->no_objects;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 			}
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
 			break;
@@ -132,25 +131,25 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 		case COLL_ENG_LIST_MTF_HASH:
 			{
 			hi_bucket_hl_obj_t *b_obj, *p;
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 
 			uint32_t key_hash = hi_handle->hash2_func(key, keylen);
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 
 				if (key_hash == b_obj->key_hash &&
-						hi_handle->key_cmp(key, b_obj->key)) {
+						hi_handle->key_cmp(key, b_obj->key) == 0) {
 
 					*data = b_obj->data;
 					lhi_list_del(&b_obj->list);
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
 					--hi_handle->no_objects;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 
 				}
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
 			break;
@@ -182,16 +181,16 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 
 		case COLL_ENG_LIST:
 			{
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			hi_bucket_obj_t *b_obj;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->eng_list.bucket_table[bucket]), list) {
-				if (hi_handle->key_cmp(key, b_obj->key)) {
+				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
 					*data = b_obj->data;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
             /* CHAINING_LIST_MTF is nearly equal to the CHAINING_LIST
@@ -210,19 +209,19 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 			 * set and reorder the set.
 			 */
 			hi_bucket_obj_t *b_obj, *p;
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 
-				if (hi_handle->key_cmp(key, b_obj->key)) {
+				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
 					lhi_list_del(&b_obj->list);
 					lhi_list_add_head(&b_obj->list, &(hi_handle->eng_list.bucket_table[bucket]));
 					*data = b_obj->data;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
 
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
 			break;
@@ -230,7 +229,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 		case COLL_ENG_LIST_HASH:
 			{
 			hi_bucket_hl_obj_t *b_obj;
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			uint32_t key_hash = hi_handle->hash2_func(key, keylen);
 			lhi_list_for_each_entry(b_obj, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 
@@ -239,21 +238,21 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 				 * experience collisions ... ;-)
 				 */
 				if (key_hash == b_obj->key_hash &&
-						hi_handle->key_cmp(key, b_obj->key)) {
+						hi_handle->key_cmp(key, b_obj->key) == 0) {
 					*data = b_obj->data;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
 
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
 
 		case COLL_ENG_LIST_MTF_HASH:
 			{
 			hi_bucket_hl_obj_t *b_obj;
-			lhi_pthread_lock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			uint32_t key_hash = hi_handle->hash2_func(key, keylen);
 			lhi_list_for_each_entry(b_obj, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 
@@ -262,16 +261,16 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 				 * experience collisions ... ;-)
 				 */
 				if (key_hash == b_obj->key_hash &&
-						hi_handle->key_cmp(key, b_obj->key)) {
+						hi_handle->key_cmp(key, b_obj->key) == 0) {
 					lhi_list_del(&b_obj->list);
 					lhi_list_add_head(&b_obj->list, &(hi_handle->eng_list.bucket_table[bucket]));
 					*data = b_obj->data;
-					lhi_pthread_unlock(hi_handle->mutex_lock);
+					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
 
 			}
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_NOKEY;
 			}
 			break;

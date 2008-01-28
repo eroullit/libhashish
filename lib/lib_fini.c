@@ -41,7 +41,7 @@ int hi_fini(hi_handle_t *hi_handle)
 {
 	uint32_t ret;
 
-	lhi_pthread_lock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 
 	switch (hi_handle->coll_eng) {
 
@@ -59,20 +59,17 @@ int hi_fini(hi_handle_t *hi_handle)
 			break;
 
 		case COLL_ENG_RBTREE:
-			break;
-
+			ret = lhi_fini_rbtree(hi_handle);
 		default:
 			return HI_ERR_INTERNAL;
 
 	}
-
-	lhi_pthread_unlock(hi_handle->mutex_lock);
-	lhi_pthread_destroy(hi_handle->mutex_lock);
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_destroy(hi_handle->mutex_lock);
 
 	/* cleanup the mutex lock */
 	free(hi_handle);
 	hi_handle = NULL;
-
 
 	return SUCCESS;
 }

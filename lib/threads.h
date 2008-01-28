@@ -26,23 +26,35 @@
 #include "libhashish.h"
 
 #ifdef THREADSAFE
+#define lhi_pthread_mutex_lock(a)	pthread_mutex_lock((a))
+#define lhi_pthread_mutex_unlock(a)	pthread_mutex_unlock((a))
+static int __attribute__((unused)) lhi_pthread_mutex_init(pthread_mutex_t **a ,  const  pthread_mutexattr_t *b)
+{
+	int ret = HI_ERR_SYSTEM;
+	pthread_mutex_t *p = malloc(sizeof(*p));
+	if (p) {
+		ret = pthread_mutex_init(p, b);
+		*a = p;
+	}
+	return ret;
+}
 
-int lhi_pthread_init(pthread_mutex_t **,
-		const pthread_mutexattr_t *);
-void lhi_pthread_destroy(pthread_mutex_t *);
-void lhi_pthread_lock(pthread_mutex_t *);
-void lhi_pthread_unlock(pthread_mutex_t *);
 
-#else
+static int __attribute__((unused)) lhi_pthread_mutex_destroy(pthread_mutex_t *a)
+{
+	int r = pthread_mutex_destroy(a);
+	if (r == 0)
+		free(a);
+	return r;
+}
 
-/* if this package isn't compiled with
- * THREADSAFE that this NULL macros are expanded
- */
-static inline int lhi_pthread_init(pthread_mutex_t **a,
-		const pthread_mutexattr_t *b)  { (void)a; (void)b; return 0; }
-static void __attribute__((unused)) lhi_pthread_destroy(pthread_mutex_t *a) { (void)a; }
-static void lhi_pthread_lock(pthread_mutex_t * a) { (void)a; }
-static void lhi_pthread_unlock(pthread_mutex_t * a) { (void)a; }
+#define lhi_pthread_mutex_destroy(a)	do { } while(0)
+
+#else /* THREADSAFE */
+
+#define lhi_pthread_mutex_init(a ,b )	do { } while(0)
+#define lhi_pthread_mutex_lock(a)	do { } while(0)
+#define lhi_pthread_mutex_unlock(a)	do { } while(0)
 
 #endif
 

@@ -53,10 +53,10 @@ int lhi_lookup_array(const hi_handle_t *hi_handle,
 		case COLL_ENG_ARRAY_DYN_HASH:
 		case COLL_ENG_ARRAY_HASH:
 			for (i = 0; i < hi_handle->eng_array.bucket_array_slot_size[bucket]; i++) {
-				if (hi_handle->key_cmp(key,
-							hi_handle->eng_array.bucket_array[bucket][i].key)) {
+				int diff = hi_handle->key_cmp(key,
+							hi_handle->eng_array.bucket_array[bucket][i].key);
+				if (diff == 0)
 					return SUCCESS;
-				}
 			}
 			break;
 
@@ -109,7 +109,7 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 {
 	uint32_t i;
 
-	lhi_pthread_lock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 	for (i = 0; i < hi_handle->table_size; i++) {
 		free(hi_handle->eng_array.bucket_array[i]);
 	}
@@ -117,7 +117,7 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 	free(hi_handle->eng_array.bucket_array_slot_size);
 	free(hi_handle->eng_array.bucket_array_slot_max);
 	free(hi_handle->bucket_size);
-	lhi_pthread_unlock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
 	return SUCCESS;
 }

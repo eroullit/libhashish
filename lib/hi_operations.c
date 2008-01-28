@@ -41,7 +41,7 @@
  * @return SUCCESS if found or FAILURE when not found
  */
 
-int hi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
+int hi_lookup(hi_handle_t *hi_handle, void *key, uint32_t keylen)
 {
 	switch (hi_handle->coll_eng) {
 
@@ -57,8 +57,8 @@ int hi_lookup(const hi_handle_t *hi_handle, void *key, uint32_t keylen)
 		case COLL_ENG_ARRAY_DYN_HASH:
 			return lhi_lookup_array(hi_handle, key, keylen);
 
-		case COLL_ENG_RBTREE:
-			return lhi_lookup_rbtree(hi_handle, key, keylen);
+		case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
+			return FAILURE;
 
 		default:
 			return HI_ERR_INTERNAL;
@@ -114,12 +114,13 @@ int hi_get(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data
 			return lhi_get_list(hi_handle, key, keylen, data);
 			break;
 
+		case COLL_ENG_RBTREE:
+			return lhi_get_rbtree(hi_handle, key, keylen, data);
 		/* FIXME */
 		case COLL_ENG_ARRAY:
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
-		case COLL_ENG_RBTREE:
 		default:
 			return HI_ERR_INTERNAL;
 	}
@@ -148,11 +149,12 @@ int hi_remove(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **d
 		case COLL_ENG_LIST_MTF_HASH:
 			return lhi_remove_list(hi_handle, key, keylen, data);
 
+		case COLL_ENG_RBTREE:
+			return lhi_remove_rbtree(hi_handle, key, keylen, data);
 		case COLL_ENG_ARRAY:
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
-		case COLL_ENG_RBTREE:
 		default:
 			return HI_ERR_INTERNAL;
 	}
@@ -167,14 +169,14 @@ int hi_remove(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **d
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
+int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
 {
 	int ret; uint32_t bucket;
 
-	lhi_pthread_lock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 
 	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) { /* already in hash or error */
-		lhi_pthread_unlock(hi_handle->mutex_lock);
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 		return HI_ERR_DUPKEY;
 	}
 
@@ -185,7 +187,7 @@ int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *da
 		case COLL_ENG_LIST_MTF:
 		case COLL_ENG_LIST_MTF_HASH:
 			ret = lhi_insert_list((hi_handle_t *)hi_handle, key, keylen, data);
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return ret;
 
 		case COLL_ENG_ARRAY:
@@ -193,19 +195,19 @@ int hi_insert(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void *da
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
 			ret = lhi_insert_array((hi_handle_t *)hi_handle, key, keylen, data);
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return ret;
 
 		case COLL_ENG_RBTREE:
 			ret = lhi_insert_rbtree(hi_handle, key, keylen, data);
-			lhi_pthread_unlock(hi_handle->mutex_lock);
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return ret;
 
 		default:
 			return HI_ERR_INTERNAL;
 	}
 
-	lhi_pthread_unlock(hi_handle->mutex_lock);
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
 	return HI_ERR_INTERNAL;
 }

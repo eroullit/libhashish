@@ -203,19 +203,32 @@ static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 	return SUCCESS;
 }
 
+
 static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 {
-	int ret;
+	uint32_t i;
 
-	ret =  XMALLOC((void **) &hi_hndl->eng_rbtree.rb_root,
-			hi_hndl->table_size * sizeof(struct rb_root));
-	if (ret != 0) {
+	printf("size %u, rbeng %u, rb %u\n", hi_hndl->table_size, sizeof(hi_hndl->eng_rbtree),sizeof(struct rb_root));
+	hi_hndl->eng_rbtree.trees = calloc(sizeof(struct __hi_rb_tree), hi_hndl->table_size);
+	if (!hi_hndl->eng_rbtree.trees)
 		return HI_ERR_SYSTEM;
+
+	lhi_pthread_mutex_lock(hi_hndl->mutex_lock);
+
+	for (i = 0; i < hi_hndl->table_size; i++) {
+		hi_hndl->eng_rbtree.trees[i].root.rb_node = NULL;
+		hi_hndl->eng_rbtree.trees[i].lock = NULL;
+		if (lhi_pthread_mutex_init(&hi_hndl->eng_rbtree.trees[i].lock, NULL))
+			goto out_err;
 	}
-
-
+	lhi_pthread_mutex_unlock(hi_hndl->mutex_lock);
 	return SUCCESS;
+ out_err:
+	while (i--)
+		lhi_pthread_mutex_destroy(hi_hndl->eng_rbtree.rb_array[i].lock);
+	return HI_ERR_SYSTEM;
 }
+
 
 static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 {
@@ -289,11 +302,10 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 	/* Initiate mutex lock if build with thread
 	 * support. */
 	hi_handle->mutex_lock = NULL;
-	ret = lhi_pthread_init(&hi_handle->mutex_lock, NULL);
+	ret = lhi_pthread_mutex_init(&hi_handle->mutex_lock, NULL);
 	if (ret != 0) {
 		return HI_ERR_SYSTEM;
 	}
-
 
 	/* Create internal data structure for
 	 * list, array or rbtree */

@@ -30,7 +30,7 @@
 
 int hi_cmp_str(const uint8_t *key1, const uint8_t *key2)
 {
-	 return (!strcmp((char *)key1, (char *)key2));
+	return strcmp((char *)key1, (char *)key2);
 }
 
 int hi_cmp_int32(const uint8_t *key1, const uint8_t *key2)
