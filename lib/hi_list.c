@@ -40,7 +40,7 @@
  * @return SUCCESS if found or FAILURE when not found
  */
 
-int lhi_lookup_list(const hi_handle_t *hi_handle,
+int lhi_lookup_list(hi_handle_t *hi_handle,
 		void *key, uint32_t keylen)
 {
 	uint32_t bucket;

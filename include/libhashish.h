@@ -143,7 +143,6 @@ typedef struct __hi_handle {
 	uint32_t (*hash2_func)(const uint8_t*, uint32_t);
 	int (*key_cmp)(const uint8_t *, const uint8_t *);
 	struct my_stuff * (*rb_search)(struct rb_root *, void *);
-	void (*rb_insert)(struct rb_root *, void *);
 
 	/* statistic data */
 
@@ -163,7 +162,7 @@ typedef struct __hi_handle {
 			uint32_t    *bucket_array_slot_max;
 		} eng_array;
 		struct {
-			struct rb_root *rb_root;
+			struct rb_root *rb_array;
 		} eng_rbtree;
 	};
 
@@ -214,8 +213,8 @@ int hi_cmp_str(const uint8_t *, const uint8_t *);
 int hi_cmp_int32(const uint8_t *, const uint8_t *);
 
 /* hi_operations */
-int hi_lookup(const hi_handle_t *, void *, uint32_t);
-int hi_insert(const hi_handle_t *, void *, uint32_t, void *);
+int hi_lookup(hi_handle_t *, void *, uint32_t);
+int hi_insert(hi_handle_t *, void *, uint32_t, void *);
 int hi_get(const hi_handle_t *, void *, uint32_t, void **);
 int hi_remove(const hi_handle_t *, void *, uint32_t, void **);
 
