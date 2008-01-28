@@ -105,6 +105,11 @@ struct hi_init_set {
 	int (*key_cmp)(const uint8_t *, const uint8_t *);
 };
 
+struct __hi_rb_tree {
+	struct rb_root root;
+	pthread_mutex_t *lock;
+};
+
  typedef struct __hi_bucket_obj {
      uint32_t                 key_len; /* key length in bytes */
      void                    *key;
@@ -162,7 +167,7 @@ typedef struct __hi_handle {
 			uint32_t    *bucket_array_slot_max;
 		} eng_array;
 		struct {
-			struct rb_root *rb_array;
+			struct __hi_rb_tree *trees;
 		} eng_rbtree;
 	};
 

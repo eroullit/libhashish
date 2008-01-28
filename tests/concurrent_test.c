@@ -178,13 +178,13 @@ static void *thread_main(void *args)
 	return NULL;
 }
 
-int main(int ac, char **av)
+
+
+static int test_hashtable(enum coll_eng collision_engine)
 {
 	int ret = 0, i;
 	pthread_t thread_id[MAXTHREAD];
 	struct hi_init_set hi_set;
-
-	(void) ac; (void) av;
 
 	fputs("# concurrent test\n", stderr);
 
@@ -192,7 +192,7 @@ int main(int ac, char **av)
 	hi_set_zero(&hi_set);
 	hi_set_bucket_size(&hi_set, 100);
 	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_coll_eng(&hi_set, collision_engine);
 	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 
 	ret = hi_create(&hi_hndl, &hi_set);
@@ -218,8 +218,19 @@ int main(int ac, char **av)
 	hi_fini(hi_hndl);
 
 	fprintf(stderr, " passed\n");
-
 	return ret;
+}
+
+
+int main(int ac, char **av)
+{
+	(void) ac; (void) av;
+
+	fputs("# concurrent test: COLL_ENG_RBTREE\n", stderr);
+	test_hashtable(COLL_ENG_RBTREE);
+
+	fputs("# concurrent test: COLL_ENG_LIST\n", stderr);
+	return test_hashtable(COLL_ENG_LIST);
 }
 
 
