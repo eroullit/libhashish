@@ -48,10 +48,9 @@ static int __attribute__((unused)) lhi_pthread_mutex_destroy(pthread_mutex_t *a)
 	return r;
 }
 
-#define lhi_pthread_mutex_destroy(a)	do { } while(0)
-
 #else /* THREADSAFE */
 
+#define lhi_pthread_mutex_destroy(a)	do { } while(0)
 #define lhi_pthread_mutex_init(a ,b )	do { } while(0)
 #define lhi_pthread_mutex_lock(a)	do { } while(0)
 #define lhi_pthread_mutex_unlock(a)	do { } while(0)
