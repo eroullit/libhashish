@@ -154,8 +154,6 @@ static void concurrent_test(int num)
 	}
 
 	fprintf(stderr, "-%d", num);
-
-	return;
 }
 
 static void *thread_main(void *args)
@@ -174,7 +172,7 @@ static void *thread_main(void *args)
 			exit(23);
 			break;
 	}
-
+	free(args);
 	return NULL;
 }
 
@@ -196,18 +194,26 @@ static int test_hashtable(enum coll_eng collision_engine)
 	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 
 	ret = hi_create(&hi_hndl, &hi_set);
-	if (ret != 0)
+	if (ret != 0) {
 		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
 				strerror(errno) : hi_strerror(ret));
+		return ret;
+	}
 
-	for	(i = 0; i < MAXTHREAD; i++) {
+	for (i = 0; i < MAXTHREAD; i++) {
 		int *num = malloc(sizeof(int *));
+
 		if (!num) {
 			perror("malloc");
 			exit(1);
 		}
 		*num = i;
-		pthread_create(&thread_id[i], NULL, thread_main, num);
+		ret = pthread_create(&thread_id[i], NULL, thread_main, num);
+		if (ret) {
+			fprintf(stderr, "pthread_create failed: %s\n", strerror(ret));
+			free(num);
+			return ret;
+		}
 	}
 
 	fputs("# + -> thread startup; - -> thread shutdown\n", stderr);
