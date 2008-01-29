@@ -225,7 +225,7 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 	return SUCCESS;
  out_err:
 	while (i--)
-		lhi_pthread_mutex_destroy(hi_hndl->eng_rbtree.rb_array[i].lock);
+		lhi_pthread_mutex_destroy(hi_hndl->eng_rbtree.trees[i].lock);
 	return HI_ERR_SYSTEM;
 }
 
