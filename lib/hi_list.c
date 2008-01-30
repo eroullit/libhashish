@@ -56,7 +56,6 @@ int lhi_lookup_list(hi_handle_t *hi_handle,
 			lhi_list_for_each_entry(b_obj,
 					&(hi_handle->eng_list.bucket_table[bucket]), list) {
 				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
-					fprintf(stderr, "\nDEBUG new: %s old: %s\n\n", b_obj->key, key);
 					return SUCCESS;
 				}
 			}
