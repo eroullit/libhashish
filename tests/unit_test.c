@@ -117,7 +117,6 @@ static void check_list_remove(void)
 
 	hi_handle_t *hi_hndl2;
 	struct hi_init_set hi_set2;
-	void *data_ret2;
 
 	fprintf(stderr, " o list remove tests (COLL_ENG_LIST_MTF) ...");
 
@@ -216,7 +215,6 @@ static void check_list_get(void)
 
 	hi_handle_t *hi_hndl2;
 	struct hi_init_set hi_set2;
-	void *data_ret2;
 
 	fprintf(stderr, " o list get tests (COLL_ENG_LIST_MTF) ...");
 

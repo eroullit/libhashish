@@ -81,11 +81,9 @@ static void insert_much_and_free_loop(void)
 	char *ptr_bucket[TEST_ITER_NO][2];
 	struct drand48_data seed_data;
 	unsigned long seed;
-	long int rand_res;
 
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
-	void *data_ret;
 
 	hi_set_zero(&hi_set);
 	hi_set_bucket_size(&hi_set, 100);
