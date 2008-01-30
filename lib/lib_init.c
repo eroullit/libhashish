@@ -208,7 +208,6 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 {
 	uint32_t i;
 
-	printf("size %u, rbeng %u, rb %u\n", hi_hndl->table_size, sizeof(hi_hndl->eng_rbtree),sizeof(struct rb_root));
 	hi_hndl->eng_rbtree.trees = calloc(sizeof(struct __hi_rb_tree), hi_hndl->table_size);
 	if (!hi_hndl->eng_rbtree.trees)
 		return HI_ERR_SYSTEM;
