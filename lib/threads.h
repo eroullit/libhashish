@@ -50,10 +50,13 @@ static int __attribute__((unused)) lhi_pthread_mutex_destroy(pthread_mutex_t *a)
 
 #else /* THREADSAFE */
 
-#define lhi_pthread_mutex_destroy(a)	do { } while(0)
-#define lhi_pthread_mutex_init(a ,b )	do { } while(0)
-#define lhi_pthread_mutex_lock(a)	do { } while(0)
-#define lhi_pthread_mutex_unlock(a)	do { } while(0)
+static inline lhi_pthread_mutex_lock(__attribute__((unused)) void* a) { return 0; }
+static inline lhi_pthread_mutex_unlock(__attribute__((unused)) void* a) { return 0; }
+static inline __attribute__((unused)) lhi_pthread_mutex_destroy(
+		__attribute__((unused)) void* a) { return 0; }
+static inline __attribute__((unused)) lhi_pthread_mutex_init(
+		__attribute__((unused)) void* a,
+		__attribute__((unused)) void *b) { return 0; }
 
 #endif
 
