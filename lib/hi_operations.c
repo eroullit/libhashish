@@ -68,30 +68,7 @@ int hi_lookup(hi_handle_t *hi_handle, void *key, uint32_t keylen)
 	return HI_ERR_INTERNAL;
 }
 
-/**
- * Remove a bucket from the list.
- * This function only do some list handling. It is up to the callee to
- * free this object and do some stat keeping (bucket_size, etc.).
- *
- * @arg hi_bucket_obj the object to remove from bucket list
- */
-void lhi_bucket_obj_remove(hi_bucket_obj_t *hi_bucket_obj)
-{
 
-}
-
-/**
- * lhi_bucket_remove cleans a bucket completely. No further
- * free() is needed (and imposible ;).
- *
- * @arg hi_handle the hashish handle
- * @arg bucket_index the index to the bucket
- * @return SUCCESS or negative error value and set lhi_errno (see * hi_geterror())
- */
-int lhi_bucket_remove(hi_handle_t *hi_handle, unsigned int bucket_index)
-{
-
-}
 
 /**
  * hi_get return for a given key the correspond data entry
