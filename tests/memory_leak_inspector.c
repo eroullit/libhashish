@@ -74,7 +74,7 @@
 
 hi_handle_t *hi_handle;
 
-static void insert_much_and_free_loop(void)
+static void insert_much_and_free_loop(enum coll_eng engine)
 {
 	int i, ret;
 	void *data;
@@ -88,7 +88,7 @@ static void insert_much_and_free_loop(void)
 	hi_set_zero(&hi_set);
 	hi_set_bucket_size(&hi_set, 100);
 	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
+	hi_set_coll_eng(&hi_set, engine);
 	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 
 
@@ -152,10 +152,16 @@ static void insert_much_and_free_loop(void)
 }
 
 
-int main(int ac, char **av)
+static void do_test(enum coll_eng engine)
 {
 	int i = 10;
 
+	while (i--)
+		insert_much_and_free_loop(engine);
+}
+
+int main(int ac, char **av)
+{
 	(void) ac;
 	(void) av;
 
@@ -163,8 +169,10 @@ int main(int ac, char **av)
 
 	//init_seed();
 
-	while (--i)
-		insert_much_and_free_loop();
+	fputs("testing COLL_ENG_LIST\n", stderr);
+	do_test(COLL_ENG_LIST);
+	fputs("testing COLL_ENG_RBTREE\n", stderr);
+	do_test(COLL_ENG_RBTREE);
 
 	fprintf(stderr, "... finished\n");
 
