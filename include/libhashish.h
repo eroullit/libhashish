@@ -74,6 +74,8 @@ enum hash_alg {
 	__HI_HASH_MAX
 };
 
+#define	HI_HASH_DEFAULT HI_HASH_HSIEH
+
 
 #define	HI_HASH_MAX (__HI_HASH_MAX - 1)
 
@@ -230,6 +232,12 @@ static inline uint32_t hi_no_objects(const hi_handle_t *h)
 {
 	return h->no_objects;
 }
+
+/* string specific functions */
+int hi_init_str(hi_handle_t **, const uint32_t);
+int hi_insert_str(hi_handle_t *, const char *, const void *);
+int hi_get_str(hi_handle_t *, const char *, void **);
+int hi_remove_str(hi_handle_t *, const char *, void **);
 
 
 #ifdef __cplusplus

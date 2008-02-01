@@ -30,11 +30,11 @@ LIBHASHSTATIC = $(LIBNAME).a
 all: $(LIBHASH) $(LIBHASHSTATIC) $(CIN)
 
 $(LIBHASH): $(OBJ) ../Make.Rules
-	@echo "### build dynamic library (libhashish.{so,a})"
+	@echo "### build dynamic library (libhashish.so)"
 	$(LD) $(LDFLAGS) --as-needed -soname=$(LIBHASHNAME) -lpthread -x -shared -o $@ $(OBJ)
 
 $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
-	@echo "### build static archiv"
+	@echo "### build static archiv (libhashish.a)"
 	$(AR) cr $@ $(OBJ) 
 	$(RANLIB) $@
 # This is a workaround that the test suite can be linked

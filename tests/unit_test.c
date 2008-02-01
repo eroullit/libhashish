@@ -452,6 +452,31 @@ static void check_set_init(void)
 	fprintf(stderr, " passed\n");
 }
 
+static void check_str_wrapper(void)
+{
+	int ret;
+	hi_handle_t *hi_handle;
+	const char *key = "23";
+	const char *data = "data element";
+	void *data_ptr;
+
+	fprintf(stderr, " o string wrapper functions tests ...");
+
+	ret = hi_init_str(&hi_handle, 23);
+	xassert(!ret);
+
+	ret = hi_insert_str(hi_handle, key, data);
+	xassert(!ret);
+
+	hi_get_str(hi_handle, key, &data_ptr);
+	xassert(!ret);
+
+	hi_fini(hi_handle);
+	xassert(!ret);
+
+	fprintf(stderr, " passed\n");
+}
+
 
 int
 main(void)
@@ -467,6 +492,8 @@ main(void)
 
 	check_list_get();
 	check_list_remove();
+
+	check_str_wrapper();
 
 	return 0;
 }
