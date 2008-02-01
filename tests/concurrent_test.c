@@ -231,6 +231,9 @@ static int test_hashtable(enum coll_eng collision_engine)
 int main(int ac, char **av)
 {
 	(void) ac; (void) av;
+#ifndef THREADSAFE
+	fputs("WARNING: library compiled without --enable-thread-locking ?!\n", stderr);
+#endif
 
 	fputs("# concurrent test: COLL_ENG_RBTREE\n", stderr);
 	test_hashtable(COLL_ENG_RBTREE);
