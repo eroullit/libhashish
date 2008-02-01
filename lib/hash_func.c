@@ -18,6 +18,8 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "privlibhashish.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -25,9 +27,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-
-#include "libhashish.h"
-#include "privlibhashish.h"
 
 
 /**

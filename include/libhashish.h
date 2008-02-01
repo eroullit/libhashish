@@ -21,8 +21,6 @@
 #ifndef _LIB_HASHISH_H
 #define	_LIB_HASHISH_H
 
-#include "../config.h"
-
 #include <inttypes.h> /* include stdint.h */
 #include <stdio.h>
 #include <pthread.h>

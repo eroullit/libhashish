@@ -6,7 +6,6 @@
  * really clutter hash_func.c otherwise.
  */
 
-/* #include "libhashish.h" */
 #include "privlibhashish.h"
 
 uint32_t lhi_hash_goulburn(const uint8_t *cp, uint32_t len)

@@ -26,7 +26,6 @@
 #include <unistd.h>
 
 #include "privlibhashish.h"
-#include "libhashish.h"
 #include "list.h"
 
 #include "threads.h"

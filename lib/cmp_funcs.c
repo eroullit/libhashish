@@ -19,6 +19,8 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "privlibhashish.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -26,7 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "libhashish.h"
 
 int hi_cmp_str(const uint8_t *key1, const uint8_t *key2)
 {

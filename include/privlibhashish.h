@@ -21,8 +21,8 @@
 #ifndef _LIB_PRIVHASHISH_H
 #define	_LIB_PRIVHASHISH_H
 
-#include "libhashish.h"
 #include "../config.h"
+#include "libhashish.h"
 
 #define SUCCESS 0
 #define FAILURE -1
