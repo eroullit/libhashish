@@ -69,11 +69,11 @@ enum hash_alg {
 	HI_HASH_WEINB,
 	HI_HASH_KORZENDORFER1,
 	HI_HASH_KORZENDORFER2,
+	HI_HASH_SHA1,
 	__HI_HASH_MAX
 };
 
 #define	HI_HASH_DEFAULT HI_HASH_HSIEH
-
 
 #define	HI_HASH_MAX (__HI_HASH_MAX - 1)
 
@@ -191,6 +191,7 @@ uint32_t lhi_hash_kr(const uint8_t *, uint32_t);
 uint32_t lhi_hash_sdbm(const uint8_t *, uint32_t);
 uint32_t lhi_hash_korzendorfer1(const uint8_t *, uint32_t);
 uint32_t lhi_hash_korzendorfer2(const uint8_t *, uint32_t);
+uint32_t lhi_hash_sha1(const uint8_t *, uint32_t);
 
 /* hi_fini.c */
 int hi_fini(hi_handle_t *);
