@@ -360,7 +360,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 			rbnode = &parent->rb_left;
 	}
 	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
-	return FAILURE;
+	return HI_ERR_NOKEY;
 }
 
 

@@ -60,6 +60,7 @@ int hi_fini(hi_handle_t *hi_handle)
 
 		case COLL_ENG_RBTREE:
 			ret = lhi_fini_rbtree(hi_handle);
+			break;
 		default:
 			return HI_ERR_INTERNAL;
 
