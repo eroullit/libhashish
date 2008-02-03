@@ -32,17 +32,6 @@
 #include "list.h"
 #include "tests.h"
 
-#undef xassert
-/* if 0 -> raise error */
-#define	xassert(x)	\
-	do {	\
-		if(!x) {	\
-			fprintf(stderr, "assert failed: %s:%d (function: %s)\n",	\
-					__FILE__, __LINE__, __FUNCTION__);		\
-			exit(1);	\
-		}	\
-	} while (0)
-
 #define	TESTSTRING "SURVEILLANCE"
 
 #define	TEST_ITER_NO 2048
@@ -61,396 +50,254 @@ static uint32_t dumb_hash_func(const uint8_t *key,
 	return 1;
 }
 
+static void print_error(int ret)
+{
+	const char *msg;
 
-static void check_list_remove(void)
+	if (ret == HI_ERR_SYSTEM)
+		msg = strerror(errno);
+	else
+		msg = hi_strerror(ret);
+
+	fprintf(stderr, "Error: %s\n", msg);
+}
+
+
+static void check_data(const char *data, const char *expected)
+{
+	if (strcmp(data, expected)) {
+		fprintf(stderr, "strcmp failed: got \"%s\", expected \"%s\"\n", data, expected);
+		exit(1);
+	}
+}
+
+
+
+static void check_remove(enum coll_eng engine)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
 	void *data_ret;
 
-	/** COLL_ENG_LIST **/
-	fprintf(stderr, " o list remove test (COLL_ENG_LIST) ...");
-
 	hi_set_zero(&hi_set);
-	hi_set_bucket_size(&hi_set, 100);
-	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
-	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	ret = hi_set_bucket_size(&hi_set, 100);
+	assert(ret == 0);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	assert(ret == 0);
+	ret = hi_set_coll_eng(&hi_set, engine);
+	assert(ret == 0);
+	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	assert(ret == 0);
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
+		print_error(ret);
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 0);
 
-	if (hi_hndl->no_objects != 0) {
-		fprintf(stderr, "failed! Wront number of objects ...");
-		exit(1);
-	}
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 1);
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 2);
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), (void *) "DATAX");
-	xassert(!ret);
+	assert(hi_hndl->no_objects == 3);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
+		print_error(ret);
+	assert(ret == 0);
+	check_data(data_ret, "DATA");
+	assert(hi_hndl->no_objects == 2);
+	data_ret = NULL;
 
-	if (hi_hndl->no_objects != 2) {
-		fprintf(stderr, "failed! Wront number of objects ...");
-		exit(1);
-	}
-
-	fprintf(stderr, " passed\n");
-
-	/** COLL_ENG_LIST_MTF **/
-
-	hi_handle_t *hi_hndl2;
-	struct hi_init_set hi_set2;
-
-	fprintf(stderr, " o list remove tests (COLL_ENG_LIST_MTF) ...");
-
-	hi_set_zero(&hi_set2);
-	hi_set_bucket_size(&hi_set2, 100);
-	hi_set_hash_alg(&hi_set2, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set2, COLL_ENG_LIST_MTF);
-	hi_set_key_cmp_func(&hi_set2, hi_cmp_str);
-
-	ret = hi_create(&hi_hndl2, &hi_set2);
+	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ret);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
+		print_error(ret);
+	assert(ret == 0);
+	check_data(data_ret, "DATAX");
+	assert(hi_hndl->no_objects == 1);
+	data_ret = NULL;
 
-	if (hi_hndl2->no_objects != 0) {
-		fprintf(stderr, "failed! Wrong number of objects ...");
-		exit(1);
-	}
-
-	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-
-	if (hi_hndl2->no_objects != 3) {
-		fprintf(stderr, "failed! Wrong number of objects ...");
-		exit(1);
-	}
-
-	ret = hi_remove(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
+		print_error(ret);
+	assert(ret == 0);
+	check_data(data_ret, "DATAX");
+	assert(hi_hndl->no_objects == 0);
 
-	if (hi_hndl2->no_objects != 2) {
-		fprintf(stderr, "failed! Wrong number of objects ...");
-		exit(1);
-	}
+	/* must fail */
+	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	assert(ret == HI_ERR_NOKEY);
 
+	ret = hi_fini(hi_hndl);
+	assert(ret == 0);
 
-	fprintf(stderr, " passed\n");
 }
 
 
-static void check_list_get(void)
+static void check_get_remove(enum coll_eng engine)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
 	void *data_ret;
 
-	/** COLL_ENG_LIST **/
-	fprintf(stderr, " o list get test (COLL_ENG_LIST) ...");
-
 	hi_set_zero(&hi_set);
-	hi_set_bucket_size(&hi_set, 100);
-	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
-	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	ret = hi_set_bucket_size(&hi_set, 100);
+	assert(ret == 0);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	assert(ret == 0);
+	ret = hi_set_coll_eng(&hi_set, engine);
+	assert(ret == 0);
+	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	assert(ret == 0);
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
+		print_error(ret);
+	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), (void *) "DATAX");
-	xassert(!ret);
+	assert(hi_hndl->no_objects == 0);
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 1);
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 2);
+	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 3);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ret);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
+		print_error(ret);
+	check_data(data_ret, "DATA");
+	assert(hi_hndl->no_objects == 3);
 
-	fprintf(stderr, " passed\n");
-
-	/** COLL_ENG_LIST_MTF **/
-
-	hi_handle_t *hi_hndl2;
-	struct hi_init_set hi_set2;
-
-	fprintf(stderr, " o list get tests (COLL_ENG_LIST_MTF) ...");
-
-	hi_set_zero(&hi_set2);
-	hi_set_bucket_size(&hi_set2, 100);
-	hi_set_hash_alg(&hi_set2, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set2, COLL_ENG_LIST_MTF);
-	hi_set_key_cmp_func(&hi_set2, hi_cmp_str);
-
-	ret = hi_create(&hi_hndl2, &hi_set2);
+	ret = hi_get(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
+		print_error(ret);
+	check_data(data_ret, "DATAX");
+	assert(hi_hndl->no_objects == 3);
+	data_ret = NULL;
 
-	ret = hi_insert(hi_hndl2, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
+	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 2);
+	check_data(data_ret, "DATA");
+	data_ret = NULL;
+	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ret);
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 1);
+	ret = hi_remove(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
+	assert(ret == 0);
+	assert(hi_hndl->no_objects == 0);
+	check_data(data_ret, "DATAX");
 
-	ret = hi_insert(hi_hndl2, (void *) "key1", strlen("key1"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl2, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_get(hi_hndl2, (void *) "key", strlen("key"), &data_ret);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
-
-	fprintf(stderr, " passed\n");
-
-
-	/** COLL_ENG_LIST_HASH **/
-	hi_handle_t *hi_hndl3;
-	struct hi_init_set hi_set3;
-	void *data_ret3;
-
-	fprintf(stderr, " o list get tests (COLL_ENG_LIST_HASH) ...");
-
-	hi_set_zero(&hi_set3);
-	hi_set_bucket_size(&hi_set3, 100);
-	hi_set_hash_alg(&hi_set3, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set3, COLL_ENG_LIST_MTF);
-	hi_set_key_cmp_func(&hi_set3, hi_cmp_str);
-
-	ret = hi_create(&hi_hndl3, &hi_set3);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl3, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl3, (void *) "key1", strlen("key1"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl3, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_get(hi_hndl3, (void *) "key", strlen("key"), &data_ret3);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret3)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
-
-	fprintf(stderr, " passed\n");
-
-
-	/** COLL_ENG_LIST_MTF_HASH: **/
-	hi_handle_t *hi_hndl4;
-	struct hi_init_set hi_set4;
-	void *data_ret4;
-
-	fprintf(stderr, " o list get tests (COLL_ENG_LIST_MTF_HASH) ...");
-
-	hi_set_zero(&hi_set4);
-	hi_set_bucket_size(&hi_set4, 100);
-	hi_set_hash_alg(&hi_set4, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set4, COLL_ENG_LIST_MTF);
-	hi_set_key_cmp_func(&hi_set4, hi_cmp_str);
-
-	ret = hi_create(&hi_hndl4, &hi_set4);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl4, (void *) "key", strlen("key"), (void *) "DATA");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl4, (void *) "key1", strlen("key1"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl4, (void *) "key2", strlen("key2"), (void *) "DATAX");
-	xassert(!ret);
-
-	ret = hi_get(hi_hndl4, (void *) "key", strlen("key"), &data_ret4);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	if (strcmp("DATA", data_ret4)) {
-		fprintf(stderr, "failed! Can't get key ...");
-		exit(1);
-	}
-
-	fprintf(stderr, " passed\n");
+	ret = hi_fini(hi_hndl);
+	assert(ret == 0);
 }
 
-static void check_list_insert(void)
+
+static void check_insert(enum coll_eng engine)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
-
-	fprintf(stderr, " o list collision engine insertion  tests ...");
+	void *data_ptr = (void *) 0xdeadbeef;
 
 	hi_set_zero(&hi_set);
-	hi_set_bucket_size(&hi_set, 100);
-	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
-	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	ret = hi_set_bucket_size(&hi_set, 100);
+	assert(ret == 0);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	assert(ret == 0);
+	ret = hi_set_coll_eng(&hi_set, engine);
+	assert(ret == 0);
+	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	assert(ret == 0);
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
+		print_error(ret);
+	assert(ret == 0);
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
-	xassert(!ret);
+	assert(ret == 0);
 
 	/* same key -> must fail */
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
-	xassert(ret);
+	assert(ret == HI_ERR_DUPKEY);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
-	ret = hi_lookup(hi_hndl, (void *) "key", strlen("key"));
-	xassert(!ret);
+	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	assert(ret == 0);
+	assert(data_ptr == NULL);
+	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	assert(ret == 0);
+	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	assert(ret == HI_ERR_NOKEY);
 
-	fprintf(stderr, " passed\n");
+	ret = hi_fini(hi_hndl);
+	assert(ret == 0);
 }
 
-static void check_array_insert(void)
-{
-	int ret;
-	hi_handle_t *hi_hndl;
-	struct hi_init_set hi_set;
 
-	/** COLL_ENG_ARRAY **/
-	fprintf(stderr, " o array collision engine insertion  tests ...");
-
-	hi_set_zero(&hi_set);
-	hi_set_bucket_size(&hi_set, 100);
-	hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	hi_set_coll_eng(&hi_set, COLL_ENG_ARRAY);
-	hi_set_coll_eng_array_size(&hi_set, 5);
-	hi_set_key_cmp_func(&hi_set, hi_cmp_str);
-
-	ret = hi_create(&hi_hndl, &hi_set);
-	if (ret != 0)
-		fprintf(stderr, "Error %s\n", ret == HI_ERR_SYSTEM ?
-				strerror(errno) : hi_strerror(ret));
-	xassert(!ret);
-
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
-	xassert(!ret);
-
-	/* same key -> must fail */
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
-	xassert(ret);
-
-	/* key already in data structure -> must return 0 (SUCCESS) */
-	ret = hi_lookup(hi_hndl, (void *) "key", strlen("key"));
-	xassert(!ret);
-
-
-
-	fprintf(stderr, " passed\n");
-}
-
-static void check_set_init(void)
+static void check_hi_init_set(void)
 {
 	int ret;
 	struct hi_init_set hi_set;
 
-	fprintf(stderr, " o struct set initialize tests ...");
+	fputs(" o struct set initialize tests ...", stdout);
 
 	hi_set_zero(&hi_set);
 
 	/* test if a hash table size of 100
 	 * return the right values */
 	ret = hi_set_bucket_size(&hi_set, 100);
-	xassert(!ret);
+	assert(ret == 0);
 
 	/* trigger a failure - hash table size of
 	 * 0 is invalid */
 	ret = hi_set_bucket_size(&hi_set, 0);
-	xassert(ret);
+	assert(ret == HI_ERR_RANGE);
 
 	/* test for standard hashing algorithm - must pass */
 	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
-	xassert(!ret);
+	assert(ret == 0);
 
 	ret = hi_set_hash_func(&hi_set, dumb_hash_func);
-	xassert(!ret);
+	assert(ret == 0);
 
 	/* hash algorithm not supported test - must fail */
 	ret = hi_set_hash_alg(&hi_set, (unsigned int) -1);
-	xassert(ret);
+	assert(ret == HI_ERR_NOFUNC);
 
 	/* test for standard collision engine - must pass */
 	ret = hi_set_coll_eng(&hi_set, COLL_ENG_LIST);
-	xassert(!ret);
+	assert(ret == 0);
 
 	/* collision engine not supported test - must fail */
 	ret = hi_set_coll_eng(&hi_set, (unsigned int) -1);
-	xassert(ret);
+	assert(ret == HI_ERR_NOFUNC);
 
 	/* test compare functions - must pass */
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
-	xassert(!ret);
+	assert(ret == 0);
 
 	/* test compare functions - must fail */
 	ret = hi_set_key_cmp_func(&hi_set, NULL);
-	xassert(!!ret);
+	assert(ret == HI_ERR_NODATA);
 
-	fprintf(stderr, " passed\n");
+	puts(" passed");
 }
+
 
 static void check_str_wrapper(void)
 {
@@ -460,38 +307,48 @@ static void check_str_wrapper(void)
 	const char *data = "data element";
 	void *data_ptr;
 
-	fprintf(stderr, " o string wrapper functions tests ...");
+	fputs("o string wrapper functions tests ...", stdout);
 
 	ret = hi_init_str(&hi_handle, 23);
-	xassert(!ret);
+	assert(ret == 0);
 
 	ret = hi_insert_str(hi_handle, key, data);
-	xassert(!ret);
+	assert(ret == 0);
 
-	hi_get_str(hi_handle, key, &data_ptr);
-	xassert(!ret);
+	ret = hi_get_str(hi_handle, key, &data_ptr);
+	assert(ret == 0);
 
-	hi_fini(hi_handle);
-	xassert(!ret);
+	ret = hi_fini(hi_handle);
+	assert(ret == 0);
 
-	fprintf(stderr, " passed\n");
+	puts(" passed");
+}
+
+
+static void test_backend(enum coll_eng engine)
+{
+	puts("check insert");
+	check_insert(engine);
+
+	puts("check remove");
+	check_remove(engine);
+
+	puts("check get/remove");
+	check_get_remove(engine);
 }
 
 
 int
 main(void)
 {
-	//init_seed();
+	puts("Start test sequence");
 
-	fputs("Start test sequence\n", stderr);
+	check_hi_init_set();
 
-	check_set_init();
-
-	check_list_insert();
-	check_array_insert();
-
-	check_list_get();
-	check_list_remove();
+	puts("check COLL_ENG_LIST :");
+	test_backend(COLL_ENG_LIST);
+	puts("check COLL_ENG_RBTREE");
+	test_backend(COLL_ENG_RBTREE);
 
 	check_str_wrapper();
 
