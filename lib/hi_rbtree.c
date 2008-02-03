@@ -389,6 +389,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 			*res = (void *) lhi_entry->data;
 			rb_erase(parent, root);
 			free(lhi_entry);
+			--hi_handle->bucket_size[tree];
 			lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
 			return SUCCESS;
 		}
@@ -444,6 +445,7 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 
 	rb_link_node(&node_new->node, parent, rbnode);
 	rb_insert_color(&node_new->node, root);
+	hi_handle->bucket_size[tree]++;
 	ret = SUCCESS;
  out:
 	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
