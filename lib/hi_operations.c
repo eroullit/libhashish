@@ -41,33 +41,34 @@
  * @return SUCCESS if found or FAILURE when not found
  */
 
-int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
+static int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 {
+	int ret;
+
 	switch (hi_handle->coll_eng) {
-
-		case COLL_ENG_LIST:
-		case COLL_ENG_LIST_HASH:
-		case COLL_ENG_LIST_MTF:
-		case COLL_ENG_LIST_MTF_HASH:
-			return lhi_lookup_list(hi_handle, key, keylen);
-
-		case COLL_ENG_ARRAY:
-		case COLL_ENG_ARRAY_HASH:
-		case COLL_ENG_ARRAY_DYN:
-		case COLL_ENG_ARRAY_DYN_HASH:
-			return lhi_lookup_array(hi_handle, key, keylen);
-
-		case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
-			return FAILURE;
-
-		default:
-			return HI_ERR_INTERNAL;
+	case COLL_ENG_LIST:
+	case COLL_ENG_LIST_HASH:
+	case COLL_ENG_LIST_MTF:
+	case COLL_ENG_LIST_MTF_HASH:
+		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+		ret = lhi_lookup_list(hi_handle, key, keylen);
+		break;
+	case COLL_ENG_ARRAY:
+	case COLL_ENG_ARRAY_HASH:
+	case COLL_ENG_ARRAY_DYN:
+	case COLL_ENG_ARRAY_DYN_HASH:
+		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+		ret = lhi_lookup_array(hi_handle, key, keylen);
+		break;
+	case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
+		return FAILURE;
+	default:
+		return HI_ERR_INTERNAL;
 	}
 
-	/* catch rule */
-	return HI_ERR_INTERNAL;
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	return ret;
 }
-
 
 
 /**
@@ -149,12 +150,8 @@ int hi_insert(hi_handle_t *hi_handle, const void *key, uint32_t keylen, const vo
 {
 	int ret;
 
-	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-
-	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) { /* already in hash or error */
-		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) /* already in hash or error */
 		return HI_ERR_DUPKEY;
-	}
 
 	switch (hi_handle->coll_eng) {
 		case COLL_ENG_LIST:
@@ -176,10 +173,6 @@ int hi_insert(hi_handle_t *hi_handle, const void *key, uint32_t keylen, const vo
 			ret = HI_ERR_INTERNAL;
 			break;
 	}
-
-	if (ret == 0)
-		hi_handle->no_objects++;
-	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 	return ret;
 }
 

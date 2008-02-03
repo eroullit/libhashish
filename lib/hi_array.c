@@ -78,6 +78,8 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 {
 	uint32_t bucket;
 
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 	if (hi_handle->eng_array.bucket_array_slot_size[bucket] >=
 			hi_handle->eng_array.bucket_array_slot_max[bucket]) {
@@ -89,9 +91,9 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 		hi_handle->eng_array.bucket_array[bucket] = realloc(hi_handle->eng_array.bucket_array[bucket],
 				sizeof(hi_bucket_a_obj_t) * hi_handle->eng_array.bucket_array_slot_max[bucket]);
 		if (hi_handle->eng_array.bucket_array[bucket] == NULL) {
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_SYSTEM;
 		}
-
 	}
 
 	/* add key/data add next free slot */
@@ -99,6 +101,8 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 	hi_handle->eng_array.bucket_array[bucket][hi_handle->eng_array.bucket_array_slot_size[bucket]].data = data;
 
 	hi_handle->eng_array.bucket_array_slot_size[bucket]++;
+	hi_handle->no_objects++;
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
 	return SUCCESS;
 }

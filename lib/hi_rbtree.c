@@ -391,6 +391,10 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 			free(lhi_entry);
 			--hi_handle->bucket_size[tree];
 			lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+
+			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+			hi_handle->no_objects--;
+			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return SUCCESS;
 		}
 
@@ -449,6 +453,11 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 	ret = SUCCESS;
  out:
 	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+	if (ret == SUCCESS) { /* silly, but what can we do? 8-/ */
+		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+		hi_handle->no_objects++;
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	}
 	return ret;
 }
 

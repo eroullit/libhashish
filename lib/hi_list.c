@@ -100,64 +100,59 @@ int lhi_remove_list(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, void **data)
 {
 	uint32_t bucket;
+	int ret = SUCCESS;
 
-	bucket =  hi_handle->hash_func(key, keylen) % hi_handle->table_size;
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+
+	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 
 	switch (hi_handle->coll_eng) {
+	case COLL_ENG_LIST:
+	case COLL_ENG_LIST_MTF: {
+		hi_bucket_obj_t *b_obj, *p;
 
-		case COLL_ENG_LIST:
-		case COLL_ENG_LIST_MTF:
-			{
-			hi_bucket_obj_t *b_obj, *p;
-			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
-				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
-					*data = (void *) b_obj->data;
-					lhi_list_del(&b_obj->list);
-					free(b_obj);
-					--hi_handle->bucket_size[bucket];
-					--hi_handle->no_objects;
-					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-					return SUCCESS;
+		lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
+			if (hi_handle->key_cmp(key, b_obj->key) == 0) {
+				*data = (void *) b_obj->data;
+				lhi_list_del(&b_obj->list);
+				free(b_obj);
+				goto out_found;
 			}
-			}
-			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-			return HI_ERR_NOKEY;
-			}
-			break;
-
-		case COLL_ENG_LIST_HASH:
-		case COLL_ENG_LIST_MTF_HASH:
-			{
-			hi_bucket_hl_obj_t *b_obj, *p;
-			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-
-			uint32_t key_hash = hi_handle->hash2_func(key, keylen);
-			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
-
-				if (key_hash == b_obj->key_hash &&
-						hi_handle->key_cmp(key, b_obj->key) == 0) {
-
-					*data = (void *) b_obj->data;
-					lhi_list_del(&b_obj->list);
-					free(b_obj);
-					--hi_handle->bucket_size[bucket];
-					--hi_handle->no_objects;
-					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-					return SUCCESS;
-
-				}
-			}
-			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-			return HI_ERR_NOKEY;
-			}
-			break;
-
-		default:
-			return HI_ERR_INTERNAL;
+		}
+		ret = HI_ERR_NOKEY;
+		break;
 	}
+	case COLL_ENG_LIST_HASH:
+	case COLL_ENG_LIST_MTF_HASH: {
+		hi_bucket_hl_obj_t *b_obj, *p;
+		uint32_t key_hash = hi_handle->hash2_func(key, keylen);
 
+		lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
+			if (key_hash != b_obj->key_hash)
+				continue;
 
+			if (hi_handle->key_cmp(key, b_obj->key) == 0) {
+				*data = (void *) b_obj->data;
+				lhi_list_del(&b_obj->list);
+				free(b_obj);
+				goto out_found;
+			}
+		}
+		ret = HI_ERR_NOKEY;
+		break;
+	}
+	default:
+		ret = HI_ERR_INTERNAL;
+		break;
+	} /* switch */
+
+ out:
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	return ret;
+ out_found:
+	--hi_handle->bucket_size[bucket];
+	--hi_handle->no_objects;
+	goto out;
 }
 
 /**
@@ -290,23 +285,27 @@ int lhi_get_list(const hi_handle_t *hi_handle, const void *key,
 int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
-	int ret;
+	hi_bucket_obj_t *obj;
+	int ret = HI_ERR_SYSTEM;
 	uint32_t bucket;
 
-	hi_bucket_obj_t *obj;
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 	ret = XMALLOC((void **) &obj, sizeof(hi_bucket_obj_t));
 	if (ret != 0)
-		return HI_ERR_SYSTEM;
+		goto out;
 
 	obj->hi_handle = &hi_handle->eng_list.bucket_table[bucket];
 	lhi_list_add_tail(&obj->list, &hi_handle->eng_list.bucket_table[bucket]);
 	obj->key = key;
 	obj->data = data;
 	hi_handle->bucket_size[bucket]++;
+	ret = SUCCESS;
+ out:
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
-	return SUCCESS;
-
+	return ret;
 }
 
 

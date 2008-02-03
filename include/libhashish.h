@@ -219,7 +219,6 @@ int hi_cmp_str(const uint8_t *, const uint8_t *);
 int hi_cmp_int32(const uint8_t *, const uint8_t *);
 
 /* hi_operations */
-int hi_lookup(hi_handle_t *, const void *, uint32_t);
 int hi_insert(hi_handle_t *, const void *, uint32_t, const void *);
 int hi_get(const hi_handle_t *, const void *, uint32_t, void **);
 int hi_remove(hi_handle_t *, void *, uint32_t, void **);
