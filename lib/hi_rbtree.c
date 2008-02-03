@@ -375,7 +375,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 	root = &hi_handle->eng_rbtree.trees[tree].root;
 	rbnode = &root->rb_node;
 	if (!rbnode)
-		return FAILURE;
+		return HI_ERR_NOKEY;
 
 	lhi_pthread_mutex_lock(hi_handle->eng_rbtree.trees[tree].lock);
 	while (*rbnode) {
@@ -404,7 +404,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 			rbnode = &parent->rb_left;
 	}
 	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
-	return FAILURE;
+	return HI_ERR_NOKEY;
 }
 
 
@@ -424,7 +424,7 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 
 	rbnode = &root->rb_node;
 	if (!rbnode)
-		return FAILURE;
+		return HI_ERR_INTERNAL;
 
 	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
 	while (*rbnode) {
