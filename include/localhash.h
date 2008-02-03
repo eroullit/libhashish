@@ -24,6 +24,7 @@
 #include "../config.h"
 
 #include <stdlib.h>
+#include <inttypes.h>
 
 /* localhash/datagen.c */
 int random_string(uint32_t, char **, struct drand48_data *);
@@ -31,6 +32,10 @@ double gaussian(double, double, struct drand48_data *);
 
 /* localhash/random.c */
 unsigned int get_proper_seed(void);
+
+/* localhash/mt.c */
+void seed_mt(uint32_t);
+uint32_t random_mt(void);
 
 #ifdef __cplusplus
 }

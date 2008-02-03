@@ -43,16 +43,10 @@
 // It would be nice to CC: <Cokus@math.washington.edu> when you write.
 //
 
+#include <localhash.h>
+
 #include <stdio.h>
-#include <stdlib.h>
 
-//
-// uint32 must be an unsigned integer type capable of holding at least 32
-// bits; exactly 32 should be fastest, but 64 is better on an Alpha with
-// GCC at -O3 optimization so try your options and see what's best for you
-//
-
-typedef unsigned long uint32;
 
 #define N              (624)                 // length of state vector
 #define M              (397)                 // a period parameter
@@ -62,12 +56,12 @@ typedef unsigned long uint32;
 #define loBits(u)      ((u) & 0x7FFFFFFFU)   // mask     the highest   bit of u
 #define mixBits(u, v)  (hiBit(u)|loBits(v))  // move hi bit of u to hi bit of v
 
-static uint32   state[N+1];     // state vector + 1 extra to not violate ANSI C
-static uint32   *next;          // next random value is computed from here
+static uint32_t   state[N+1];     // state vector + 1 extra to not violate ANSI C
+static uint32_t   *next;          // next random value is computed from here
 static int      left = -1;      // can *next++ this many times before reloading
 
 
-void seedMT(uint32 seed)
+void seed_mt(uint32_t seed)
  {
     //
     // We initialize state[0..(N-1)] via the generator
@@ -115,7 +109,7 @@ void seedMT(uint32 seed)
     // so-- that's why the only change I made is to restrict to odd seeds.
     //
 
-    register uint32 x = (seed | 1U) & 0xFFFFFFFFU, *s = state;
+    register uint32_t x = (seed | 1U) & 0xFFFFFFFFU, *s = state;
     register int    j;
 
     for(left=0, *s++=x, j=N; --j;
@@ -137,13 +131,13 @@ void seedMT(uint32 seed)
  }
 
 
-uint32 reloadMT(void)
+static inline uint32_t reload_mt(void)
  {
-    register uint32 *p0=state, *p2=state+2, *pM=state+M, s0, s1;
+    register uint32_t *p0=state, *p2=state+2, *pM=state+M, s0, s1;
     register int    j;
 
     if(left < -1)
-        seedMT(4357U);
+        seed_mt(4357U);
 
     left=N-1, next=state+1;
 
@@ -161,12 +155,12 @@ uint32 reloadMT(void)
  }
 
 
-inline uint32 randomMT(void)
+uint32_t random_mt(void)
  {
-    uint32 y;
+    uint32_t y;
 
     if(--left < 0)
-        return(reloadMT());
+        return(reload_mt());
 
     y  = *next++;
     y ^= (y >> 11);
