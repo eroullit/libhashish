@@ -99,7 +99,6 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 	hi_handle->eng_array.bucket_array[bucket][hi_handle->eng_array.bucket_array_slot_size[bucket]].data = data;
 
 	hi_handle->eng_array.bucket_array_slot_size[bucket]++;
-	hi_handle->no_objects++;
 
 	return SUCCESS;
 }

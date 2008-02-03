@@ -157,35 +157,30 @@ int hi_insert(hi_handle_t *hi_handle, const void *key, uint32_t keylen, const vo
 	}
 
 	switch (hi_handle->coll_eng) {
-
 		case COLL_ENG_LIST:
 		case COLL_ENG_LIST_HASH:
 		case COLL_ENG_LIST_MTF:
 		case COLL_ENG_LIST_MTF_HASH:
 			ret = lhi_insert_list((hi_handle_t *)hi_handle, key, keylen, data);
-			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-			return ret;
-
+			break;
 		case COLL_ENG_ARRAY:
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
 			ret = lhi_insert_array((hi_handle_t *)hi_handle, key, keylen, data);
-			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-			return ret;
-
+			break;
 		case COLL_ENG_RBTREE:
 			ret = lhi_insert_rbtree(hi_handle, key, keylen, data);
-			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-			return ret;
-
+			break;
 		default:
-			return HI_ERR_INTERNAL;
+			ret = HI_ERR_INTERNAL;
+			break;
 	}
 
+	if (ret == 0)
+		hi_handle->no_objects++;
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-
-	return HI_ERR_INTERNAL;
+	return ret;
 }
 
 

@@ -304,7 +304,6 @@ int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
 	obj->key = key;
 	obj->data = data;
 	hi_handle->bucket_size[bucket]++;
-	hi_handle->no_objects++;
 
 	return SUCCESS;
 
