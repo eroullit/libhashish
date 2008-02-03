@@ -365,7 +365,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 
 
 /* like get, but remove from tree */
-int lhi_remove_rbtree(const hi_handle_t *hi_handle,
+int lhi_remove_rbtree(hi_handle_t *hi_handle,
 		const void *key, uint32_t keylen, void **res)
 {
 	uint32_t tree = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
@@ -408,8 +408,8 @@ int lhi_remove_rbtree(const hi_handle_t *hi_handle,
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int lhi_insert_rbtree(hi_handle_t *hi_handle, void *key,
-		uint32_t keylen, void *data)
+int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
+		uint32_t keylen, const void *data)
 {
 	uint32_t tree = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 	struct rb_root *root = &hi_handle->eng_rbtree.trees[tree].root;

@@ -112,8 +112,8 @@ struct __hi_rb_tree {
 
  typedef struct __hi_bucket_obj {
      uint32_t                 key_len; /* key length in bytes */
-     void                    *key;
-     void                    *data;
+     const void              *key;
+     const void              *data;
      struct lhi_list_head    *hi_handle;
      struct lhi_list_head     list;
  } hi_bucket_obj_t;
@@ -121,9 +121,9 @@ struct __hi_rb_tree {
 
  typedef struct __hi_bucket_hl_obj {
      uint32_t                 key_len; /* key length in bytes */
-     void                    *key;
+     const void              *key;
      uint32_t                 key_hash;
-     void                    *data;
+     const void               *data;
      struct lhi_list_head    *hi_handle;
      struct lhi_list_head     list;
  } hi_bucket_hl_obj_t;
@@ -131,9 +131,9 @@ struct __hi_rb_tree {
  /* CHAINING_ARRAY elements */
  typedef struct __hi_bucket_a_obj {
      uint32_t                 key_len; /* key length in bytes */
-     void                    *key;
+     const void               *key;
      uint32_t                 key_hash;
-     void                    *data;
+     const void               *data;
  } hi_bucket_a_obj_t;
 
 typedef struct __hi_handle {
@@ -219,10 +219,10 @@ int hi_cmp_str(const uint8_t *, const uint8_t *);
 int hi_cmp_int32(const uint8_t *, const uint8_t *);
 
 /* hi_operations */
-int hi_lookup(hi_handle_t *, void *, uint32_t);
-int hi_insert(hi_handle_t *, void *, uint32_t, void *);
-int hi_get(const hi_handle_t *, void *, uint32_t, void **);
-int hi_remove(const hi_handle_t *, void *, uint32_t, void **);
+int hi_lookup(hi_handle_t *, const void *, uint32_t);
+int hi_insert(hi_handle_t *, const void *, uint32_t, const void *);
+int hi_get(const hi_handle_t *, const void *, uint32_t, void **);
+int hi_remove(hi_handle_t *, void *, uint32_t, void **);
 
 
 /* helper function section */

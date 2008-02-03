@@ -41,7 +41,7 @@
  * @return SUCCESS if found or FAILURE when not found
  */
 
-int hi_lookup(hi_handle_t *hi_handle, void *key, uint32_t keylen)
+int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 {
 	switch (hi_handle->coll_eng) {
 
@@ -79,7 +79,7 @@ int hi_lookup(hi_handle_t *hi_handle, void *key, uint32_t keylen)
  * @data the pointer-pointer for the returned data
  * @returns FAILURE or SUCCESS on success and set data pointer
  */
-int hi_get(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
+int hi_get(const hi_handle_t *hi_handle, const void *key, uint32_t keylen, void **data)
 {
 
 	switch (hi_handle->coll_eng) {
@@ -89,7 +89,6 @@ int hi_get(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data
 		case COLL_ENG_LIST_MTF:
 		case COLL_ENG_LIST_MTF_HASH:
 			return lhi_get_list(hi_handle, key, keylen, data);
-			break;
 
 		case COLL_ENG_RBTREE:
 			return lhi_get_rbtree(hi_handle, key, keylen, data);
@@ -116,7 +115,7 @@ int hi_get(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data
  * @data the pointer-pointer for the returned data
  * @returns FAILURE or SUCCESS on success and set data pointer
  */
-int hi_remove(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
+int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 {
 	switch (hi_handle->coll_eng) {
 
@@ -146,9 +145,9 @@ int hi_remove(const hi_handle_t *hi_handle, void *key, uint32_t keylen, void **d
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int hi_insert(hi_handle_t *hi_handle, void *key, uint32_t keylen, void *data)
+int hi_insert(hi_handle_t *hi_handle, const void *key, uint32_t keylen, const void *data)
 {
-	int ret; uint32_t bucket;
+	int ret;
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 

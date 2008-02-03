@@ -39,7 +39,7 @@
  * @return SUCCESS if found or FAILURE when not found
  */
 int lhi_lookup_array(const hi_handle_t *hi_handle,
-		void *key, uint32_t keylen)
+		const void *key, uint32_t keylen)
 {
 	uint32_t i, bucket;
 	bucket =  hi_handle->hash_func(key, keylen) % hi_handle->table_size;
@@ -73,8 +73,8 @@ int lhi_lookup_array(const hi_handle_t *hi_handle,
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int lhi_insert_array(hi_handle_t *hi_handle, void *key,
-		uint32_t keylen, void *data)
+int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
+		uint32_t keylen, const void *data)
 {
 	uint32_t bucket;
 

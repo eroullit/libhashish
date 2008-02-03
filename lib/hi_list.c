@@ -41,7 +41,7 @@
  */
 
 int lhi_lookup_list(hi_handle_t *hi_handle,
-		void *key, uint32_t keylen)
+		const void *key, uint32_t keylen)
 {
 	uint32_t bucket;
 
@@ -96,7 +96,7 @@ int lhi_lookup_list(hi_handle_t *hi_handle,
  * @data the pointer-pointer for the returned data
  * @returns FAILURE or SUCCESS on success and set data pointer
  */
-int lhi_remove_list(hi_handle_t *hi_handle, void *key,
+int lhi_remove_list(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, void **data)
 {
 	uint32_t bucket;
@@ -112,7 +112,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			lhi_list_for_each_entry_safe(b_obj, p, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
-					*data = b_obj->data;
+					*data = (void *) b_obj->data;
 					lhi_list_del(&b_obj->list);
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
@@ -138,7 +138,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
 				if (key_hash == b_obj->key_hash &&
 						hi_handle->key_cmp(key, b_obj->key) == 0) {
 
-					*data = b_obj->data;
+					*data = (void *) b_obj->data;
 					lhi_list_del(&b_obj->list);
 					free(b_obj);
 					--hi_handle->bucket_size[bucket];
@@ -169,7 +169,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, void *key,
  * @data the pointer-pointer for the returned data
  * @returns FAILURE or SUCCESS on success and set data pointer
  */
-int lhi_get_list(hi_handle_t *hi_handle, void *key,
+int lhi_get_list(const hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, void **data)
 {
 	uint32_t bucket;
@@ -184,7 +184,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 			hi_bucket_obj_t *b_obj;
 			lhi_list_for_each_entry(b_obj, &(hi_handle->eng_list.bucket_table[bucket]), list) {
 				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
-					*data = b_obj->data;
+					*data = (void*) b_obj->data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -214,7 +214,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 				if (hi_handle->key_cmp(key, b_obj->key) == 0) {
 					lhi_list_del(&b_obj->list);
 					lhi_list_add_head(&b_obj->list, &(hi_handle->eng_list.bucket_table[bucket]));
-					*data = b_obj->data;
+					*data = (void *) b_obj->data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -238,7 +238,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 				 */
 				if (key_hash == b_obj->key_hash &&
 						hi_handle->key_cmp(key, b_obj->key) == 0) {
-					*data = b_obj->data;
+					*data = (void*) b_obj->data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -263,7 +263,7 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
 						hi_handle->key_cmp(key, b_obj->key) == 0) {
 					lhi_list_del(&b_obj->list);
 					lhi_list_add_head(&b_obj->list, &(hi_handle->eng_list.bucket_table[bucket]));
-					*data = b_obj->data;
+					*data = (void*) b_obj->data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -287,8 +287,8 @@ int lhi_get_list(hi_handle_t *hi_handle, void *key,
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int lhi_insert_list(hi_handle_t *hi_handle, void *key,
-		uint32_t keylen, void *data)
+int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
+		uint32_t keylen, const void *data)
 {
 	int ret;
 	uint32_t bucket;
