@@ -17,6 +17,9 @@ clean: Make.Rules
 		echo "### Entering $$dir" && cd $$dir && $(MAKE) clean && cd ..; \
 	done
 
+test:
+	cd tests && $(MAKE) test
+
 distclean: clean
 	rm -rf Make.Rules config.h config.log
 

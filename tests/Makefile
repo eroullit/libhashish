@@ -25,6 +25,7 @@ export
 
 all: unit_test memory_leak_inspector concurrent_test # string_distribution concurrent_test
 
+
 unit_test: $(OBJ)
 	$(CC) $(CFLAGS) unit_test.o $(LIBFLAGS) -o $@
 
@@ -36,6 +37,10 @@ string_distribution: $(OBJ)
 
 memory_leak_inspector: $(OBJ)
 	$(CC) $(CFLAGS) memory_leak_inspector.o $(LIBFLAGS) -o $@
+
+test: unit_test concurrent_test
+	./unit_test
+	./concurrent_test
 
 clean:
 	@echo "### cleaning"; \
