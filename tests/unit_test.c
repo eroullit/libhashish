@@ -66,7 +66,8 @@ static void print_error(int ret)
 static void check_data(const char *data, const char *expected)
 {
 	if (strcmp(data, expected)) {
-		fprintf(stderr, "strcmp failed: got \"%s\", expected \"%s\"\n", data, expected);
+		fprintf(stderr, "strcmp failed: got \"%s\", expected \"%s\"\n",
+				data, expected);
 		exit(1);
 	}
 }
@@ -138,6 +139,7 @@ static void check_remove(enum coll_eng engine)
 	ret = hi_fini(hi_hndl);
 	assert(ret == 0);
 
+	fputs("passed\n", stdout);
 }
 
 
@@ -203,6 +205,8 @@ static void check_get_remove(enum coll_eng engine)
 
 	ret = hi_fini(hi_hndl);
 	assert(ret == 0);
+
+	fputs("passed\n", stdout);
 }
 
 
@@ -246,6 +250,8 @@ static void check_insert(enum coll_eng engine)
 
 	ret = hi_fini(hi_hndl);
 	assert(ret == 0);
+
+	fputs("passed\n", stdout);
 }
 
 
@@ -307,7 +313,7 @@ static void check_str_wrapper(void)
 	const char *data = "data element";
 	void *data_ptr;
 
-	fputs("o string wrapper functions tests ...", stdout);
+	fputs(" o check string wrapper functions tests ...", stdout);
 
 	ret = hi_init_str(&hi_handle, 23);
 	assert(ret == 0);
@@ -327,13 +333,13 @@ static void check_str_wrapper(void)
 
 static void test_backend(enum coll_eng engine)
 {
-	puts("check insert");
+	fputs("\tcheck insert ... ", stdout); fflush(stdout);
 	check_insert(engine);
 
-	puts("check remove");
+	fputs("\tcheck remove ... ", stdout); fflush(stdout);
 	check_remove(engine);
 
-	puts("check get/remove");
+	fputs("\tcheck get/remove ... ", stdout); fflush(stdout);
 	check_get_remove(engine);
 }
 
@@ -341,16 +347,18 @@ static void test_backend(enum coll_eng engine)
 int
 main(void)
 {
-	puts("Start test sequence");
+	puts("Start test sequence\n");
 
 	check_hi_init_set();
 
-	puts("check COLL_ENG_LIST :");
+	puts(" o check COLL_ENG_LIST");
 	test_backend(COLL_ENG_LIST);
-	puts("check COLL_ENG_RBTREE");
+	puts(" o check COLL_ENG_RBTREE");
 	test_backend(COLL_ENG_RBTREE);
 
 	check_str_wrapper();
+
+	puts("\nall tests passed - great!");
 
 	return 0;
 }
