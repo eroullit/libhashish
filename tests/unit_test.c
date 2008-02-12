@@ -73,6 +73,28 @@ static void check_data(const char *data, const char *expected)
 }
 
 
+static void check_preambel_test(void)
+{
+  int ret;
+  hi_handle_t *hi_handle;
+  const char *key = "23";
+  const char *data = "data element";
+  void *data_ptr;
+
+  /* initialize hashish handle */
+  hi_init_str(&hi_handle, 23);
+
+  /* insert an key/data pair */
+  ret = hi_insert_str(hi_handle, key, data);
+
+  /* search for a pair with a string key and store result */
+  hi_get_str(hi_handle, key, &data_ptr);
+
+  /* free the hashish handle */
+  hi_fini(hi_handle);
+
+}
+
 
 static void check_remove(enum coll_eng engine)
 {
@@ -348,6 +370,8 @@ int
 main(void)
 {
 	puts("Start test sequence\n");
+
+	check_preambel_test();
 
 	check_hi_init_set();
 
