@@ -231,6 +231,8 @@ static inline uint32_t hi_no_objects(const hi_handle_t *h)
 	return h->no_objects;
 }
 
+double hi_table_load_factor(hi_handle_t *);
+
 /* string specific functions */
 int hi_init_str(hi_handle_t **, const uint32_t);
 int hi_insert_str(hi_handle_t *, const char *, const void *);

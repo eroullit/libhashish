@@ -7,7 +7,7 @@ endif
 CIN      := $(wildcard *.c)
 
 OBJ      := unit_test.o memory_leak_inspector.o concurrent_test.o #$(CIN:%.c=%.o)
-CFLAGS   += -I../include
+CFLAGS   += -I../include -DNDEBUG
 LIBFLAGS := -lm 
 LIBFLAGS += -L../lib -L../localhash -lhashish_s -llocalhash
 GRAPHFALGS :=

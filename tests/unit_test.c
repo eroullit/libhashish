@@ -95,6 +95,32 @@ static void check_preambel_test(void)
 
 }
 
+static void check_hi_load_factor(void)
+{
+	int ret;
+	hi_handle_t *hi_handle;
+	const char *key = "23";
+	void *data_ptr;
+	double load_factor;
+
+	fputs(" o check_hi_load_factor test ...", stdout);
+
+	/* initialize hashish handle */
+	hi_init_str(&hi_handle, 3);
+
+	ret = hi_insert_str(hi_handle, "1", NULL);
+	ret = hi_insert_str(hi_handle, "2", NULL);
+
+	load_factor = hi_table_load_factor(hi_handle);
+
+	assert(load_factor == ((double)3)/2);
+
+	/* free the hashish handle */
+	hi_fini(hi_handle);
+
+	fputs("passed\n", stdout);
+}
+
 
 static void check_remove(enum coll_eng engine)
 {
@@ -375,12 +401,15 @@ main(void)
 
 	check_hi_init_set();
 
+
 	puts(" o check COLL_ENG_LIST");
 	test_backend(COLL_ENG_LIST);
 	puts(" o check COLL_ENG_RBTREE");
 	test_backend(COLL_ENG_RBTREE);
 
 	check_str_wrapper();
+
+	check_hi_load_factor();
 
 	puts("\nall tests passed - great!");
 
