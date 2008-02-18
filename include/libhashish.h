@@ -107,7 +107,7 @@ struct hi_init_set {
 
 struct __hi_rb_tree {
 	struct rb_root root;
-	pthread_mutex_t *lock;
+	pthread_rwlock_t *rwlock;
 };
 
  typedef struct __hi_bucket_obj {

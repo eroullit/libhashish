@@ -340,7 +340,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 	uint32_t tree = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 	struct rb_node **rbnode = &hi_handle->eng_rbtree.trees[tree].root.rb_node;
 
-	lhi_pthread_mutex_lock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_rdlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	while (*rbnode) {
 		int diff;
 		struct lhi_rb_entry *lhi_entry;
@@ -350,7 +350,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 		diff = hi_handle->key_cmp(key, lhi_entry->key);
 		if (diff == 0) {
 			*res = (void *) lhi_entry->data;
-			lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+			lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 			return SUCCESS;
 		}
 
@@ -359,7 +359,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 		else
 			rbnode = &parent->rb_left;
 	}
-	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	return HI_ERR_NOKEY;
 }
 
@@ -377,7 +377,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 	if (!rbnode)
 		return HI_ERR_NOKEY;
 
-	lhi_pthread_mutex_lock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_wrlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	while (*rbnode) {
 		int diff;
 		struct lhi_rb_entry *lhi_entry;
@@ -390,7 +390,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 			rb_erase(parent, root);
 			free(lhi_entry);
 			--hi_handle->bucket_size[tree];
-			lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+			lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			hi_handle->no_objects--;
@@ -403,7 +403,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 		else
 			rbnode = &parent->rb_left;
 	}
-	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	return HI_ERR_NOKEY;
 }
 
@@ -426,7 +426,7 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 	if (!rbnode)
 		return HI_ERR_INTERNAL;
 
-	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_wrlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	while (*rbnode) {
 		int diff;
 		struct lhi_rb_entry *lhi_entry;
@@ -452,7 +452,7 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 	hi_handle->bucket_size[tree]++;
 	ret = SUCCESS;
  out:
-	lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[tree].lock);
+	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	if (ret == SUCCESS) { /* silly, but what can we do? 8-/ */
 		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 		hi_handle->no_objects++;
@@ -470,10 +470,10 @@ int lhi_fini_rbtree(hi_handle_t *hi_handle)
 	hi_handle->table_size = 0;
 
 	for (i=0; i < size ; i++) {
-		lhi_pthread_mutex_lock(hi_handle->eng_rbtree.trees[i].lock);
+		lhi_pthread_rwlock_wrlock(hi_handle->eng_rbtree.trees[i].rwlock);
 		/* make sure noone accesses this */
-		lhi_pthread_mutex_unlock(hi_handle->eng_rbtree.trees[i].lock);
-		lhi_pthread_mutex_destroy(hi_handle->eng_rbtree.trees[i].lock);
+		lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[i].rwlock);
+		lhi_pthread_rwlock_destroy(hi_handle->eng_rbtree.trees[i].rwlock);
 	}
 	free(hi_handle->eng_rbtree.trees);
 	hi_handle->eng_rbtree.trees = NULL;

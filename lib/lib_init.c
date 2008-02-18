@@ -217,15 +217,15 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 
 	for (i = 0; i < hi_hndl->table_size; i++) {
 		hi_hndl->eng_rbtree.trees[i].root.rb_node = NULL;
-		hi_hndl->eng_rbtree.trees[i].lock = NULL;
-		if (lhi_pthread_mutex_init(&hi_hndl->eng_rbtree.trees[i].lock, NULL))
+		hi_hndl->eng_rbtree.trees[i].rwlock = NULL;
+		if (lhi_pthread_rwlock_init(&hi_hndl->eng_rbtree.trees[i].rwlock, NULL))
 			goto out_err;
 	}
 	lhi_pthread_mutex_unlock(hi_hndl->mutex_lock);
 	return SUCCESS;
  out_err:
 	while (i--)
-		lhi_pthread_mutex_destroy(hi_hndl->eng_rbtree.trees[i].lock);
+		lhi_pthread_rwlock_destroy(hi_hndl->eng_rbtree.trees[i].rwlock);
 	return HI_ERR_SYSTEM;
 }
 

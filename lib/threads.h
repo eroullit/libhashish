@@ -28,13 +28,36 @@
 #ifdef THREADSAFE
 #define lhi_pthread_mutex_lock(a)	pthread_mutex_lock((a))
 #define lhi_pthread_mutex_unlock(a)	pthread_mutex_unlock((a))
+
+#define lhi_pthread_rwlock_rdlock(a)	pthread_rwlock_rdlock((a))
+#define lhi_pthread_rwlock_wrlock(a)	pthread_rwlock_wrlock((a))
+#define lhi_pthread_rwlock_unlock(a)	pthread_rwlock_unlock((a))
+
 static int __attribute__((unused)) lhi_pthread_mutex_init(pthread_mutex_t **a ,  const  pthread_mutexattr_t *b)
 {
 	int ret = HI_ERR_SYSTEM;
 	pthread_mutex_t *p = malloc(sizeof(*p));
 	if (p) {
 		ret = pthread_mutex_init(p, b);
-		*a = p;
+		if (ret)
+			free(p);
+		else
+			*a = p;
+	}
+	return ret;
+}
+
+
+static int __attribute__((unused)) lhi_pthread_rwlock_init(pthread_rwlock_t **a , const pthread_rwlockattr_t *b)
+{
+	int ret = HI_ERR_SYSTEM;
+	pthread_rwlock_t *p = malloc(sizeof(*p));
+	if (p) {
+		ret = pthread_rwlock_init(p, b);
+		if (ret)
+			free(p);
+		else
+			*a = p;
 	}
 	return ret;
 }
@@ -48,8 +71,15 @@ static int __attribute__((unused)) lhi_pthread_mutex_destroy(pthread_mutex_t *a)
 	return r;
 }
 
-#else /* THREADSAFE */
 
+static int __attribute__((unused)) lhi_pthread_rwlock_destroy(pthread_rwlock_t *a)
+{
+	int r = pthread_rwlock_destroy(a);
+	if (r == 0)
+		free(a);
+	return r;
+}
+#else /* THREADSAFE */
 static inline int lhi_pthread_mutex_lock(__attribute__((unused)) void* a) { return 0; }
 static inline int lhi_pthread_mutex_unlock(__attribute__((unused)) void* a) { return 0; }
 static inline int __attribute__((unused)) lhi_pthread_mutex_destroy(
@@ -58,9 +88,16 @@ static inline int __attribute__((unused)) lhi_pthread_mutex_init(
 		__attribute__((unused)) void* a,
 		__attribute__((unused)) void *b) { return 0; }
 
+static inline int lhi_pthread_rwlock_rdlock(__attribute__((unused)) void* a) { return 0; }
+static inline int lhi_pthread_rwlock_wrlock(__attribute__((unused)) void* a) { return 0; }
+static inline int lhi_pthread_rwlock_unlock(__attribute__((unused)) void* a) { return 0; }
+static inline int __attribute__((unused)) lhi_pthread_rwlock_destroy(
+		__attribute__((unused)) void* a) { return 0; }
+static inline int __attribute__((unused)) lhi_pthread_rwlock_init(
+		__attribute__((unused)) void* a,
+		__attribute__((unused)) void *b) { return 0; }
+
 #endif
-
-
 #endif /* _LHI_THREADS_H */
 
 
