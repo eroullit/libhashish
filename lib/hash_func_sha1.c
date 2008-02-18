@@ -36,7 +36,8 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <inttypes.h>
+
+#include "privlibhashish.h"
 
 typedef struct
 {
