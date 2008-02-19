@@ -118,7 +118,6 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 	free(hi_handle->eng_array.bucket_array);
 	free(hi_handle->eng_array.bucket_array_slot_size);
 	free(hi_handle->eng_array.bucket_array_slot_max);
-	free(hi_handle->bucket_size);
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
 	return SUCCESS;

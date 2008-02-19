@@ -332,7 +332,6 @@ int lhi_fini_list(hi_handle_t *hi_handle)
 		}
 	}
 	free(hi_handle->eng_list.bucket_table);
-	free(hi_handle->bucket_size);
 
 	return SUCCESS;
 }

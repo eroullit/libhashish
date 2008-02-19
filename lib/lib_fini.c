@@ -68,7 +68,7 @@ int hi_fini(hi_handle_t *hi_handle)
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 	lhi_pthread_mutex_destroy(hi_handle->mutex_lock);
 
-	/* cleanup the mutex lock */
+	free(hi_handle->bucket_size);
 	free(hi_handle);
 	hi_handle = NULL;
 
