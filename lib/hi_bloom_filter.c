@@ -26,28 +26,29 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key)
 {
 	uint32_t map_offset, bit_mask, hkey;
 
 	hkey = lhi_hash_elf(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
 
 	hkey = lhi_hash_torek(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
 
 	hkey = lhi_hash_weinb(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
 
 	hkey = lhi_hash_djb2(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
 }
@@ -57,31 +58,71 @@ int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key)
 	uint32_t map_offset, bit_mask, hkey;
 
 	hkey = lhi_hash_elf(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
 		return 0;
 
 	hkey = lhi_hash_torek(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
 		return 0;
 
 	hkey = lhi_hash_weinb(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
 		return 0;
 
 	hkey = lhi_hash_djb2(key, strlen((char *)key));
-	map_offset = hkey % bh->map_bit_size;
+	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
 		return 0;
 
 	/* match! */
 	return 1;
+}
+
+/**
+ * hi_bloom_bit_get returns if an specified bit
+ * in the map is set
+ *
+ * @arg bh	this become out new hashish handle
+ * @arg bit	the bit to check (start with bit 0 - of course)
+ * @returns negativ error value or zero when not found and one when found
+ */
+int hi_bloom_bit_get(hi_bloom_handle_t *bh, uint32_t bit)
+{
+	uint32_t byte_offset, bit_offset;
+
+	if (!bh)
+		return HI_ERR_NODATA;
+
+	if (bit > bh->map_bit_size)
+		return HI_ERR_RANGE;
+
+	byte_offset = (uint32_t)(floor((double)bit / 8));
+	bit_offset = (uint32_t)(bit % 8);
+
+	return (!!(bh->filter_map[byte_offset] & (1 << bit_offset)));
+
+}
+
+int hi_bloom_print_hex_map(hi_bloom_handle_t *bh)
+{
+	uint32_t byte_offset = 0;
+
+	if (!bh)
+		return HI_ERR_NODATA;
+
+	for (byte_offset = 0; byte_offset < bh->map_bit_size / 8; ++byte_offset) {
+		fprintf(stderr, "0x%X ", bh->filter_map[byte_offset]);
+	}
+
+
+	return SUCCESS;
 }
 
 /**
