@@ -342,5 +342,78 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 	return SUCCESS;
 }
 
+/**
+ *
+ * @arg hi_hndl	this become out new hashish handle
+ * @returns negativ error value or zero on success
+ */
+int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
+{
+	int ret;
+	hi_handle_t *hi_handle;
+
+	ret = lhi_create_vanilla_hdnl(&hi_handle);
+	if (ret != SUCCESS)
+		return ret;
+
+	memcpy(hi_handle, *hi_hndl, sizeof(hi_handle_t));
+
+	hi_handle->table_size = new_table_size;
+
+	/* Allocate memory fot accounting the number of
+	 * elements within every bucket in the table.  */
+	ret = XMALLOC((void **) &hi_handle->bucket_size,
+			hi_handle->table_size * sizeof(hi_handle->bucket_size));
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+
+	/* 0 objects in the list at start-up */
+	hi_handle->no_objects = 0;
+
+	/* Initiate mutex lock if build with thread
+	 * support. */
+	hi_handle->mutex_lock = NULL;
+	ret = lhi_pthread_mutex_init(&hi_handle->mutex_lock, NULL);
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+
+	/* Create internal data structure for
+	 * list, array or rbtree */
+	switch (hi_handle->coll_eng) {
+
+		case COLL_ENG_LIST:
+		case COLL_ENG_LIST_HASH:
+		case COLL_ENG_LIST_MTF:
+		case COLL_ENG_LIST_MTF_HASH:
+			ret = lhi_create_eng_list(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+			break;
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = lhi_create_eng_array(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+			break;
+		case COLL_ENG_RBTREE:
+			ret = lhi_create_eng_rbtree(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+			break;
+		default:
+			return HI_ERR_INTERNAL;
+			break;
+	}
+
+	/* FIXME: implement rehashing */
+
+	*hi_hndl = hi_handle;
+
+	return SUCCESS;
+}
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */

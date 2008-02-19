@@ -240,6 +240,20 @@ int hi_get_str(hi_handle_t *, const char *, void **);
 int hi_remove_str(hi_handle_t *, const char *, void **);
 
 
+/* BLOOM Filter Implementation */
+
+typedef struct __hi_bloom_handle {
+	uint8_t *filter_map;
+	uint32_t map_bit_size;
+} hi_bloom_handle_t;
+
+void hi_bloom_filter_add(hi_bloom_handle_t *, uint8_t *);
+int hi_bloom_filter_check(hi_bloom_handle_t *, uint8_t *);
+int hi_init_bloom_filter(hi_bloom_handle_t **, uint32_t);
+void hi_fini_bloom_filter(hi_bloom_handle_t *);
+
+
+
 #ifdef __cplusplus
 }
 #endif
