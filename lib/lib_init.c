@@ -218,6 +218,7 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 	for (i = 0; i < hi_hndl->table_size; i++) {
 		hi_hndl->eng_rbtree.trees[i].root.rb_node = NULL;
 		hi_hndl->eng_rbtree.trees[i].rwlock = NULL;
+		hi_hndl->bucket_size[i] = 0;
 		if (lhi_pthread_rwlock_init(&hi_hndl->eng_rbtree.trees[i].rwlock, NULL))
 			goto out_err;
 	}
