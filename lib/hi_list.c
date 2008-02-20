@@ -31,6 +31,60 @@
 
 #include "threads.h"
 
+
+int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **private, void **res)
+{
+	size_t max, i = 0;
+	void **mem = NULL;
+	int ret = HI_ERR_NODATA;
+
+	if (hi_handle->table_size < bucket)
+		return HI_ERR_RANGE;
+
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+	max = hi_handle->bucket_size[bucket];
+	if (!max)
+		goto out_err;
+	ret = HI_ERR_SYSTEM;
+	mem = calloc(max, sizeof(void*));
+	if (!mem)
+		goto out_err;
+
+	switch (hi_handle->coll_eng) {
+	case COLL_ENG_LIST:
+	case COLL_ENG_LIST_MTF: {
+		hi_bucket_obj_t *b_obj;
+		lhi_list_for_each_entry(b_obj,
+			&(hi_handle->eng_list.bucket_table[bucket]), list) {
+			mem[i] = (void*) b_obj->data;
+			i++;
+		}
+	break;
+	}
+	case COLL_ENG_LIST_HASH:
+	case COLL_ENG_LIST_MTF_HASH: {
+		hi_bucket_hl_obj_t *b_obj;
+		lhi_list_for_each_entry(b_obj,
+			&(hi_handle->eng_list.bucket_table[bucket]), list) {
+			mem[i] = (void*) b_obj->data;
+			i++;
+		}
+	break;
+	}
+	default:
+		ret = HI_ERR_INTERNAL;
+		goto out_err;
+	}
+	*private = mem;
+	*res = (size_t *) max;
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	return 0;
+ out_err:
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+	free(mem);
+	return ret;
+}
+
 /* lhi_lookup_list search for a given key and return SUCCESS
  * when found in the hash and FAILURE if not found.
  *

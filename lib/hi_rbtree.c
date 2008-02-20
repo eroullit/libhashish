@@ -321,9 +321,6 @@ static void rb_erase(struct rb_node *node, struct rb_root *root)
 }
 
 
-
-
-
 /*
  * lhi_get_rbtree search for a given key and return SUCCESS
  * when found in the hash and FAILURE if not found.
@@ -361,6 +358,60 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 	}
 	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	return HI_ERR_NOKEY;
+}
+
+
+static size_t hi_rbtree_traverse(struct rb_node *rbnode, size_t pos, void **data, const size_t max)
+{
+	struct lhi_rb_entry *lhi_entry;
+	struct rb_node *left, *right;
+	size_t p = pos;
+
+	left = rbnode->rb_left;
+	pos++;
+	if (left)
+		pos = hi_rbtree_traverse(left, pos, data, max);
+	right = rbnode->rb_right;
+	if (right)
+		pos = hi_rbtree_traverse(right, pos, data, max);
+	lhi_entry = rb_entry(rbnode, struct lhi_rb_entry, node);
+	//printf("save key %s at %u\n", lhi_entry->key, p);
+	if (p < max)
+		data[p] = (void *) lhi_entry->data;
+	return pos;
+}
+
+
+int lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t tree, void **private, void **res)
+{
+	struct rb_node *rbnode;
+	size_t max;
+	void *mem;
+	int ret = HI_ERR_NODATA;
+
+	if (hi_handle->table_size < tree)
+		return HI_ERR_RANGE;
+	rbnode = hi_handle->eng_rbtree.trees[tree].root.rb_node;
+	if (!rbnode)
+		return HI_ERR_NODATA;
+
+	lhi_pthread_rwlock_rdlock(hi_handle->eng_rbtree.trees[tree].rwlock);
+	max = hi_handle->bucket_size[tree];
+	if (!max)
+		goto out;
+
+	ret = HI_ERR_SYSTEM;
+	mem = calloc(max, sizeof(void*));
+	if (!mem)
+		goto out;
+
+	hi_rbtree_traverse(rbnode, 0, mem, max);
+	*private = mem;
+	*res = (size_t *) max;
+	ret = 0;
+ out:
+	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);
+	return ret;
 }
 
 

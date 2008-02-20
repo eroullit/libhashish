@@ -18,6 +18,7 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -99,8 +100,6 @@ static void check_hi_load_factor(void)
 {
 	int ret;
 	hi_handle_t *hi_handle;
-	const char *key = "23";
-	void *data_ptr;
 	double load_factor;
 
 	fputs(" o check_hi_load_factor test ...", stdout);
@@ -302,6 +301,86 @@ static void check_insert(enum coll_eng engine)
 	fputs("passed\n", stdout);
 }
 
+static void check_iterator(enum coll_eng engine)
+{
+	int ret, i;
+	hi_handle_t *hi_hndl;
+	struct hi_init_set hi_set;
+	hi_iterator_t *iterator;
+	void *data_ptr = (void *) 0xdeadbeef;
+
+	hi_set_zero(&hi_set);
+	ret = hi_set_bucket_size(&hi_set, 100);
+	assert(ret == 0);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	assert(ret == 0);
+	ret = hi_set_coll_eng(&hi_set, engine);
+	assert(ret == 0);
+	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
+	assert(ret == 0);
+
+	ret = hi_create(&hi_hndl, &hi_set);
+	if (ret != 0)
+		print_error(ret);
+	assert(ret == 0);
+
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "data");
+	assert(ret == 0);
+
+	ret = hi_insert(hi_hndl, (void *) "key1", strlen("key1"), "data1");
+	assert(ret == 0);
+
+	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "data2");
+	assert(ret == 0);
+
+	ret = hi_iterator_create(hi_hndl, &iterator);
+	if (ret != 0)
+		return;
+
+	for (i = 0; i < 2; i++) {
+		bool got_key[] = { 0, 0, 0 };
+		unsigned int j;
+
+		for (j = 0 ; j < 3 ; j++) {
+			data_ptr = NULL;
+			ret = hi_iterator_getnext(iterator, &data_ptr);
+			assert(ret == 0);
+			assert(data_ptr);
+			if (strcmp(data_ptr, "data") == 0) {
+				assert(!got_key[0]);
+				got_key[0] = true;
+				continue;
+			}
+			if (strcmp(data_ptr, "data1") == 0) {
+				assert(!got_key[1]);
+				got_key[1] = true;
+				continue;
+			}
+			assert (strcmp(data_ptr, "data2") == 0);
+			assert(!got_key[2]);
+			got_key[2] = true;
+		}
+		ret = hi_iterator_getnext(iterator, &data_ptr);
+		assert (ret == HI_ERR_NODATA);
+		ret = hi_iterator_reset(iterator);
+		assert(ret == 0);
+	}
+	hi_iterator_fini(iterator);
+
+	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	assert(ret == 0);
+	ret = hi_remove(hi_hndl, (void *) "key1", strlen("key1"), &data_ptr);
+	assert(ret == 0);
+	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ptr);
+	assert(ret == 0);
+
+	ret = hi_fini(hi_hndl);
+	assert(ret == 0);
+
+	fputs("passed\n", stdout);
+}
+
+
 
 static void check_hi_init_set(void)
 {
@@ -389,6 +468,9 @@ static void test_backend(enum coll_eng engine)
 
 	fputs("\tcheck get/remove ... ", stdout); fflush(stdout);
 	check_get_remove(engine);
+
+	fputs("\tcheck iterator... ", stdout); fflush(stdout);
+	check_iterator(engine);
 }
 
 

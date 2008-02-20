@@ -112,6 +112,7 @@ int lhi_create_vanilla_hdnl(hi_handle_t **);
 int LHI_NO_EXPORT lhi_lookup_array(const hi_handle_t *, const void *, uint32_t);
 int LHI_NO_EXPORT lhi_fini_array(hi_handle_t *);
 int LHI_NO_EXPORT lhi_insert_array(hi_handle_t *, const void *, uint32_t , const void *);
+int LHI_NO_EXPORT lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **list, void **len);
 
 /* private list manipulation functions */
 int LHI_NO_EXPORT lhi_lookup_list(hi_handle_t *, const void *, uint32_t);
@@ -119,13 +120,14 @@ int LHI_NO_EXPORT lhi_insert_list(hi_handle_t *, const void *, uint32_t , const 
 int LHI_NO_EXPORT lhi_fini_list(hi_handle_t *);
 int LHI_NO_EXPORT lhi_get_list(const hi_handle_t *, const void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_remove_list(hi_handle_t *, const void *, uint32_t , void **);
+int LHI_NO_EXPORT lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **list, void **len);
 
 /* private rbtree manipulation functions */
 int LHI_NO_EXPORT lhi_insert_rbtree(hi_handle_t *, const void *, uint32_t , const void *);
 int LHI_NO_EXPORT lhi_get_rbtree(const hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_remove_rbtree(hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_fini_rbtree(hi_handle_t *);
-
+int LHI_NO_EXPORT lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t, void **list, void **len);
 
 #ifdef __cplusplus
 }

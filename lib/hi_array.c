@@ -67,6 +67,39 @@ int lhi_lookup_array(const hi_handle_t *hi_handle,
 	return FAILURE;
 }
 
+int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **private, void **res)
+{
+	unsigned int len, alloc;
+	void **memdup;
+
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+	len = hi_handle->eng_array.bucket_array_slot_max[bucket];
+	if (len == 0) {
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+		return HI_ERR_NODATA;
+	}
+
+	alloc = len * sizeof(void *);
+	if ((alloc/len) != sizeof(void*)) {/* integer overflow */
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+		return HI_ERR_INTERNAL;
+	}
+
+	memdup = malloc(alloc);
+	if (!memdup) {
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+		return HI_ERR_SYSTEM;
+	}
+	*res = (unsigned *) len;
+	while (len--)
+		memdup[len] = (void *) hi_handle->eng_array.bucket_array[bucket][len].data;
+
+	*private = memdup;
+	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+
+	return 0;
+}
+
 
 /* lhi_insert_array insert a key/data pair into our hashhandle
  *

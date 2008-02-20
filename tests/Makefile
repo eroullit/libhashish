@@ -7,7 +7,7 @@ endif
 CIN      := $(wildcard *.c)
 
 OBJ      := unit_test.o memory_leak_inspector.o concurrent_test.o bloom_filter_test.o #$(CIN:%.c=%.o)
-CFLAGS   += -I../include -DNDEBUG
+CFLAGS   += -I../include
 LIBFLAGS := -lm 
 LIBFLAGS += -L../lib -L../localhash -lhashish_s -llocalhash
 GRAPHFALGS :=
@@ -25,7 +25,7 @@ export
 				string_distribution memory_leak_inspector \
 				concurrent_test bloom_filter_test
 
-all: unit_test memory_leak_inspector concurrent_test bloom_filter_test # string_distribution concurrent_test
+all: unit_test memory_leak_inspector iterator_test concurrent_test bloom_filter_test # string_distribution concurrent_test
 
 
 unit_test: $(OBJ)
@@ -36,6 +36,9 @@ bloom_filter_test: $(OBJ)
 
 concurrent_test: $(OBJ)
 	$(CC) $(CFLAGS) concurrent_test.o $(LIBFLAGS) $(THREADFLAGSX) -o $@
+
+iterator_test: iterator_test.c
+	$(CC) $(CFLAGS) iterator_test.c $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
 string_distribution: $(OBJ)
 	$(CC) $(CFLAGS) string_distribution.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
@@ -50,6 +53,7 @@ test: unit_test concurrent_test
 clean:
 	@echo "### cleaning"; \
 	$(RM) -f $(OBJ) unit_test string_distribution concurrent_test memory_leak_inspector *.png core*
+	$(RM) -f iterator_test
 
 distclean:
 	@echo "### distclean testdir"

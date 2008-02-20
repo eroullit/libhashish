@@ -199,6 +199,15 @@ int hi_fini(hi_handle_t *);
 /* libhashish.c */
 int hi_create(hi_handle_t **, struct hi_init_set *);
 
+/* hi_iterator.c */
+struct hi_operator;
+typedef struct hi_operator hi_iterator_t;
+int hi_iterator_create(hi_handle_t *t, hi_iterator_t **);
+int hi_iterator_reset(hi_iterator_t *);
+int hi_iterator_getnext(hi_iterator_t *, void **);
+void hi_iterator_fini(hi_iterator_t *);
+
+
 /* hi_set.c */
 void hi_set_zero(struct hi_init_set *);
 int hi_set_bucket_size(struct hi_init_set *, uint32_t);
