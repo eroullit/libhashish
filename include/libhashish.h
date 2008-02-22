@@ -251,15 +251,27 @@ int hi_remove_str(hi_handle_t *, const char *, void **);
 
 typedef struct __hi_bloom_handle {
 	uint8_t *filter_map;
-	uint32_t map_bit_size;
+	uint32_t m;
+	uint32_t bit_collision;
+	uint32_t n;
+	unsigned k;
 } hi_bloom_handle_t;
 
-void hi_bloom_filter_add(hi_bloom_handle_t *, uint8_t *);
-int hi_bloom_filter_check(hi_bloom_handle_t *, uint8_t *);
-int hi_init_bloom_filter(hi_bloom_handle_t **, uint32_t);
-void hi_fini_bloom_filter(hi_bloom_handle_t *);
+void hi_bloom_filter_add(hi_bloom_handle_t *, uint8_t *, uint32_t);
+int hi_bloom_filter_check(hi_bloom_handle_t *, uint8_t *, uint32_t);
+void hi_bloom_filter_add_str(hi_bloom_handle_t *, const char *);
+int hi_bloom_filter_check_str(hi_bloom_handle_t *, const char *);
+
 int hi_bloom_bit_get(hi_bloom_handle_t *, uint32_t);
 int hi_bloom_print_hex_map(hi_bloom_handle_t *);
+
+int hi_init_bloom_filter(hi_bloom_handle_t **, uint32_t);
+int hi_bloom_init_mk(hi_bloom_handle_t **, uint32_t, uint32_t);
+void hi_fini_bloom_filter(hi_bloom_handle_t *);
+
+double hi_bloom_current_false_positiv_probability(hi_bloom_handle_t *);
+double hi_bloom_false_positiv_probability(uint32_t, uint32_t, uint32_t);
+
 
 
 

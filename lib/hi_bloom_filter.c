@@ -28,61 +28,77 @@
 #include <unistd.h>
 #include <math.h>
 
-void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key)
+struct {
+	uint32_t (*hash)(const uint8_t *key, uint32_t len);
+} lhi_hashmap[] = {
+	{ lhi_hash_hsieh },
+	{ lhi_hash_jenkins },
+	{ lhi_hash_goulburn },
+	{ lhi_hash_phong },
+	{ lhi_hash_torek },
+	{ lhi_hash_xor },
+	{ lhi_hash_sdbm }
+};
+
+
+double hi_bloom_current_false_positiv_probability(hi_bloom_handle_t *bh)
 {
-	uint32_t map_offset, bit_mask, hkey;
-
-	hkey = lhi_hash_elf(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	bh->filter_map[map_offset] |= bit_mask;
-
-	hkey = lhi_hash_torek(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	bh->filter_map[map_offset] |= bit_mask;
-
-	hkey = lhi_hash_phong(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	bh->filter_map[map_offset] |= bit_mask;
-
-	hkey = lhi_hash_djb2(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	bh->filter_map[map_offset] |= bit_mask;
+	/* (1-e^(-kn/m))^k */
+	return pow((1 - pow(M_E, -((double)bh->k * bh->n / bh->m))), (double)bh->k);
 }
 
-int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key)
+
+double hi_bloom_false_positiv_probability(uint32_t m, uint32_t n, uint32_t k)
 {
-	uint32_t map_offset, bit_mask, hkey;
+	/* (1-e^(-kn/m))^k */
+	return pow((1 - pow(M_E, -((double)k * n / m))), (double)k);
+}
 
-	hkey = lhi_hash_elf(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
-		return 0;
 
-	hkey = lhi_hash_torek(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
-		return 0;
+void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
+{
+	uint32_t map_offset, bit, bit_mask, hkey, iter;
 
-	hkey = lhi_hash_phong(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
-		return 0;
+	/* track number of elements */
+	bh->n++;
 
-	hkey = lhi_hash_djb2(key, strlen((char *)key));
-	map_offset = hkey % (bh->map_bit_size / 8);
-	bit_mask = 1 << (hkey & 0x7);
-	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
-		return 0;
+	/* TODO: could be unrolled via switch case and fall through ...
+	 * but I am to lazy now ... --HGN */
+	for (iter = 0; iter < bh->k; ++iter) {
+		hkey = lhi_hashmap[iter].hash(key, len);
+		bit  = hkey % bh->m;
+		map_offset = floor(bit / 8);
+		bit_mask = 1 << (bit & 7);
+		if (bh->filter_map[map_offset] & bit_mask)
+			bh->bit_collision++;
+		bh->filter_map[map_offset] |= bit_mask;
+	}
+}
+int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
+{
+	uint32_t map_offset, bit_mask, hkey, iter;
+
+	for (iter = 0; iter < bh->k; ++iter) {
+
+		hkey = lhi_hashmap[iter].hash(key, len);
+		map_offset = hkey % (bh->m / 8);
+		bit_mask = 1 << (hkey & 0x7);
+		if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
+			return 0; /* bit not set */
+	}
 
 	/* match! */
 	return 1;
+}
+
+void hi_bloom_filter_add_str(hi_bloom_handle_t *a, const char *b)
+{
+	hi_bloom_filter_add(a, (uint8_t *) b, strlen(b));
+}
+
+int hi_bloom_filter_check_str(hi_bloom_handle_t *a, const char *b)
+{
+	return hi_bloom_filter_check(a, (uint8_t *) b, strlen(b));
 }
 
 /**
@@ -100,7 +116,7 @@ int hi_bloom_bit_get(hi_bloom_handle_t *bh, uint32_t bit)
 	if (!bh)
 		return HI_ERR_NODATA;
 
-	if (bit > bh->map_bit_size)
+	if (bit > bh->m)
 		return HI_ERR_RANGE;
 
 	byte_offset = (uint32_t)(floor((double)bit / 8));
@@ -117,13 +133,57 @@ int hi_bloom_print_hex_map(hi_bloom_handle_t *bh)
 	if (!bh)
 		return HI_ERR_NODATA;
 
-	for (byte_offset = 0; byte_offset < bh->map_bit_size / 8; ++byte_offset) {
+	for (byte_offset = 0; byte_offset < bh->m / 8; ++byte_offset) {
 		fprintf(stderr, "0x%X ", bh->filter_map[byte_offset]);
 	}
 
 
 	return SUCCESS;
 }
+
+/**
+ * This is one initialize function for bloom filter.
+ * This function must be called to initialize the bloom filter
+ *
+ * @arg bh	this become out new hashish handle
+ * @arg m	hash bucket size
+ * @arg k   number of hash algorithms to use
+ * @returns negativ error value or zero on success
+ */
+int hi_bloom_init_mk(hi_bloom_handle_t **bh, uint32_t m, uint32_t k)
+{
+	int ret;
+	hi_bloom_handle_t *nbh;
+
+	if (m % 8 != 0 && m > 0) /* bit size must conform to byte boundaries */
+		return HI_ERR_RANGE;
+
+	if (ARRAY_SIZE(lhi_hashmap) < k)
+		return HI_ERR_RANGE;
+
+	ret = XMALLOC((void **) &nbh, sizeof(hi_bloom_handle_t));
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+	memset(nbh, 0, sizeof(hi_bloom_handle_t));
+
+	nbh->k = k;
+
+	/* initialize filter_map */
+	ret = XMALLOC((void **) &nbh->filter_map, m / 8);
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+	memset(nbh->filter_map, 0, m / 8);
+
+	nbh->m = m;
+
+	*bh = nbh;
+
+	return SUCCESS;
+}
+
+
 
 /**
  * This is the default initialize function for bloom filter.
@@ -155,7 +215,7 @@ int hi_init_bloom_filter(hi_bloom_handle_t **bh, uint32_t bits)
 	memset(nbh->filter_map, 0, bits / 8);
 
 
-	nbh->map_bit_size = bits;
+	nbh->m = bits;
 
 	*bh = nbh;
 
