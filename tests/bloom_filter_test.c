@@ -40,13 +40,13 @@ main(void)
 
 	hi_init_bloom_filter(&bh, 256);
 
-	hi_bloom_filter_add(bh, "xxx");
-	if ((hi_bloom_filter_check(bh, "xxx")) != 1) {
+	hi_bloom_filter_add_str(bh, "xxx");
+	if ((hi_bloom_filter_check_str(bh, "xxx")) != 1) {
 		fprintf(stderr, "failed\n");
 		exit(1);
 	}
 
-	if ((hi_bloom_filter_check(bh, "ccc")) == 1) {
+	if ((hi_bloom_filter_check_str(bh, "ccc")) == 1) {
 		fprintf(stderr, "failed (probably)\n");
 		exit(1);
 	}
