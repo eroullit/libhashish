@@ -42,7 +42,6 @@ const struct hashfunc_map_t lhi_hashfunc_map[] = {
 	{HI_HASH_PHONG, "phong", lhi_hash_phong},
 	{HI_HASH_TOREK, "torek", lhi_hash_torek},
 	{HI_HASH_XOR, "xor", lhi_hash_xor},
-	{HI_HASH_WEINB, "weinberger", lhi_hash_weinb},
 	{HI_HASH_KORZENDORFER1, "korzendorfer1", lhi_hash_korzendorfer1},
 	{HI_HASH_KORZENDORFER2, "korzendorfer2", lhi_hash_korzendorfer2},
 	{HI_HASH_SHA1, "sha1", lhi_hash_sha1}

@@ -42,18 +42,26 @@ uint32_t lhi_hash_dumb1(const uint8_t *key, uint32_t len)
 }
 
 /** lhi_hash_elf is the currently used hashing function for resolving symbol
- * names for the UNIX elf environment.
+ * names for the UNIX elf environment. It is a variant of
+ * the `hashpjw' function by P.J. Weinberger [see Aho/Sethi/Ullman, COMPILERS: Principles, Techniques and Tools]
+ *
+ * "In 32-bit environments, the algorithms are identical" (http://www.ddj.com/184409859).
+ * adapted from bfd/elf.c, GNU binutils 2.17.
  */
+
 uint32_t lhi_hash_elf(const uint8_t *key, uint32_t len)
 {
 	uint32_t hash = 0, x = 0, i = 0;
 
 	for (i = 0; i < len; key++, i++) {
 		hash = (hash << 4) + (*key);
-		if ((x = hash & 0xF0000000L) != 0)
-			hash ^= (x >> 24);
+		if ((x = hash & 0xF0000000L) != 0) {
+			hash ^= x >> 24;
+          /* The ELF ABI says `h &= ~g', but this is equivalent in
+             this case and on some machines one insn instead of two.  */
+			hash ^= x;
+		}
 
-		hash &= ~x;
 	}
 
 	return hash;
@@ -89,29 +97,6 @@ uint32_t lhi_hash_phong(const uint8_t *key, uint32_t len)
 	return hash;
 }
 
-
-/**
- * lhi_hash_weinb  P.J. Weinberger's hash function. Use a prime for range
- * (e.g. 65599)
- */
-uint32_t lhi_hash_weinb(const uint8_t *key, uint32_t len)
-{
-	uint32_t hash = 0, test = 0, i = 0;
-	const uint32_t bits_unsigned_int = (uint32_t) (sizeof(uint32_t) * 8);
-	const uint32_t three_quarters = (uint32_t) ((bits_unsigned_int  * 3) / 4);
-	const uint32_t eight_byte = (uint32_t) (bits_unsigned_int / 8);
-	const uint32_t high_bits = (uint32_t) (0xFFFFFFFF) << (bits_unsigned_int - eight_byte);
-
-	for (i = 0; i < len; key++, i++) {
-		hash = (hash << eight_byte) + (*key);
-
-		if ((test = hash & high_bits) != 0)
-			hash = (( hash ^ (test >> three_quarters)) & (~high_bits));
-			/* FIXME: should 24 be 28?  h ^= (g >> 24); h ^= g; */
-	}
-
-	return hash;
-}
 
 /**
  * lhi_hash_kr Brian W. Kernighan and Dennis M. Richie's hash function.

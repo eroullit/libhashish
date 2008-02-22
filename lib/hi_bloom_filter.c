@@ -42,7 +42,7 @@ void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key)
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
 
-	hkey = lhi_hash_weinb(key, strlen((char *)key));
+	hkey = lhi_hash_phong(key, strlen((char *)key));
 	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	bh->filter_map[map_offset] |= bit_mask;
@@ -69,7 +69,7 @@ int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key)
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
 		return 0;
 
-	hkey = lhi_hash_weinb(key, strlen((char *)key));
+	hkey = lhi_hash_phong(key, strlen((char *)key));
 	map_offset = hkey % (bh->map_bit_size / 8);
 	bit_mask = 1 << (hkey & 0x7);
 	if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))

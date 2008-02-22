@@ -66,7 +66,6 @@ enum hash_alg {
 	HI_HASH_PHONG,
 	HI_HASH_TOREK,
 	HI_HASH_XOR,
-	HI_HASH_WEINB,
 	HI_HASH_KORZENDORFER1,
 	HI_HASH_KORZENDORFER2,
 	HI_HASH_SHA1,
@@ -183,7 +182,6 @@ uint32_t lhi_hash_jenkins(const uint8_t *, uint32_t);
 uint32_t lhi_hash_goulburn(const uint8_t *, uint32_t);
 uint32_t lhi_hash_phong(const uint8_t *, uint32_t);
 uint32_t lhi_hash_torek(const uint8_t *, uint32_t);
-uint32_t lhi_hash_weinb(const uint8_t *, uint32_t);
 uint32_t lhi_hash_elf(const uint8_t *, uint32_t);
 uint32_t lhi_hash_djb2(const uint8_t *, uint32_t);
 uint32_t lhi_hash_xor(const uint8_t *, uint32_t);

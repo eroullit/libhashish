@@ -131,7 +131,7 @@ static void check_remove(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -200,7 +200,7 @@ static void check_get_remove(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -267,7 +267,7 @@ static void check_insert(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -312,7 +312,7 @@ static void check_iterator(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -402,7 +402,7 @@ static void check_hi_init_set(void)
 	assert(ret == HI_ERR_RANGE);
 
 	/* test for standard hashing algorithm - must pass */
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_WEINB);
+	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
 	assert(ret == 0);
 
 	ret = hi_set_hash_func(&hi_set, dumb_hash_func);
