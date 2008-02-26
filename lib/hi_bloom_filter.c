@@ -185,43 +185,6 @@ int hi_bloom_init_mk(hi_bloom_handle_t **bh, uint32_t m, uint32_t k)
 
 
 
-/**
- * This is the default initialize function for bloom filter.
- * This function must be called to initialize the bloom filter
- *
- * @arg bh	this become out new hashish handle
- * @arg bit_size	hash bucket size
- * @returns negativ error value or zero on success
- */
-int hi_init_bloom_filter(hi_bloom_handle_t **bh, uint32_t bits)
-{
-	int ret;
-	hi_bloom_handle_t *nbh;
-
-	if (bits % 8 != 0 && bits > 0) /* bit size must conform to byte boundaries */
-		return HI_ERR_NODATA;
-
-	ret = XMALLOC((void **) &nbh, sizeof(hi_bloom_handle_t));
-	if (ret != 0) {
-		return HI_ERR_SYSTEM;
-	}
-	memset(nbh, 0, sizeof(hi_bloom_handle_t));
-
-	/* initialize filter_map */
-	ret = XMALLOC((void **) &nbh->filter_map, bits / 8);
-	if (ret != 0) {
-		return HI_ERR_SYSTEM;
-	}
-	memset(nbh->filter_map, 0, bits / 8);
-
-
-	nbh->m = bits;
-
-	*bh = nbh;
-
-	return SUCCESS;
-}
-
 void hi_fini_bloom_filter(hi_bloom_handle_t *bh)
 {
 	free(bh->filter_map);
