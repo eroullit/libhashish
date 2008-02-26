@@ -41,20 +41,46 @@ struct {
 };
 
 
+/**
+ * Return the current false positive probability for
+ * the filter: (1-e^(-kn/m))^k
+ * Search the web for a more detailed explanation.
+ *
+ * @arg bh hashish handle
+ * @returns the current false positive probability
+ */
 double hi_bloom_current_false_positiv_probability(hi_bloom_handle_t *bh)
 {
-	/* (1-e^(-kn/m))^k */
 	return pow((1 - pow(M_E, -((double)bh->k * bh->n / bh->m))), (double)bh->k);
 }
 
 
+/**
+ * hi_bloom_false_positiv_probability returns the false
+ * positive probability for a given set of arguments:
+ * (1-e^(-kn/m))^k
+ *
+ * @arg m is the bitvector size (e.g. 256)
+ * @arg n are the amount of inserted elements
+ * @arg k is the number of utilized hash functions
+ * @returns the current false positive probability
+ */
 double hi_bloom_false_positiv_probability(uint32_t m, uint32_t n, uint32_t k)
 {
-	/* (1-e^(-kn/m))^k */
 	return pow((1 - pow(M_E, -((double)k * n / m))), (double)k);
 }
 
 
+/**
+ * hi_bloom_filter_add adds an key into the bloom
+ * filter and set all approximate bits for hi_bloom_handle
+ * bh. 
+ *
+ * @arg bh hashish handle
+ * @arg key is the key to add into the filter
+ * @arg len are the length of the key to calculate (to hash)
+ * @returns negative error value or zero when not found and one when found
+ */
 void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
 {
 	uint32_t map_offset, bit, bit_mask, hkey, iter;
@@ -74,6 +100,21 @@ void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
 		bh->filter_map[map_offset] |= bit_mask;
 	}
 }
+
+
+/**
+ * hi_bloom_filter_check check if a certain key is already
+ * in the filter. Remember how bloom filter works - there
+ * is no real deterministic characteristic that a certain
+ * key was already added to the filter (see
+ * hi_bloom_current_false_positiv_probability() for the current
+ * probability.
+ *
+ * @arg bh hashish handle
+ * @arg key is the key to add into the filter
+ * @arg len is the length of the key to hash
+ * @returns negative error value or zero when not found and one when found
+ */
 int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
 {
 	uint32_t map_offset, bit_mask, hkey, iter;
@@ -91,11 +132,31 @@ int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
 	return 1;
 }
 
+/**
+ * hi_bloom_filter_add_str is a simple wrapper around
+ * hi_bloom_filter_add to handle string keys more smoothly
+ *
+ * @arg bh hashish handle
+ * @arg key is the key to add into the filter
+ * @returns negative error value or zero when not found and one when found
+ */
 void hi_bloom_filter_add_str(hi_bloom_handle_t *a, const char *b)
 {
 	hi_bloom_filter_add(a, (uint8_t *) b, strlen(b));
 }
 
+
+/**
+ * hi_bloom_filter_check_str is wrapper for hi_bloom_filter_check
+ * for strings. The length arguments is substituted through strlen()
+ * and the argument types are string conform (e.g. const char *).
+ * See hi_bloom_filter_check() for an in deep detail of this function
+ * or read the source code. ;-)
+ *
+ * @arg bh hashish handle
+ * @arg key is the key to add into the filter
+ * @returns negative error value or zero when not found and one when found
+ */
 int hi_bloom_filter_check_str(hi_bloom_handle_t *a, const char *b)
 {
 	return hi_bloom_filter_check(a, (uint8_t *) b, strlen(b));
@@ -105,9 +166,9 @@ int hi_bloom_filter_check_str(hi_bloom_handle_t *a, const char *b)
  * hi_bloom_bit_get returns if an specified bit
  * in the map is set
  *
- * @arg bh	this become out new hashish handle
- * @arg bit	the bit to check (start with bit 0 - of course)
- * @returns negativ error value or zero when not found and one when found
+ * @arg bh hashish handle
+ * @arg bit	to check (start with bit 0 - of course)
+ * @returns negative error value or zero when not found and one when found
  */
 int hi_bloom_bit_get(hi_bloom_handle_t *bh, uint32_t bit)
 {
@@ -126,8 +187,26 @@ int hi_bloom_bit_get(hi_bloom_handle_t *bh, uint32_t bit)
 
 }
 
+/**
+ * This is for analysis of bloom filter and print
+ * out the textural representation of the bit vector
+ * in hexadecimal format.
+ *
+ * @arg bh the hashish handle
+ * @returns negativ error value or zero on success
+ */
 int hi_bloom_print_hex_map(hi_bloom_handle_t *bh)
 {
+	/* TODO: this function should be replaced
+	 * by an more parseable form. The main puspose
+	 * of this function is a simple wrapper around the
+	 * internal representation of the bitvector -a public accessor.
+	 *
+	 * A more clean design is a malloc/snprintf/return vector or
+	 * simple a malloc/memcpy/ return bitvector
+	 *
+	 *	--HGN
+	 */
 	uint32_t byte_offset = 0;
 
 	if (!bh)
@@ -185,6 +264,13 @@ int hi_bloom_init_mk(hi_bloom_handle_t **bh, uint32_t m, uint32_t k)
 
 
 
+/**
+ * This is finilizer function for bloom filter.
+ * This function must be called to free the internal
+ * memory used by bloom filter.
+ *
+ * @arg bh the hashish handle
+ */
 void hi_fini_bloom_filter(hi_bloom_handle_t *bh)
 {
 	free(bh->filter_map);
