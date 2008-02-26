@@ -34,20 +34,24 @@
 int
 main(void)
 {
+	int ret;
 	hi_bloom_handle_t *bh;
 
 	puts("Start bloom filter test sequence");
 
-	hi_init_bloom_filter(&bh, 256);
+	ret = hi_bloom_init_mk(&bh, 256, 4);
+	if (ret < 0) {
+		if (ret == HI_ERR_SYSTEM)
+			perror("failed: hi_bloom_init_mk");
+		else
+			fprintf(stderr, "failed: hi_bloom_init_mk: %s\n", hi_strerror(ret));
+
+		exit(1);
+	}
 
 	hi_bloom_filter_add_str(bh, "xxx");
 	if ((hi_bloom_filter_check_str(bh, "xxx")) != 1) {
 		fprintf(stderr, "failed\n");
-		exit(1);
-	}
-
-	if ((hi_bloom_filter_check_str(bh, "ccc")) == 1) {
-		fprintf(stderr, "failed (probably)\n");
 		exit(1);
 	}
 
