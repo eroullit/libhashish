@@ -265,7 +265,6 @@ int hi_bloom_filter_check_str(hi_bloom_handle_t *, const char *);
 int hi_bloom_bit_get(hi_bloom_handle_t *, uint32_t);
 int hi_bloom_print_hex_map(hi_bloom_handle_t *);
 
-int hi_init_bloom_filter(hi_bloom_handle_t **, uint32_t);
 int hi_bloom_init_mk(hi_bloom_handle_t **, uint32_t, uint32_t);
 void hi_fini_bloom_filter(hi_bloom_handle_t *);
 
