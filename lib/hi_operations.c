@@ -57,8 +57,7 @@ static int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 	case COLL_ENG_ARRAY_HASH:
 	case COLL_ENG_ARRAY_DYN:
 	case COLL_ENG_ARRAY_DYN_HASH:
-		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-		ret = lhi_lookup_array(hi_handle, key, keylen);
+		return FAILURE;
 		break;
 	case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
 		return FAILURE;
@@ -98,6 +97,7 @@ int hi_get(const hi_handle_t *hi_handle, const void *key, uint32_t keylen, void 
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
+			return lhi_get_array(hi_handle, key, keylen, data);
 		default:
 			return HI_ERR_INTERNAL;
 	}
@@ -128,10 +128,13 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 
 		case COLL_ENG_RBTREE:
 			return lhi_remove_rbtree(hi_handle, key, keylen, data);
+
 		case COLL_ENG_ARRAY:
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
+			return lhi_remove_array(hi_handle, key, keylen, data);
+
 		default:
 			return HI_ERR_INTERNAL;
 	}

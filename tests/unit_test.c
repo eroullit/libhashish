@@ -274,24 +274,39 @@ static void check_insert(enum coll_eng engine)
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
 
+	/* we need aditional arguments for ARRAY based engines */
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = hi_set_coll_eng_array_size(&hi_set, 20);
+			assert(ret == 0);
+			break;
+		default:
+			break;
+	};
+
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
 	assert(ret == 0);
 
 	/* same key -> must fail */
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), NULL);
+	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
 	assert(ret == HI_ERR_DUPKEY);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
 	assert(ret == 0);
-	assert(data_ptr == NULL);
+	//assert(data_ptr == NULL);
+
 	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
 	assert(ret == 0);
+
 	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
 	assert(ret == HI_ERR_NOKEY);
 
@@ -318,6 +333,20 @@ static void check_iterator(enum coll_eng engine)
 	assert(ret == 0);
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
+
+	/* we need aditional arguments for ARRAY based engines */
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = hi_set_coll_eng_array_size(&hi_set, 20);
+			assert(ret == 0);
+			break;
+		default:
+			break;
+	};
+
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
@@ -486,8 +515,12 @@ main(void)
 
 	puts(" o check COLL_ENG_LIST");
 	test_backend(COLL_ENG_LIST);
+
 	puts(" o check COLL_ENG_RBTREE");
 	test_backend(COLL_ENG_RBTREE);
+
+	puts(" o check COLL_ENG_ARRAY");
+	test_backend(COLL_ENG_ARRAY);
 
 	check_str_wrapper();
 

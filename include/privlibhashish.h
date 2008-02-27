@@ -112,7 +112,15 @@ int lhi_create_vanilla_hdnl(hi_handle_t **);
 int LHI_NO_EXPORT lhi_lookup_array(const hi_handle_t *, const void *, uint32_t);
 int LHI_NO_EXPORT lhi_fini_array(hi_handle_t *);
 int LHI_NO_EXPORT lhi_insert_array(hi_handle_t *, const void *, uint32_t , const void *);
+int LHI_NO_EXPORT lhi_get_array(const hi_handle_t *, const void *, uint32_t , void **);
+int LHI_NO_EXPORT lhi_remove_array(hi_handle_t *, const void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **list, void **len);
+
+/* to signal the current allocation status we need two markers */
+enum {
+	BA_NOT_ALLOCATED,
+	BA_ALLOCATED
+};
 
 /* private list manipulation functions */
 int LHI_NO_EXPORT lhi_lookup_list(hi_handle_t *, const void *, uint32_t);

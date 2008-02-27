@@ -130,9 +130,10 @@ struct __hi_rb_tree {
  /* CHAINING_ARRAY elements */
  typedef struct __hi_bucket_a_obj {
      uint32_t                 key_len; /* key length in bytes */
-     const void               *key;
+     const void              *key;
      uint32_t                 key_hash;
-     const void               *data;
+     const void              *data;
+	 int					  allocation; /* BA_NOT_ALLOCATED or BA_ALLOCATED */
  } hi_bucket_a_obj_t;
 
 typedef struct __hi_handle {

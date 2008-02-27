@@ -232,23 +232,28 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 
 static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 {
-	int ret; uint32_t i;
+	int ret; uint32_t i, j;
 
+	/* the number of elements in this bucket */
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_size,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
 
+	/* the maximum number of elements for this bucket (realloc necessary
+	 * if the space is insufficient */
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_max,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
 
+	/* the pointer for the several buckets */
 	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array,
 			(sizeof(hi_bucket_a_obj_t *) * hi_hndl->table_size));
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
 
+	/* last but not least: the buckets */
 	for (i = 0; i < hi_hndl->table_size; i++) {
 		/* align array on 16 byte boundaries */
 		ret = xalloc_align((void **) &hi_hndl->eng_array.bucket_array[i],
@@ -257,6 +262,17 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 		if (ret != 0)
 			return HI_ERR_SYSTEM;
 
+		/* a bucket_array[i] handles key, data and one additional field:
+		 * the allocation of the current element within the bucket. This
+		 * is essential for the bucket structure cause through due remove
+		 * method wholes can arise. One answer is to reorder the whole
+		 * structure or (like this implementation does), flag the element
+		 * as BA_NOT_ALLOCATED (or BA_ALLOCATED on the other hand)  --HGN */
+
+		for (j = 0; j < hi_hndl->coll_eng_array_size; ++j)
+			hi_hndl->eng_array.bucket_array[i][j].allocation = BA_NOT_ALLOCATED;
+
+		/* some status bookkeeping */
 		hi_hndl->eng_array.bucket_array_slot_size[i] = 0;
 		hi_hndl->eng_array.bucket_array_slot_max[i]  = hi_hndl->coll_eng_array_size;
 	}
