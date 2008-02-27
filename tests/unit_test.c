@@ -138,6 +138,19 @@ static void check_remove(enum coll_eng engine)
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
 
+	/* we need aditional arguments for ARRAY based engines */
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = hi_set_coll_eng_array_size(&hi_set, 20);
+			assert(ret == 0);
+			break;
+		default:
+			break;
+	};
+
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
 		print_error(ret);
@@ -206,6 +219,19 @@ static void check_get_remove(enum coll_eng engine)
 	assert(ret == 0);
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
+
+	/* we need aditional arguments for ARRAY based engines */
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = hi_set_coll_eng_array_size(&hi_set, 20);
+			assert(ret == 0);
+			break;
+		default:
+			break;
+	};
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
@@ -346,7 +372,6 @@ static void check_iterator(enum coll_eng engine)
 		default:
 			break;
 	};
-
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
@@ -498,6 +523,14 @@ static void test_backend(enum coll_eng engine)
 	fputs("\tcheck get/remove ... ", stdout); fflush(stdout);
 	check_get_remove(engine);
 
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_DYN_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_HASH:
+			return;
+			break;
+	};
 	fputs("\tcheck iterator... ", stdout); fflush(stdout);
 	check_iterator(engine);
 }

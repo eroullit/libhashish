@@ -179,6 +179,7 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 					hi_handle->eng_array.bucket_array[bucket][i].allocation =
 						BA_NOT_ALLOCATED;
 					hi_handle->eng_array.bucket_array_slot_size[bucket]--;
+					hi_handle->no_objects--;
 
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
@@ -260,7 +261,7 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 	 * TODO: we should split lhi_get_array to avoid the overhead
 	 * but due to the fact that the implementation isn't trivial
 	 * and currently in developing this is the actual state */
-	if (lhi_get_array(hi_handle, key, keylen, data) == SUCCESS)
+	if (lhi_get_array(hi_handle, key, keylen, &data) == SUCCESS)
 		return HI_ERR_DUPKEY;
 
 	/* check if the free place is exhausted. If this is
