@@ -523,13 +523,6 @@ static void test_backend(enum coll_eng engine)
 	fputs("\tcheck get/remove ... ", stdout); fflush(stdout);
 	check_get_remove(engine);
 
-	switch (engine) {
-		case COLL_ENG_ARRAY:
-		case COLL_ENG_ARRAY_DYN_HASH:
-		case COLL_ENG_ARRAY_DYN:
-		case COLL_ENG_ARRAY_HASH:
-			break;
-	};
 	fputs("\tcheck iterator... ", stdout); fflush(stdout);
 	check_iterator(engine);
 }
