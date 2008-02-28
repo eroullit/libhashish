@@ -113,7 +113,7 @@ int hi_iterator_reset(hi_iterator_t *i)
 	case COLL_ENG_ARRAY_DYN:
 	case COLL_ENG_ARRAY_DYN_HASH:
 		free(i->private);
-		res = list_get_next_bucket(i);
+		res = array_get_next_bucket(i);
 		break;
 	case COLL_ENG_LIST:
 	case COLL_ENG_LIST_HASH:
