@@ -211,11 +211,11 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 
 int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **private, void **res)
 {
-	unsigned int len, alloc;
+	unsigned int len, alloc, i, j;
 	void **memdup;
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-	len = hi_handle->eng_array.bucket_array_slot_max[bucket];
+	len = hi_handle->eng_array.bucket_array_slot_size[bucket];
 	if (len == 0) {
 		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 		return HI_ERR_NODATA;
@@ -233,8 +233,20 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void 
 		return HI_ERR_SYSTEM;
 	}
 	*res = (unsigned *) len;
-	while (len--)
-		memdup[len] = (void *) hi_handle->eng_array.bucket_array[bucket][len].data;
+
+	j = 0;
+
+	for (i = 0; i <
+			hi_handle->eng_array.bucket_array_slot_size[bucket]; i++) {
+
+		/* the array CAN contain spare data buckets, skip it if
+		 * we found such bucket */
+		if (hi_handle->eng_array.bucket_array[bucket][i].allocation ==
+				BA_NOT_ALLOCATED)
+			continue;
+
+		memdup[j++] = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
+	}
 
 	*private = memdup;
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);

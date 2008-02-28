@@ -528,7 +528,6 @@ static void test_backend(enum coll_eng engine)
 		case COLL_ENG_ARRAY_DYN_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_HASH:
-			return;
 			break;
 	};
 	fputs("\tcheck iterator... ", stdout); fflush(stdout);
