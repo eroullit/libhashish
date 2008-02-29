@@ -121,7 +121,7 @@ static void check_hi_load_factor(void)
 }
 
 
-static void check_remove(enum coll_eng engine)
+static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
@@ -131,7 +131,7 @@ static void check_remove(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
+	ret = hi_set_hash_alg(&hi_set, hash_alg);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -203,7 +203,7 @@ static void check_remove(enum coll_eng engine)
 }
 
 
-static void check_get_remove(enum coll_eng engine)
+static void check_get_remove(enum coll_eng engine, enum hash_alg hash_alg)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
@@ -213,7 +213,7 @@ static void check_get_remove(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
+	ret = hi_set_hash_alg(&hi_set, hash_alg);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -283,7 +283,7 @@ static void check_get_remove(enum coll_eng engine)
 }
 
 
-static void check_insert(enum coll_eng engine)
+static void check_insert(enum coll_eng engine, enum hash_alg hash_alg)
 {
 	int ret;
 	hi_handle_t *hi_hndl;
@@ -293,7 +293,7 @@ static void check_insert(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
+	ret = hi_set_hash_alg(&hi_set, hash_alg);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -342,7 +342,7 @@ static void check_insert(enum coll_eng engine)
 	fputs("passed\n", stdout);
 }
 
-static void check_iterator(enum coll_eng engine)
+static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 {
 	int ret, i;
 	hi_handle_t *hi_hndl;
@@ -353,7 +353,7 @@ static void check_iterator(enum coll_eng engine)
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
 	assert(ret == 0);
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
+	ret = hi_set_hash_alg(&hi_set, hash_alg);
 	assert(ret == 0);
 	ret = hi_set_coll_eng(&hi_set, engine);
 	assert(ret == 0);
@@ -436,7 +436,7 @@ static void check_iterator(enum coll_eng engine)
 
 
 
-static void check_hi_init_set(void)
+static void check_hi_init_set(enum hash_alg hash_alg)
 {
 	int ret;
 	struct hi_init_set hi_set;
@@ -456,7 +456,7 @@ static void check_hi_init_set(void)
 	assert(ret == HI_ERR_RANGE);
 
 	/* test for standard hashing algorithm - must pass */
-	ret = hi_set_hash_alg(&hi_set, HI_HASH_ELF);
+	ret = hi_set_hash_alg(&hi_set, hash_alg);
 	assert(ret == 0);
 
 	ret = hi_set_hash_func(&hi_set, dumb_hash_func);
@@ -512,40 +512,46 @@ static void check_str_wrapper(void)
 }
 
 
-static void test_backend(enum coll_eng engine)
+static void test_backend(enum coll_eng engine, enum hash_alg hash_alg)
 {
 	fputs("\tcheck insert ... ", stdout); fflush(stdout);
-	check_insert(engine);
+	check_insert(engine, hash_alg);
 
 	fputs("\tcheck remove ... ", stdout); fflush(stdout);
-	check_remove(engine);
+	check_remove(engine, hash_alg);
 
 	fputs("\tcheck get/remove ... ", stdout); fflush(stdout);
-	check_get_remove(engine);
+	check_get_remove(engine, hash_alg);
 
 	fputs("\tcheck iterator... ", stdout); fflush(stdout);
-	check_iterator(engine);
+	check_iterator(engine, hash_alg);
 }
 
 
 int
 main(void)
 {
+	int hash_alg;
+
 	puts("Start test sequence\n");
 
 	check_preambel_test();
 
-	check_hi_init_set();
+	for (hash_alg = 0; hash_alg < HI_HASH_MAX; hash_alg++) {
+
+		check_hi_init_set(hash_alg);
 
 
-	puts(" o check COLL_ENG_LIST");
-	test_backend(COLL_ENG_LIST);
+		puts(" o check COLL_ENG_LIST");
+		test_backend(COLL_ENG_LIST, hash_alg);
 
-	puts(" o check COLL_ENG_RBTREE");
-	test_backend(COLL_ENG_RBTREE);
+		puts(" o check COLL_ENG_RBTREE");
+		test_backend(COLL_ENG_RBTREE, hash_alg);
 
-	puts(" o check COLL_ENG_ARRAY");
-	test_backend(COLL_ENG_ARRAY);
+		puts(" o check COLL_ENG_ARRAY");
+		test_backend(COLL_ENG_ARRAY, hash_alg);
+
+	}
 
 	check_str_wrapper();
 

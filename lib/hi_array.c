@@ -30,19 +30,6 @@
 
 #include "threads.h"
 
-/* lhi_lookup_array search for a given key and return SUCCESS
- * when found in the hash and FAILURE if not found.
- *
- * @arg hi_handle the hashish handle
- * @arg key the pointer to the key
- * @arg keylen the len of the key in bytes
- * @return SUCCESS if found or FAILURE when not found
- */
-int lhi_lookup_array(const hi_handle_t *hi_handle,
-		const void *key, uint32_t keylen)
-{
-	return HI_ERR_INTERNAL;
-}
 
 /**
  * hi_get_array return for a given key the correspond data entry
@@ -66,7 +53,7 @@ int lhi_get_array(const hi_handle_t *hi_handle, const void *key,
 		case COLL_ENG_ARRAY:
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			for (i = 0; i <
-					hi_handle->eng_array.bucket_array_slot_size[bucket]; i++) {
+					hi_handle->eng_array.bucket_array_slot_max[bucket]; i++) {
 
 				int diff;
 
@@ -93,7 +80,7 @@ int lhi_get_array(const hi_handle_t *hi_handle, const void *key,
 				diff = hi_handle->key_cmp(key,
 							hi_handle->eng_array.bucket_array[bucket][i].key);
 				if (diff == 0) {
-					*data = hi_handle->eng_array.bucket_array[bucket][i].data;
+					*data = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -146,7 +133,7 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 		case COLL_ENG_ARRAY:
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			for (i = 0; i <
-					hi_handle->eng_array.bucket_array_slot_size[bucket]; i++) {
+					hi_handle->eng_array.bucket_array_slot_max[bucket]; i++) {
 
 				int diff;
 
@@ -232,6 +219,7 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void 
 		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 		return HI_ERR_SYSTEM;
 	}
+
 	*res = (unsigned *) len;
 
 	j = 0;
@@ -273,7 +261,7 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 	 * TODO: we should split lhi_get_array to avoid the overhead
 	 * but due to the fact that the implementation isn't trivial
 	 * and currently in developing this is the actual state */
-	if (lhi_get_array(hi_handle, key, keylen, &data) == SUCCESS)
+	if (lhi_get_array(hi_handle, key, keylen, (void **) &data) == SUCCESS)
 		return HI_ERR_DUPKEY;
 
 	/* check if the free place is exhausted. If this is
