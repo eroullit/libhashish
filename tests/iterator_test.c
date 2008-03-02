@@ -55,7 +55,7 @@ static void kvpairs_fill(struct key_value_pair *k, unsigned int len)
 static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsigned int len)
 {
 	int ret;
-	void *data_ptr;
+	void *data_ptr, *key_ptr;
 	unsigned int i;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
@@ -89,13 +89,14 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 		for (j = 0 ; j < len ; j++) {
 			unsigned data;
 			data_ptr = NULL;
-			ret = hi_iterator_getnext(iterator, &data_ptr);
+			ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr);
 			assert(ret == 0);
 			assert(data_ptr);
+			assert(key_ptr);
 			data = *(unsigned int *) data_ptr;
 			kvpair_tag_as_seen(k, data, len);
 		}
-		ret = hi_iterator_getnext(iterator, &data_ptr);
+		ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr);
 		assert (ret == HI_ERR_NODATA);
 		ret = hi_iterator_reset(iterator);
 		assert(ret == 0);

@@ -106,6 +106,13 @@ size_t strlcpy(char *, const char *, size_t);
 /* libhashish.c */
 int lhi_create_vanilla_hdnl(hi_handle_t **);
 
+struct lhi_bucket_array {
+	void **data;	/* malloc'ed array of data ptrs inside hash table */
+	void **keys;	/* malloc'ed array of key ptrs inside hash table */
+	size_t nmemb;	/* length of data/key array (keys and data are always 1:1) */
+};
+
+int LHI_NO_EXPORT lhi_bucket_array_alloc(struct lhi_bucket_array *a, size_t nmemb);
 
 /* private array manipulation functions */
 
@@ -114,7 +121,7 @@ int LHI_NO_EXPORT lhi_fini_array(hi_handle_t *);
 int LHI_NO_EXPORT lhi_insert_array(hi_handle_t *, const void *, uint32_t , const void *);
 int LHI_NO_EXPORT lhi_get_array(const hi_handle_t *, const void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_remove_array(hi_handle_t *, const void *, uint32_t , void **);
-int LHI_NO_EXPORT lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **list, void **len);
+int LHI_NO_EXPORT lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct lhi_bucket_array *);
 
 /* to signal the current allocation status we need two markers */
 enum {
@@ -122,20 +129,21 @@ enum {
 	BA_ALLOCATED
 };
 
+
 /* private list manipulation functions */
 int LHI_NO_EXPORT lhi_lookup_list(hi_handle_t *, const void *, uint32_t);
 int LHI_NO_EXPORT lhi_insert_list(hi_handle_t *, const void *, uint32_t , const void *);
 int LHI_NO_EXPORT lhi_fini_list(hi_handle_t *);
 int LHI_NO_EXPORT lhi_get_list(const hi_handle_t *, const void *, uint32_t , void **);
 int LHI_NO_EXPORT lhi_remove_list(hi_handle_t *, const void *, uint32_t , void **);
-int LHI_NO_EXPORT lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **list, void **len);
+int LHI_NO_EXPORT lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct lhi_bucket_array *);
 
 /* private rbtree manipulation functions */
 int LHI_NO_EXPORT lhi_insert_rbtree(hi_handle_t *, const void *, uint32_t , const void *);
 int LHI_NO_EXPORT lhi_get_rbtree(const hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_remove_rbtree(hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_fini_rbtree(hi_handle_t *);
-int LHI_NO_EXPORT lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t, void **list, void **len);
+int LHI_NO_EXPORT lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t, struct lhi_bucket_array *);
 
 #ifdef __cplusplus
 }

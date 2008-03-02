@@ -361,7 +361,7 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 }
 
 
-static size_t hi_rbtree_traverse(struct rb_node *rbnode, size_t pos, void **data, const size_t max)
+static size_t hi_rbtree_traverse(struct rb_node *rbnode, size_t pos,  struct lhi_bucket_array *a)
 {
 	struct lhi_rb_entry *lhi_entry;
 	struct rb_node *left, *right;
@@ -370,23 +370,24 @@ static size_t hi_rbtree_traverse(struct rb_node *rbnode, size_t pos, void **data
 	left = rbnode->rb_left;
 	pos++;
 	if (left)
-		pos = hi_rbtree_traverse(left, pos, data, max);
+		pos = hi_rbtree_traverse(left, pos, a);
 	right = rbnode->rb_right;
 	if (right)
-		pos = hi_rbtree_traverse(right, pos, data, max);
+		pos = hi_rbtree_traverse(right, pos, a);
 	lhi_entry = rb_entry(rbnode, struct lhi_rb_entry, node);
 	//printf("save key %s at %u\n", lhi_entry->key, p);
-	if (p < max)
-		data[p] = (void *) lhi_entry->data;
+	if (p < a->nmemb) {
+		a->data[p] = (void *) lhi_entry->data;
+		a->keys[p] = (void *) lhi_entry->key;
+	}
 	return pos;
 }
 
 
-int lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t tree, void **private, void **res)
+int lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t tree, struct lhi_bucket_array *a)
 {
 	struct rb_node *rbnode;
 	size_t max;
-	void *mem;
 	int ret = HI_ERR_NODATA;
 
 	if (hi_handle->table_size < tree)
@@ -400,14 +401,10 @@ int lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t tree, void *
 	if (!max)
 		goto out;
 
-	ret = HI_ERR_SYSTEM;
-	mem = calloc(max, sizeof(void*));
-	if (!mem)
+	ret = lhi_bucket_array_alloc(a, max);
+	if (ret)
 		goto out;
-
-	hi_rbtree_traverse(rbnode, 0, mem, max);
-	*private = mem;
-	*res = (size_t *) max;
+	hi_rbtree_traverse(rbnode, 0, a);
 	ret = 0;
  out:
 	lhi_pthread_rwlock_unlock(hi_handle->eng_rbtree.trees[tree].rwlock);

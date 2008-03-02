@@ -32,10 +32,9 @@
 #include "threads.h"
 
 
-int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void **private, void **res)
+int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct lhi_bucket_array *a)
 {
 	size_t max, i = 0;
-	void **mem = NULL;
 	int ret = HI_ERR_NODATA;
 
 	if (hi_handle->table_size < bucket)
@@ -45,9 +44,8 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void *
 	max = hi_handle->bucket_size[bucket];
 	if (!max)
 		goto out_err;
-	ret = HI_ERR_SYSTEM;
-	mem = calloc(max, sizeof(void*));
-	if (!mem)
+	ret = lhi_bucket_array_alloc(a, max);
+	if (ret)
 		goto out_err;
 
 	switch (hi_handle->coll_eng) {
@@ -56,7 +54,8 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void *
 		hi_bucket_obj_t *b_obj;
 		lhi_list_for_each_entry(b_obj,
 			&(hi_handle->eng_list.bucket_table[bucket]), list) {
-			mem[i] = (void*) b_obj->data;
+			a->data[i] = (void*) b_obj->data;
+			a->keys[i] = (void*) b_obj->key;
 			i++;
 		}
 	break;
@@ -66,7 +65,8 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void *
 		hi_bucket_hl_obj_t *b_obj;
 		lhi_list_for_each_entry(b_obj,
 			&(hi_handle->eng_list.bucket_table[bucket]), list) {
-			mem[i] = (void*) b_obj->data;
+			a->data[i] = (void*) b_obj->data;
+			a->keys[i] = (void*) b_obj->key;
 			i++;
 		}
 	break;
@@ -75,13 +75,10 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, void *
 		ret = HI_ERR_INTERNAL;
 		goto out_err;
 	}
-	*private = mem;
-	*res = (size_t *) max;
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 	return 0;
  out_err:
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-	free(mem);
 	return ret;
 }
 
