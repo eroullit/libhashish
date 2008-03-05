@@ -170,16 +170,33 @@ static int lhi_transform_set_2_hndl(hi_handle_t *hi_hndl,
 	 * representation this additional step is more generic.
 	 */
 
-	hi_hndl->table_size          = hi_set->table_size;
-	hi_hndl->hash_func           = hi_set->hash_func;
-	hi_hndl->hash2_func          = hi_set->hash2_func;
-	hi_hndl->key_cmp             = hi_set->key_cmp;
-	hi_hndl->coll_eng            = hi_set->coll_eng;
-	hi_hndl->self_resizing       = hi_set->self_resizing;
-	hi_hndl->coll_eng_array_size = hi_set->coll_eng_array_size;
+	hi_hndl->table_size           = hi_set->table_size;
+	hi_hndl->hash_func            = hi_set->hash_func;
+	hi_hndl->hash2_func           = hi_set->hash2_func;
+	hi_hndl->key_cmp              = hi_set->key_cmp;
+	hi_hndl->coll_eng             = hi_set->coll_eng;
+	hi_hndl->rehash_auto          = hi_set->rehash_auto;
+	hi_hndl->rehash_threshold     = hi_set->rehash_threshold;
+	hi_hndl->coll_eng_array_size  = hi_set->coll_eng_array_size;
 
 	return SUCCESS;
 }
+
+void lhi_transform_hndl_2_hndl(hi_handle_t *hi_hndl_src,
+		hi_handle_t *hi_hndl_dst)
+{
+
+	hi_hndl_dst->table_size          = hi_hndl_dst->table_size;
+	hi_hndl_dst->hash_func           = hi_hndl_dst->hash_func;
+	hi_hndl_dst->hash2_func          = hi_hndl_dst->hash2_func;
+	hi_hndl_dst->key_cmp             = hi_hndl_dst->key_cmp;
+	hi_hndl_dst->coll_eng            = hi_hndl_dst->coll_eng;
+	hi_hndl_dst->rehash_auto         = hi_hndl_dst->rehash_auto;
+	hi_hndl_dst->rehash_threshold    = hi_hndl_dst->rehash_threshold;
+	hi_hndl_dst->coll_eng_array_size = hi_hndl_dst->coll_eng_array_size;
+
+}
+
 
 static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 {
@@ -352,6 +369,109 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 			return HI_ERR_INTERNAL;
 			break;
 	}
+
+	*hi_hndl = hi_handle;
+
+	return SUCCESS;
+}
+
+/**
+ *
+ * @arg hi_hndl	this become out new hashish handle
+ * @returns negativ error value or zero on success
+ */
+
+int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
+{
+	int ret;
+	void *key, *data;
+	hi_handle_t *hi_handle;
+	hi_iterator_t *iterator;
+
+	/* create a clean handle for the new structure */
+	ret = lhi_create_vanilla_hdnl(&hi_handle);
+	if (ret != SUCCESS)
+		return ret;
+
+	/* we take over the original settings done
+	 * by the user taken at hi_create() time */
+	lhi_transform_hndl_2_hndl(*hi_hndl, hi_handle);
+
+
+	hi_handle->table_size = new_table_size;
+
+	/* Allocate memory fot accounting the number of
+	 * elements within every bucket in the table.  */
+	ret = XMALLOC((void **) &hi_handle->bucket_size,
+			hi_handle->table_size * sizeof(hi_handle->bucket_size));
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+
+	/* 0 objects in the list at start-up */
+	hi_handle->no_objects = 0;
+
+	/* Initiate mutex lock if build with thread
+	 * support. */
+	hi_handle->mutex_lock = NULL;
+	ret = lhi_pthread_mutex_init(&hi_handle->mutex_lock, NULL);
+	if (ret != 0) {
+		return HI_ERR_SYSTEM;
+	}
+
+	/* Create internal data structure for
+	 * list, array or rbtree */
+	switch (hi_handle->coll_eng) {
+
+		case COLL_ENG_LIST:
+		case COLL_ENG_LIST_HASH:
+		case COLL_ENG_LIST_MTF:
+		case COLL_ENG_LIST_MTF_HASH:
+			ret = lhi_create_eng_list(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+
+
+			break;
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = lhi_create_eng_array(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+
+
+			break;
+		case COLL_ENG_RBTREE:
+			ret = lhi_create_eng_rbtree(hi_handle);
+			if (ret != SUCCESS)
+				return ret;
+
+
+			break;
+		default:
+			return HI_ERR_INTERNAL;
+			break;
+	}
+
+	ret = hi_iterator_create(hi_hndl, &iterator);
+	if (ret != SUCCESS)
+		return ret;
+
+	while ((ret = hi_iterator_getnext(iterator, &data)) == SUCCESS) {
+
+
+
+	}
+	/* verify that no error occured during iterator run */
+	if (ret != HI_ERR_NODATA) {
+		hi_iterator_fini(iterator);
+		return ret;
+	}
+
+	hi_iterator_fini(iterator);
+
 
 	*hi_hndl = hi_handle;
 

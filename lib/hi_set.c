@@ -142,9 +142,9 @@ int hi_set_coll_eng(struct hi_init_set *hi_set, enum coll_eng coll_eng)
 	return SUCCESS;
 }
 
-void hi_set_self_resizing(struct hi_init_set *hi_set, int choice)
+void hi_set_rehash_auto(struct hi_init_set *hi_set, int choice)
 {
-	hi_set->self_resizing = choice;
+	hi_set->rehash_auto = choice;
 }
 
 int hi_set_key_cmp_func(struct hi_init_set *hi_set,

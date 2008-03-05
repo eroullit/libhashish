@@ -105,6 +105,7 @@ size_t strlcpy(char *, const char *, size_t);
 
 /* libhashish.c */
 int lhi_create_vanilla_hdnl(hi_handle_t **);
+void LHI_NO_EXPORT lhi_transform_hndl_2_hndl(hi_handle_t *, hi_handle_t *);
 
 struct lhi_bucket_array {
 	void **data;	/* malloc'ed array of data ptrs inside hash table */

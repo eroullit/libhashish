@@ -91,18 +91,24 @@ enum coll_eng {
 
 #define COLL_ENG_MAX (__COLL_ENG_MAX - 1)
 
-/** This struct is passed to hi_init and determine
- * the hash libaray behaviour
+/* This struct is passed to hi_init and determine
+ * the hash libaray behaviour.
+ *
+ * NOTE: if you add additional field make sure you
+ * adopt all dependcies functions like lhi_transform_hndl_2_hndl()!
  */
 struct hi_init_set {
 	uint32_t table_size;
-	int self_resizing;
+	int rehash_auto; /* < signals if the table perform self rehashing */
+	float rehash_threshold; /* < if self_resizing is true then this is the threshold */
 	uint32_t coll_eng_array_size;
 	enum coll_eng coll_eng;
 	uint32_t (*hash_func)(const uint8_t*, uint32_t);
 	uint32_t (*hash2_func)(const uint8_t*, uint32_t);
 	int (*key_cmp)(const uint8_t *, const uint8_t *);
 };
+
+#define	DEFAULT_REHASHING_THRESHOLD (0.7f)
 
 struct __hi_rb_tree {
 	struct rb_root root;
@@ -139,15 +145,15 @@ struct __hi_rb_tree {
 typedef struct __hi_handle {
 
 	/* data from user -> hi_init_set */
-	uint32_t table_size;
-	enum coll_eng coll_eng;
-	int self_resizing;
-	uint32_t coll_eng_array_size;
-
-	uint32_t (*hash_func)(const uint8_t*, uint32_t);
-	uint32_t (*hash2_func)(const uint8_t*, uint32_t);
-	int (*key_cmp)(const uint8_t *, const uint8_t *);
-	struct my_stuff * (*rb_search)(struct rb_root *, void *);
+	uint32_t table_size;  /* < the table size */
+	enum coll_eng coll_eng; /* < the selected collision engine */
+	int rehash_auto;      /* < flag to indicate self resizing or not */
+	float rehash_threshold; /* < if self_resizing is true then this is the threshold */
+	uint32_t coll_eng_array_size; /* < if collision engine is array then this indicates the size */
+	uint32_t (*hash_func)(const uint8_t*, uint32_t); /* < the primary hash function */
+	uint32_t (*hash2_func)(const uint8_t*, uint32_t); /* < *_HASH collision engines requires a second hash function */
+	int (*key_cmp)(const uint8_t *, const uint8_t *); /* < the key compare function e.g. strcmp() */
+	struct my_stuff * (*rb_search)(struct rb_root *, void *); /* < red black trees requires an addtional search function */
 
 	/* statistic data */
 
@@ -216,7 +222,8 @@ int hi_set_hash2_alg(struct hi_init_set *, enum hash_alg);
 int hi_set_hash2_func(struct hi_init_set *, uint32_t (*hash_func)(const uint8_t*, uint32_t));
 int hi_set_coll_eng(struct hi_init_set *, enum coll_eng);
 int hi_set_key_cmp_func(struct hi_init_set *, int (*cmp)(const uint8_t *, const uint8_t *));
-void hi_set_self_resizing(struct hi_init_set *, int);
+void hi_set_rehash_auto(struct hi_init_set *, int);
+void hi_set_rehash_threshold(struct hi_init_set *, float);
 int hi_set_coll_eng_array_size(struct hi_init_set *, uint32_t);
 
 /* xutils.c */
