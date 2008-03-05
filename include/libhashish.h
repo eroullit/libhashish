@@ -209,7 +209,7 @@ struct hi_operator;
 typedef struct hi_operator hi_iterator_t;
 int hi_iterator_create(hi_handle_t *t, hi_iterator_t **);
 int hi_iterator_reset(hi_iterator_t *);
-int hi_iterator_getnext(hi_iterator_t *, void **, void **);
+int hi_iterator_getnext(hi_iterator_t *, void **, void **, uint32_t *);
 void hi_iterator_fini(hi_iterator_t *);
 
 

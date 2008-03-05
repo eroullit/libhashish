@@ -56,6 +56,7 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct
 			&(hi_handle->eng_list.bucket_table[bucket]), list) {
 			a->data[i] = (void*) b_obj->data;
 			a->keys[i] = (void*) b_obj->key;
+			a->keys_length[i] = b_obj->key_len;
 			i++;
 		}
 	break;
@@ -67,6 +68,7 @@ int lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct
 			&(hi_handle->eng_list.bucket_table[bucket]), list) {
 			a->data[i] = (void*) b_obj->data;
 			a->keys[i] = (void*) b_obj->key;
+			a->keys_length[i] = b_obj->key_len;
 			i++;
 		}
 	break;
@@ -350,6 +352,7 @@ int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
 	obj->hi_handle = &hi_handle->eng_list.bucket_table[bucket];
 	lhi_list_add_tail(&obj->list, &hi_handle->eng_list.bucket_table[bucket]);
 	obj->key = key;
+	obj->key_len = keylen;
 	obj->data = data;
 	hi_handle->bucket_size[bucket]++;
 	hi_handle->no_objects++;

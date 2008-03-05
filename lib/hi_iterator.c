@@ -25,6 +25,8 @@ int lhi_bucket_array_alloc(struct lhi_bucket_array *a, size_t nmemb)
 {
 	size_t alloc = nmemb;
 	void *mem_d, *mem_k;
+	uint32_t *keylen;
+	int ret = HI_ERR_RANGE;
 
 	alloc *= sizeof(void*);
 	if (alloc / nmemb != sizeof(void *)) /* integer overflow */
@@ -38,20 +40,37 @@ int lhi_bucket_array_alloc(struct lhi_bucket_array *a, size_t nmemb)
 		free(mem_d);
 		return HI_ERR_SYSTEM;
 	}
+	alloc = nmemb * sizeof(uint32_t);
+	if (alloc / nmemb != sizeof(uint32_t))
+		goto out_err;
+
+	ret = HI_ERR_SYSTEM;
+	keylen = malloc(alloc);
+	if (!keylen)
+		goto out_err;
+
 	a->keys = mem_k;
+	a->keys_length = keylen;
 
 	a->data = mem_d;
 	a->nmemb = nmemb;
+
 	return 0;
+ out_err:
+	free(mem_d);
+	free(mem_k);
+	return ret;
 }
 
 
 static void lhi_bucket_array_free(struct lhi_bucket_array *a)
 {
-	free(a->keys);
 	free(a->data);
+	free(a->keys);
+	free(a->keys_length);
 	a->data = NULL;
 	a->keys = NULL;
+	a->keys_length = NULL;
 }
 
 
@@ -163,15 +182,12 @@ int hi_iterator_reset(hi_iterator_t *i)
 }
 
 
-int hi_iterator_getnext(hi_iterator_t *i, void **data, void **key)
+int hi_iterator_getnext(hi_iterator_t *i, void **data, void **key, uint32_t *keylen)
 {
-	int ret;
-	if (i->a.nmemb) {
-		i->a.nmemb--;
-		*data = i->a.data[i->a.nmemb];
-		*key = i->a.keys[i->a.nmemb];
-		return 0;
-	}
+	int ret = 0;
+
+	if (i->a.nmemb)
+		goto out;
 	switch (i->handle->coll_eng) {
 	case COLL_ENG_RBTREE:
 		lhi_bucket_array_free(&i->a);
@@ -198,9 +214,11 @@ int hi_iterator_getnext(hi_iterator_t *i, void **data, void **key)
 		return HI_ERR_INTERNAL;
 	}
 	if (ret == 0) {
+ out:
 		i->a.nmemb--;
 		*data = i->a.data[i->a.nmemb];
 		*key = i->a.keys[i->a.nmemb];
+		*keylen = i->a.keys_length[i->a.nmemb];
 	}
 	return ret;
 }

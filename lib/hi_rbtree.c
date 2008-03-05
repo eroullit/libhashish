@@ -379,6 +379,7 @@ static size_t hi_rbtree_traverse(struct rb_node *rbnode, size_t pos,  struct lhi
 	if (p < a->nmemb) {
 		a->data[p] = (void *) lhi_entry->data;
 		a->keys[p] = (void *) lhi_entry->key;
+		a->keys_length[p] = lhi_entry->keylen;
 	}
 	return pos;
 }

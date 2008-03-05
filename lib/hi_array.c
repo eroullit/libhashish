@@ -220,6 +220,7 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 
 		a->data[j] = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
 		a->keys[j] = (void *) hi_handle->eng_array.bucket_array[bucket][i].key;
+		a->keys_length[i] = hi_handle->eng_array.bucket_array[bucket][i].key_len;
 		j++;
 	}
  out:
@@ -283,6 +284,7 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 
 			/* add key/data add next free slot */
 			hi_handle->eng_array.bucket_array[bucket][i].key = key;
+			hi_handle->eng_array.bucket_array[bucket][i].key_len = keylen;
 			hi_handle->eng_array.bucket_array[bucket][i].data = data;
 			hi_handle->eng_array.bucket_array[bucket][i].allocation = BA_ALLOCATED;
 

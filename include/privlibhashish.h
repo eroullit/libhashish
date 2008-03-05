@@ -110,6 +110,7 @@ void LHI_NO_EXPORT lhi_transform_hndl_2_hndl(hi_handle_t *, hi_handle_t *);
 struct lhi_bucket_array {
 	void **data;	/* malloc'ed array of data ptrs inside hash table */
 	void **keys;	/* malloc'ed array of key ptrs inside hash table */
+	uint32_t *keys_length;/* malloc'ed array of key lengths */
 	size_t nmemb;	/* length of data/key array (keys and data are always 1:1) */
 };
 
