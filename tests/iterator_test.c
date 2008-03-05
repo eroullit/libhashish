@@ -56,6 +56,7 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 {
 	int ret;
 	void *data_ptr, *key_ptr;
+	uint32_t keylen;
 	unsigned int i;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
@@ -70,6 +71,19 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 	assert(ret == 0);
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
+
+	/* we need aditional arguments for ARRAY based engines */
+	switch (engine) {
+		case COLL_ENG_ARRAY:
+		case COLL_ENG_ARRAY_HASH:
+		case COLL_ENG_ARRAY_DYN:
+		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = hi_set_coll_eng_array_size(&hi_set, 20);
+			assert(ret == 0);
+			break;
+		default:
+			break;
+	};
 
 	ret = hi_create(&hi_hndl, &hi_set);
 	assert(ret == 0);
@@ -89,14 +103,14 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 		for (j = 0 ; j < len ; j++) {
 			unsigned data;
 			data_ptr = NULL;
-			ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr);
+			ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr, &keylen);
 			assert(ret == 0);
 			assert(data_ptr);
 			assert(key_ptr);
 			data = *(unsigned int *) data_ptr;
 			kvpair_tag_as_seen(k, data, len);
 		}
-		ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr);
+		ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr, &keylen);
 		assert (ret == HI_ERR_NODATA);
 		ret = hi_iterator_reset(iterator);
 		assert(ret == 0);
@@ -159,8 +173,8 @@ main(void)
 	puts(" o check COLL_ENG_LIST");
 	check_iterator(COLL_ENG_LIST, kvpairs, kvpairs_max);
 
-	puts(" o check COLL_ENG_ARRAY is borken -- not testing ");
-//	check_iterator(COLL_ENG_ARRAY, kvpairs, kvpairs_max);
+	puts(" o check COLL_ENG_ARRAY");
+	check_iterator(COLL_ENG_ARRAY, kvpairs, kvpairs_max);
 
 	puts("\nall tests passed - great!");
 
