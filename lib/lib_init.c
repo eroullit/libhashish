@@ -385,6 +385,7 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 {
 	int ret;
 	void *key, *data;
+	uint32_t keylen;
 	hi_handle_t *hi_handle;
 	hi_iterator_t *iterator;
 
@@ -455,15 +456,19 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 			break;
 	}
 
-	ret = hi_iterator_create(hi_hndl, &iterator);
+	ret = hi_iterator_create(*hi_hndl, &iterator);
 	if (ret != SUCCESS)
 		return ret;
 
-	while ((ret = hi_iterator_getnext(iterator, &data, &key)) == SUCCESS) {
+	while ((ret = hi_iterator_getnext(iterator, &data, &key, &keylen)) ==
+			SUCCESS) {
+		ret = hi_insert(hi_handle, key, keylen, data);
+		if (ret != SUCCESS) {
+			hi_iterator_fini(iterator);
+			hi_fini(hi_handle);
 
-
-
-
+			return ret;
+		}
 	}
 	/* verify that no error occured during iterator run */
 	if (ret != HI_ERR_NODATA) {
@@ -472,6 +477,9 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 	}
 
 	hi_iterator_fini(iterator);
+
+	/* free old hashish handle */
+	hi_fini(*hi_hndl);
 
 
 	*hi_hndl = hi_handle;

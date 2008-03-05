@@ -203,6 +203,7 @@ int hi_fini(hi_handle_t *);
 
 /* libhashish.c */
 int hi_create(hi_handle_t **, struct hi_init_set *);
+int hi_rehash(hi_handle_t **, uint32_t);
 
 /* hi_iterator.c */
 struct hi_operator;
@@ -244,6 +245,11 @@ int hi_remove(hi_handle_t *, void *, uint32_t, void **);
 static inline uint32_t hi_no_objects(const hi_handle_t *h)
 {
 	return h->no_objects;
+}
+
+static inline uint32_t hi_table_size(hi_handle_t *h)
+{
+	return h->table_size;
 }
 
 double hi_table_load_factor(hi_handle_t *);

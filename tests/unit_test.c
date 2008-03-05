@@ -350,6 +350,7 @@ static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 	hi_iterator_t *iterator;
 	void *data_ptr = (void *) 0xdeadbeef;
 	void *key;
+	uint32_t *keylen;
 
 	hi_set_zero(&hi_set);
 	ret = hi_set_bucket_size(&hi_set, 100);
@@ -398,7 +399,7 @@ static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 
 		for (j = 0 ; j < 3 ; j++) {
 			data_ptr = NULL;
-			ret = hi_iterator_getnext(iterator, &data_ptr, &key);
+			ret = hi_iterator_getnext(iterator, &data_ptr, &key, keylen);
 			assert(ret == 0);
 			assert(data_ptr);
 			if (strcmp(data_ptr, "data") == 0) {
@@ -415,7 +416,7 @@ static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 			assert(!got_key[2]);
 			got_key[2] = true;
 		}
-		ret = hi_iterator_getnext(iterator, &data_ptr, &key);
+		ret = hi_iterator_getnext(iterator, &data_ptr, &key, keylen);
 		assert (ret == HI_ERR_NODATA);
 		ret = hi_iterator_reset(iterator);
 		assert(ret == 0);

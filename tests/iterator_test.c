@@ -57,6 +57,7 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 	int ret;
 	void *data_ptr, *key_ptr;
 	uint32_t keylen;
+	uint32_t old_table_size;
 	unsigned int i;
 	hi_handle_t *hi_hndl;
 	struct hi_init_set hi_set;
@@ -122,6 +123,43 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 		}
 	}
 	hi_iterator_fini(iterator);
+
+
+	old_table_size = hi_table_size(hi_hndl);
+	ret = hi_rehash(&hi_hndl, hi_table_size(hi_hndl) / 4);
+	assert(ret == 0);
+	assert(hi_table_size(hi_hndl) == old_table_size / 4);
+
+	ret = hi_iterator_create(hi_hndl, &iterator);
+	assert(ret == 0);
+	assert(iterator);
+
+	for (i = 0; i < 2; i++) {
+		unsigned int j;
+
+		for (j = 0 ; j < len ; j++) {
+			unsigned data;
+			data_ptr = NULL;
+			ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr, &keylen);
+			assert(ret == 0);
+			assert(data_ptr);
+			assert(key_ptr);
+			data = *(unsigned int *) data_ptr;
+			kvpair_tag_as_seen(k, data, len);
+		}
+		ret = hi_iterator_getnext(iterator, &data_ptr, &key_ptr, &keylen);
+		assert (ret == HI_ERR_NODATA);
+		ret = hi_iterator_reset(iterator);
+		assert(ret == 0);
+
+		printf("pass %d done without duplicates, checking for missing elements\n", i+1);
+		for (j = 0 ; j < len ; j++) {
+			assert(k[j].already_seen);
+			k[j].already_seen = false;
+		}
+	}
+	hi_iterator_fini(iterator);
+
 
 	for (i = 0 ; i < len ; i++ ) {
 		ret = hi_remove_str(hi_hndl, k[i].key, &data_ptr);
