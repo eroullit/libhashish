@@ -126,7 +126,7 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 
 
 	old_table_size = hi_table_size(hi_hndl);
-	ret = hi_rehash(&hi_hndl, hi_table_size(hi_hndl) / 4);
+	ret = hi_rehash(hi_hndl, hi_table_size(hi_hndl) / 4);
 	assert(ret == 0);
 	assert(hi_table_size(hi_hndl) == old_table_size / 4);
 

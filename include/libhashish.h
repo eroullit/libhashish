@@ -203,7 +203,7 @@ int hi_fini(hi_handle_t *);
 
 /* libhashish.c */
 int hi_create(hi_handle_t **, struct hi_init_set *);
-int hi_rehash(hi_handle_t **, uint32_t);
+int hi_rehash(hi_handle_t *, uint32_t);
 
 /* hi_iterator.c */
 struct hi_operator;

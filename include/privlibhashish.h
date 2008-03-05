@@ -102,6 +102,7 @@ extern int __hi_error(int, const char *, unsigned int, const char *, \
 int xalloc_align(void **, size_t, size_t);
 size_t strlcpy(char *, const char *, size_t);
 
+int LHI_NO_EXPORT lhi_fini_internal(hi_handle_t *);
 
 /* libhashish.c */
 int lhi_create_vanilla_hdnl(hi_handle_t **);

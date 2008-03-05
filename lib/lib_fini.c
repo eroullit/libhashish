@@ -32,19 +32,18 @@
 #include "threads.h"
 
 /**
- * hi_fini delete a complete hashish handle. Keys and data _aren't_ free'ed.
- *
+ * lhi_fini_internal deletes a complete hashish handle. The handle itself and keys/data _aren't_ free'ed.
+ * used internally by the rehash code.
  * @arg hi_handle the hashish handle
  * @return SUCCESS or a negativ return values in the case of an error
  */
-int hi_fini(hi_handle_t *hi_handle)
+int lhi_fini_internal(hi_handle_t *hi_handle)
 {
 	uint32_t ret;
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 
 	switch (hi_handle->coll_eng) {
-
 		case COLL_ENG_LIST:
 		case COLL_ENG_LIST_HASH:
 		case COLL_ENG_LIST_MTF:
@@ -69,10 +68,23 @@ int hi_fini(hi_handle_t *hi_handle)
 	lhi_pthread_mutex_destroy(hi_handle->mutex_lock);
 
 	free(hi_handle->bucket_size);
-	free(hi_handle);
-	hi_handle = NULL;
+	return 0;
+}
 
-	return SUCCESS;
+/**
+ * hi_fini delete a complete hashish handle. Keys and data _aren't_ free'ed.
+ *
+ * @arg hi_handle the hashish handle
+ * @return SUCCESS or a negativ return values in the case of an error
+ */
+int hi_fini(hi_handle_t *hi_handle)
+{
+	int ret = lhi_fini_internal(hi_handle);
+
+	if (ret == 0)
+		free(hi_handle);
+
+	return ret;
 }
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */

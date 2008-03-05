@@ -381,7 +381,7 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
  * @returns negativ error value or zero on success
  */
 
-int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
+int hi_rehash(hi_handle_t *hi_hndl, uint32_t new_table_size)
 {
 	int ret;
 	void *key, *data;
@@ -396,8 +396,7 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 
 	/* we take over the original settings done
 	 * by the user taken at hi_create() time */
-	lhi_transform_hndl_2_hndl(*hi_hndl, hi_handle);
-
+	lhi_transform_hndl_2_hndl(hi_hndl, hi_handle);
 
 	hi_handle->table_size = new_table_size;
 
@@ -456,7 +455,7 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 			break;
 	}
 
-	ret = hi_iterator_create(*hi_hndl, &iterator);
+	ret = hi_iterator_create(hi_hndl, &iterator);
 	if (ret != SUCCESS)
 		return ret;
 
@@ -479,10 +478,9 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 	hi_iterator_fini(iterator);
 
 	/* free old hashish handle */
-	hi_fini(*hi_hndl);
+	lhi_fini_internal(hi_hndl);
 
-
-	*hi_hndl = hi_handle;
+	memcpy(hi_hndl, hi_handle, sizeof(*hi_hndl));
 
 	return SUCCESS;
 }
