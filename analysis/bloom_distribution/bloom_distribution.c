@@ -47,6 +47,7 @@ struct ip_port_tuple {
 	uint8_t addr_array[6]; /* 4 byte addr + 2 byte port */
 };
 
+#ifdef HAVE_LIBGD
 static int ip_port_tuple_gen(struct ip_port_tuple **ret,
 		struct drand48_data *seed_data)
 {
@@ -80,7 +81,9 @@ static int ip_port_tuple_gen(struct ip_port_tuple **ret,
 
 	return 0;
 }
+#endif
 
+#ifdef HAVE_LIBGD
 static void usage(const int retval, const char * const me)
 {
 	fprintf(stderr, "USAGE: %s options\n", me);
@@ -94,10 +97,17 @@ static void usage(const int retval, const char * const me)
 
 	exit(retval);
 }
+#endif /* HAVE_LIBGD */
 
 
 int main(int argc, char **argv)
 {
+
+#ifdef HAVE_LIBGD
+	int opt = 0, verbose = 0;
+	gdImagePtr im;
+	FILE *pngout;
+	int black, white, red, yellow;
 	int k, m, n = 0;
 	char label[64];
 	int ret, i, j, current_bit, iter;
@@ -108,14 +118,12 @@ int main(int argc, char **argv)
 	struct drand48_data seed_data;
 	unsigned long seed;
 	char *outdir = NULL;
-	int opt = 0, verbose = 0;
-#ifdef HAVE_LIBGD
-	gdImagePtr im;
-	FILE *pngout;
-	int black, white, red, yellow;
 #endif
 
 #ifndef HAVE_LIBGD
+
+	(void) argc; (void) argv;
+
 	fprintf(stderr, "Sorry, you had no GD support built-in, exiting ...\n");
 	exit(1);
 #else
