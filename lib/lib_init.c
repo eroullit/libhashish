@@ -383,7 +383,7 @@ int hi_create(hi_handle_t **hi_hndl, struct hi_init_set *hi_set)
 
 int hi_rehash(hi_handle_t *hi_hndl, uint32_t new_table_size)
 {
-	int ret;
+	int ret, auto_rehash;
 	void *key, *data;
 	uint32_t keylen;
 	hi_handle_t *hi_handle;
@@ -459,6 +459,8 @@ int hi_rehash(hi_handle_t *hi_hndl, uint32_t new_table_size)
 	if (ret != SUCCESS)
 		return ret;
 
+	auto_rehash = hi_handle->rehash_auto;
+	hi_handle->rehash_auto = 0;
 	while ((ret = hi_iterator_getnext(iterator, &data, &key, &keylen)) ==
 			SUCCESS) {
 		ret = hi_insert(hi_handle, key, keylen, data);
@@ -466,9 +468,11 @@ int hi_rehash(hi_handle_t *hi_hndl, uint32_t new_table_size)
 			hi_iterator_fini(iterator);
 			hi_fini(hi_handle);
 
+			hi_handle->rehash_auto = auto_rehash;
 			return ret;
 		}
 	}
+	hi_handle->rehash_auto = auto_rehash;
 	/* verify that no error occured during iterator run */
 	if (ret != HI_ERR_NODATA) {
 		hi_iterator_fini(iterator);

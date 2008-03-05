@@ -39,6 +39,7 @@
 void hi_set_zero(struct hi_init_set *hi_set)
 {
 	memset(hi_set, 0, sizeof(struct hi_init_set));
+	hi_set->rehash_threshold = 0.75;
 }
 
 /**

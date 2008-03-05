@@ -73,6 +73,7 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 	ret = hi_set_key_cmp_func(&hi_set, hi_cmp_str);
 	assert(ret == 0);
 
+	hi_set_rehash_auto(&hi_set, rand() & 1);
 	/* we need aditional arguments for ARRAY based engines */
 	switch (engine) {
 		case COLL_ENG_ARRAY:

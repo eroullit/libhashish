@@ -143,6 +143,21 @@ int hi_remove(hi_handle_t *hi_handle, void *key, uint32_t keylen, void **data)
 	return HI_ERR_INTERNAL;
 }
 
+
+static void do_rehash(hi_handle_t *h)
+{
+	float lf;
+
+	if (!h->rehash_auto)
+		return;
+
+	lf = h->no_objects / h->table_size;
+
+	if (lf > h->rehash_threshold)
+		hi_rehash(h, h->table_size * 2);
+}
+
+
 /**
  * hi_insert insert a key/data pair into our hashhandle
  *
@@ -155,6 +170,8 @@ int hi_insert(hi_handle_t *hi_handle, const void *key, uint32_t keylen, const vo
 
 	if (hi_lookup(hi_handle, key, keylen) == SUCCESS) /* already in hash or error */
 		return HI_ERR_DUPKEY;
+
+	do_rehash(hi_handle);
 
 	switch (hi_handle->coll_eng) {
 		case COLL_ENG_LIST:
