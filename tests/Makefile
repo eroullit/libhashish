@@ -21,9 +21,8 @@ endif
 
 export
 
-.PHONY: all clean install unit_test \
-				string_distribution memory_leak_inspector \
-				concurrent_test bloom_filter_test
+.PHONY: all clean install unit_test \				string_distribution memory_leak_inspector \
+concurrent_test bloom_filter_test
 
 all: unit_test memory_leak_inspector iterator_test concurrent_test bloom_filter_test # string_distribution concurrent_test
 
@@ -46,9 +45,33 @@ string_distribution: $(OBJ)
 memory_leak_inspector: $(OBJ)
 	$(CC) $(CFLAGS) memory_leak_inspector.o $(LIBFLAGS) -o $@
 
-test: unit_test concurrent_test
-	./unit_test
-	./concurrent_test
+test: 
+	@echo $(shell ./unit_test 1>/dev/null 2>&1; \
+					if [ $$? -ne 0 ] ; then  \
+					echo "./unit_test failed" ;\
+					else  echo "./unit test passed" ; \
+					fi ;\
+					)
+	@echo $(shell ./bloom_filter_test 1>/dev/null 2>&1; \
+					if [ $$? -ne 0 ] ; then  \
+					echo "./bloom_filter_test failed" ; \
+					else  echo "./bloom_filter_test passed" ; \
+					fi ; \
+					)
+	@echo $(shell ./iterator_test 1>/dev/null 2>&1; \
+					if [ $$? -ne 0 ] ; then  \
+					echo "./iterator_test failed" ; else \
+					echo "./iterator_test passed" ; \
+					fi ; \
+					)
+ifneq (,$(findstring lpthread,$(THREADFLAGS)))
+	@echo $(shell ./concurrent_test 1>/dev/null 2>&1;\
+					if [ $$? -ne 0 ] ; then \
+					echo "./concurrent_test failed" ; \
+					else  echo "./concurrent_test passed" ; \
+					fi ; \
+					)
+endif
 
 clean:
 	@echo "### cleaning"; \

@@ -115,16 +115,18 @@ void hi_bloom_filter_add(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
  * @arg len is the length of the key to hash
  * @returns negative error value or zero when not found and one when found
  */
-int hi_bloom_filter_check(hi_bloom_handle_t *bh, uint8_t *key, uint32_t len)
+int hi_bloom_filter_check(hi_bloom_handle_t *bh, void *gkey, uint32_t len)
 {
-	uint32_t map_offset, bit_mask, hkey, iter;
+	uint32_t map_offset, bit, bit_mask, hkey, iter;
+
+	uint8_t *key = (uint8_t *)gkey;
 
 	for (iter = 0; iter < bh->k; ++iter) {
-
 		hkey = lhi_hashmap[iter].hash(key, len);
-		map_offset = hkey % (bh->m / 8);
-		bit_mask = 1 << (hkey & 0x7);
-		if (!((bh->filter_map[map_offset] & bit_mask) == bit_mask))
+		bit  = hkey % bh->m;
+		map_offset = floor(bit / 8);
+		bit_mask = 1 << (bit & 7);
+		if (!(bh->filter_map[map_offset] & bit_mask))
 			return 0; /* bit not set */
 	}
 
@@ -159,7 +161,7 @@ void hi_bloom_filter_add_str(hi_bloom_handle_t *a, const char *b)
  */
 int hi_bloom_filter_check_str(hi_bloom_handle_t *a, const char *b)
 {
-	return hi_bloom_filter_check(a, (uint8_t *) b, strlen(b));
+	return hi_bloom_filter_check(a, (void *) b, strlen(b));
 }
 
 /**

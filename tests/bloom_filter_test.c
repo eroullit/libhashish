@@ -49,7 +49,12 @@ main(void)
 		exit(1);
 	}
 
-	hi_bloom_filter_add_str(bh, "xxx");
+	hi_bloom_filter_add(bh, (void *) "xxx", 3);
+	if ((hi_bloom_filter_check(bh, (void *) "xxx", 3)) != 1) {
+		fprintf(stderr, "failed\n");
+		exit(1);
+	}
+
 	if ((hi_bloom_filter_check_str(bh, "xxx")) != 1) {
 		fprintf(stderr, "failed\n");
 		exit(1);

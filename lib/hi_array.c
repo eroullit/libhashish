@@ -125,8 +125,6 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 
 	already_checked = 0;
 
-	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 
 	switch (hi_handle->coll_eng) {
@@ -237,9 +235,7 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
-	uint32_t bucket, i;
-
-	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
+	int32_t bucket, i;
 
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 
@@ -249,6 +245,10 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 	 * and currently in developing this is the actual state */
 	if (lhi_get_array(hi_handle, key, keylen, (void **) &data) == SUCCESS)
 		return HI_ERR_DUPKEY;
+
+
+
+	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 
 	/* check if the free place is exhausted. If this is
 	 * true we must increase the array by a defined factor */

@@ -272,7 +272,7 @@ typedef struct __hi_bloom_handle {
 } hi_bloom_handle_t;
 
 void hi_bloom_filter_add(hi_bloom_handle_t *, uint8_t *, uint32_t);
-int hi_bloom_filter_check(hi_bloom_handle_t *, uint8_t *, uint32_t);
+int hi_bloom_filter_check(hi_bloom_handle_t *, void *, uint32_t);
 void hi_bloom_filter_add_str(hi_bloom_handle_t *, const char *);
 int hi_bloom_filter_check_str(hi_bloom_handle_t *, const char *);
 

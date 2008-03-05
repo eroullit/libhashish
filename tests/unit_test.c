@@ -151,11 +151,13 @@ static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 			break;
 	};
 
+
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 0);
+
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
 	assert(ret == 0);
@@ -313,10 +315,12 @@ static void check_insert(enum coll_eng engine, enum hash_alg hash_alg)
 			break;
 	};
 
+
 	ret = hi_create(&hi_hndl, &hi_set);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
+
 
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
 	assert(ret == 0);
@@ -324,6 +328,7 @@ static void check_insert(enum coll_eng engine, enum hash_alg hash_alg)
 	/* same key -> must fail */
 	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
 	assert(ret == HI_ERR_DUPKEY);
+
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
 	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
