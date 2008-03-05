@@ -186,14 +186,14 @@ void lhi_transform_hndl_2_hndl(hi_handle_t *hi_hndl_src,
 		hi_handle_t *hi_hndl_dst)
 {
 
-	hi_hndl_dst->table_size          = hi_hndl_dst->table_size;
-	hi_hndl_dst->hash_func           = hi_hndl_dst->hash_func;
-	hi_hndl_dst->hash2_func          = hi_hndl_dst->hash2_func;
-	hi_hndl_dst->key_cmp             = hi_hndl_dst->key_cmp;
-	hi_hndl_dst->coll_eng            = hi_hndl_dst->coll_eng;
-	hi_hndl_dst->rehash_auto         = hi_hndl_dst->rehash_auto;
-	hi_hndl_dst->rehash_threshold    = hi_hndl_dst->rehash_threshold;
-	hi_hndl_dst->coll_eng_array_size = hi_hndl_dst->coll_eng_array_size;
+	hi_hndl_dst->table_size          = hi_hndl_src->table_size;
+	hi_hndl_dst->hash_func           = hi_hndl_src->hash_func;
+	hi_hndl_dst->hash2_func          = hi_hndl_src->hash2_func;
+	hi_hndl_dst->key_cmp             = hi_hndl_src->key_cmp;
+	hi_hndl_dst->coll_eng            = hi_hndl_src->coll_eng;
+	hi_hndl_dst->rehash_auto         = hi_hndl_src->rehash_auto;
+	hi_hndl_dst->rehash_threshold    = hi_hndl_src->rehash_threshold;
+	hi_hndl_dst->coll_eng_array_size = hi_hndl_src->coll_eng_array_size;
 
 }
 
@@ -459,7 +459,8 @@ int hi_rehash(hi_handle_t **hi_hndl, uint32_t new_table_size)
 	if (ret != SUCCESS)
 		return ret;
 
-	while ((ret = hi_iterator_getnext(iterator, &data)) == SUCCESS) {
+	while ((ret = hi_iterator_getnext(iterator, &data, &key)) == SUCCESS) {
+
 
 
 
