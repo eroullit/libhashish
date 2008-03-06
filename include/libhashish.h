@@ -62,7 +62,7 @@ enum hash_alg {
 	HI_HASH_ELF,
 	HI_HASH_GOULBURN,
 	HI_HASH_HSIEH,
-	HI_HASH_JENKINS,
+	HI_HASH_JENKINS3,
 	HI_HASH_PHONG,
 	HI_HASH_TOREK,
 	HI_HASH_XOR,
@@ -186,7 +186,7 @@ typedef struct __hi_handle {
 /* hashfunc.c */
 uint32_t lhi_hash_dumb1(const uint8_t *, uint32_t);
 uint32_t lhi_hash_hsieh(const uint8_t *, uint32_t);
-uint32_t lhi_hash_jenkins(const uint8_t *, uint32_t);
+uint32_t lhi_hash_jenkins3(const uint8_t *, uint32_t);
 uint32_t lhi_hash_goulburn(const uint8_t *, uint32_t);
 uint32_t lhi_hash_phong(const uint8_t *, uint32_t);
 uint32_t lhi_hash_torek(const uint8_t *, uint32_t);

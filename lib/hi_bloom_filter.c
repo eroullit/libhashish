@@ -32,7 +32,7 @@ struct {
 	uint32_t (*hash)(const uint8_t *key, uint32_t len);
 } lhi_hashmap[] = {
 	{ lhi_hash_hsieh },
-	{ lhi_hash_jenkins },
+	{ lhi_hash_jenkins3 },
 	{ lhi_hash_goulburn },
 	{ lhi_hash_phong },
 	{ lhi_hash_torek },

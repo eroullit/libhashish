@@ -38,7 +38,7 @@ const struct hashfunc_map_t lhi_hashfunc_map[] = {
 	{HI_HASH_ELF, "elf", lhi_hash_elf},
 	{HI_HASH_GOULBURN, "goulburn", lhi_hash_goulburn},
 	{HI_HASH_HSIEH, "hsieh", lhi_hash_hsieh},
-	{HI_HASH_JENKINS, "jenkins", lhi_hash_jenkins},
+	{HI_HASH_JENKINS3, "jenkins3", lhi_hash_jenkins3},
 	{HI_HASH_PHONG, "phong", lhi_hash_phong},
 	{HI_HASH_TOREK, "torek", lhi_hash_torek},
 	{HI_HASH_XOR, "xor", lhi_hash_xor},

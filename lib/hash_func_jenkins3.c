@@ -350,7 +350,7 @@ static uint32_t hashlittle( const void *key, size_t length, uint32_t initval)
 }
 
 
-uint32_t lhi_hash_jenkins(const uint8_t *b, uint32_t len)
+uint32_t lhi_hash_jenkins3(const uint8_t *b, uint32_t len)
 {
 	return hashlittle(b, len, 0);
 }
