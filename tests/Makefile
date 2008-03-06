@@ -21,7 +21,7 @@ endif
 
 export
 
-.PHONY: all clean install unit_test \				string_distribution memory_leak_inspector \
+.PHONY: all clean install unit_test string_distribution memory_leak_inspector \
 concurrent_test bloom_filter_test
 
 all: unit_test memory_leak_inspector iterator_test concurrent_test bloom_filter_test # string_distribution concurrent_test
@@ -75,8 +75,9 @@ endif
 
 clean:
 	@echo "### cleaning"; \
-	$(RM) -f $(OBJ) unit_test string_distribution concurrent_test memory_leak_inspector *.png core*
-	$(RM) -f iterator_test
+	$(RM) -f $(OBJ) unit_test string_distribution
+	$(RM) -f concurrent_test memory_leak_inspector *.png core*
+	$(RM) -f iterator_test bloom_filter_test
 
 distclean:
 	@echo "### distclean testdir"
