@@ -36,7 +36,7 @@
 #define	KS_COUNTER 3
 
 /* Chi Square test based on random test suite for GAlib.
- * http://lancet.mit.edu/galib-2.4/examples/randtest.c
+ * http://lancet.mit.edu/galib-2.4/examples/randtest.C
  */
 
 static void die_usage(void)

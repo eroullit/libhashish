@@ -2,19 +2,18 @@
 
 use strict; use warnings;
 
-
-my $i;
-my $nchi = 1000;
-my $nchi_step = 100;
+my $NCHI_START = 1000;
+my $NCHI_END = 100000;
+my $nchi_step = 5000;
 
 sub calc {
    my $algorithm = shift;
 
    open(POU,">$algorithm.data") or die "Can't open $algorithm.data for writing: $!\n";
-   for ($i = 0, $nchi = 1000; $nchi < 10000; $nchi += $nchi_step, $i++) {
+   for (my $nchi = $NCHI_START; $nchi < $NCHI_END; $nchi += $nchi_step) {
       my $res = `./chi_square $algorithm string $nchi 100`;
       if ($res =~ /(\d+\.\d+).*?(\d+\.\d+)/) {
-         print POU $i . " " . $1 . " " . $2 . "\n";
+         print POU $nchi . " " . $1 . " " . $2 . "\n";
 
       }
    }
@@ -22,7 +21,8 @@ sub calc {
 
 }
 
-my @alg_array = ("torek", "goulburn", "phong", "hsieh", "jenkins", "sha1", "korzendorfer1");
+#my @alg_array = ("torek", "goulburn", "phong", "hsieh", "jenkins2", "jenkins3", "sha1", "korzendorfer1");
+my @alg_array = ("jenkins2", "jenkins3");
 
 foreach my $alg (@alg_array) {
    calc($alg);
