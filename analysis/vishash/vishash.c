@@ -7,36 +7,62 @@
 #include <gd.h>
 
 #include "libhashish.h"
+#include "localhash.h"
 #include "analysis_common.h"
 
 
 static FILE *words_file;
 
-static uint32_t xorpack(const uint8_t *s, size_t len)
+
+static uint32_t *pack_common(const uint8_t *s, uint32_t *len, uint32_t *last, uint32_t *hash)
 {
-	const uint32_t *mem;
-	uint32_t last = 0xB4dF00d;
-	uint32_t hash = 0x4551;
+	uint32_t *mem;
 	uint32_t align = ((unsigned) s) & 3;
-	uint32_t rem = len & 3;
+	uint32_t rem = *len & 3;
 
+	*last = 0xB4dF00d;
 	if (rem)
-		memcpy(&last, &s[len - rem], rem);
-
+		memcpy(last, &s[*len - rem], rem);
+	*hash = 0x4550 + 0x23;
 	if (align) {
-		memcpy(&hash, s, align);
+		memcpy(hash, s, align);
 		align = sizeof(uint32_t) - align;
 		s += align;
 		len -= align;
 	}
 	mem = (uint32_t *) s;
-	hash ^= len;
-	len >>= 2;
+	*len >>= 2;
+	return mem;
+}
+
+
+static uint32_t xorpack(const uint8_t *s, uint32_t len)
+{
+	const uint32_t *mem;
+	uint32_t last;
+	uint32_t hash;
+
+	mem = pack_common(s, &len, &last, &hash);
 	while (len--) {
 		hash ^= *mem;
 		mem++;
 	}
-	return hash ^ last;
+	return hash * last;
+}
+
+
+static uint32_t multpack(const uint8_t *s, uint32_t len)
+{
+	const uint32_t *mem;
+	uint32_t last;
+	uint32_t hash;
+
+	mem = pack_common(s, &len, &last, &hash);
+	while (len--) {
+		hash *= *mem;
+		mem++;
+	}
+	return hash * last;
 }
 
 
@@ -110,6 +136,16 @@ static uint8_t *counter(unsigned x, unsigned y, size_t *len)
 }
 
 
+static uint8_t *rand_data(unsigned x, unsigned y, size_t *len)
+{
+	static unsigned int r;
+	(void)x; (void)y;
+	r = rand();
+	* len = sizeof(r);
+	return (uint8_t*) &r;
+}
+
+
 static uint8_t *getstring(unsigned x, unsigned y, size_t *len)
 {
 	static char buf[256];
@@ -127,6 +163,31 @@ static uint8_t *getstring(unsigned x, unsigned y, size_t *len)
 	return (uint8_t *)buf;
 }
 
+static void die_nohashfun(void)
+{
+	fputs("try one of multpack, xorpack or one of"
+	" the functions known by libhashish\n", stderr);
+	die_list();
+}
+
+
+static hash_function_t get_hashfun_ptr(const char *name)
+{
+	hash_function_t fun;
+
+	fun = get_hashfunc_by_name(name);
+	if (fun)
+		return fun;
+	if (strcmp(name, "multpack") == 0)
+		fun = multpack;
+	else if (strcmp(name, "xorpack") == 0)
+		fun = xorpack;
+	else
+		die_nohashfun();
+	return fun;
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -141,19 +202,16 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc < 2)
-		die_list();
+		die_nohashfun();
 
-	fun = get_hashfunc_by_name(argv[1]);
-	if (!fun) {
-		if (strcmp(argv[1], "xorpack"))
-			die_list();
-		fun = xorpack;
-	}
+	fun = get_hashfun_ptr(argv[1]);
 	if (words_file) {
 		GEN_IMAGE(480, 480, fun, argv[1], getstring);
 	} else {
+		srand(get_proper_seed());
 		GEN_IMAGE(res_x, res_y, fun, argv[1], xy_concat);
 		GEN_IMAGE(res_x, res_y, fun, argv[1], counter);
+		GEN_IMAGE(res_x, res_y, fun, argv[1], rand_data);
 	}
 	return 0;
 }
