@@ -59,7 +59,7 @@ install:
 	$(INSTALL) -m 0644 $(OUT_SLIB) $(DESTDIR)$(libdir)
 	$(INSTALL) -m 0644 $(OUT_DLIB) $(DESTDIR)$(libdir)
 	$(LDCONFIG)
-	( cd $(LIBDIR) ; ln -sf $(LIBHASHNAME) $(LIBHASH) )
+	( cd $(LIBDIR) ; ln -sf $(DESTDIR)$(libdir)/$(LIBHASHNAME) $(DESTDIR)$(libdir)/$(LIBHASH) )
 
  export
  

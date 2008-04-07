@@ -11,15 +11,13 @@ all:
 
 clean:
 	@true
-	rm -rf $(DESTDIR)$(includedir)/libhashish
 
 distclean: clean
 	@true
 
 install:
-	mkdir -p $(DESTDIR)$(includedir)/libhashish
-	install -m 0644 libhashish.h $(DESTDIR)$(includedir)/libhashish/
+	install -m 0644 libhashish.h $(DESTDIR)$(includedir)/
 
 uninstall:
 	@true
-	rm -rf $(DESTDIR)$(includedir)/libhashish
+	rm -rf $(DESTDIR)$(includedir)/libhashish.h
