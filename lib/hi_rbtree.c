@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 
+#include "rbtree.h"
 #include "threads.h"
 
 
@@ -335,7 +336,8 @@ int lhi_get_rbtree(const hi_handle_t *hi_handle,
 		const void *key, uint32_t keylen, void **res)
 {
 	uint32_t tree = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
-	struct rb_node **rbnode = &hi_handle->eng_rbtree.trees[tree].root.rb_node;
+	struct rb_node *tmp_node = hi_handle->eng_rbtree.trees[tree].root.rb_node;
+	struct rb_node **rbnode = &tmp_node;
 
 	lhi_pthread_rwlock_rdlock(hi_handle->eng_rbtree.trees[tree].rwlock);
 	while (*rbnode) {
@@ -421,7 +423,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 	struct rb_root *root;
 	struct rb_node **rbnode;
 
-	root = &hi_handle->eng_rbtree.trees[tree].root;
+	root = (struct rb_root*) &hi_handle->eng_rbtree.trees[tree].root;
 	rbnode = &root->rb_node;
 	if (!rbnode)
 		return HI_ERR_NOKEY;
@@ -466,7 +468,7 @@ int lhi_insert_rbtree(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
 	uint32_t tree = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
-	struct rb_root *root = &hi_handle->eng_rbtree.trees[tree].root;
+	struct rb_root *root = (struct rb_root*)  &hi_handle->eng_rbtree.trees[tree].root;
 	struct lhi_rb_entry *node_new;
 	struct rb_node **rbnode, *parent = NULL;
 	int ret = HI_ERR_DUPKEY;

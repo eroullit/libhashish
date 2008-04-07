@@ -112,8 +112,9 @@ struct hi_init_set {
 
 #define	DEFAULT_REHASHING_THRESHOLD (0.7f)
 
+struct rb_root;
 struct __hi_rb_tree {
-	struct rb_root root;
+	struct { void *rb_node; } root;
 	pthread_rwlock_t *rwlock;
 };
 
