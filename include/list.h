@@ -2,13 +2,6 @@
 #ifndef LIBHASHISH_LIST_H_
 #define LIBHASHISH_LIST_H_
 
-struct lhi_list_head
-{
-	struct lhi_list_head *	next;
-	struct lhi_list_head *	prev;
-};
-
-
 static inline void __lhi_list_add(struct lhi_list_head *obj,
 				 struct lhi_list_head *prev,
 				 struct lhi_list_head *next)

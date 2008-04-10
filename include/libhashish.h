@@ -24,8 +24,6 @@
 #include <inttypes.h> /* include stdint.h */
 #include <stdio.h>
 #include <pthread.h>
-#include "list.h"
-#include "rbtree.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,6 +114,12 @@ struct rb_root;
 struct __hi_rb_tree {
 	struct { void *rb_node; } root;
 	pthread_rwlock_t *rwlock;
+};
+
+struct lhi_list_head
+{
+	struct lhi_list_head *	next;
+	struct lhi_list_head *	prev;
 };
 
  typedef struct __hi_bucket_obj {
