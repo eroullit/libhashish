@@ -13,15 +13,12 @@ gendoc:
 	mkdir html
 	doxygen Doxyfile
 
-distclean:
+distclean: clean
 	$(RM) -f html/*
 
 clean:
 	@true
 	rm -rf html
-
-distclean: clean
-	@true
 
 install:
 	@true
