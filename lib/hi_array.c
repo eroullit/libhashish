@@ -18,18 +18,11 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "privlibhashish.h"
-#include "list.h"
 
 #include "threads.h"
-
 
 /**
  * hi_get_array return for a given key the correspond data entry

@@ -1,6 +1,4 @@
 /*
-** $Id$
-**
 ** Copyright (C) 2006 - Hagen Paul Pfeifer <hagen@jauu.net>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -18,17 +16,9 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "privlibhashish.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 
-#include "list.h"
-
+#include "privlibhashish.h"
 
 /**
  * Initialize the hi_init_set structure. This function

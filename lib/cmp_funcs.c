@@ -1,4 +1,3 @@
-
 /*
 ** $Id: cmp_funcs.c 6 2007-08-20 07:52:21Z hgndgtl $
 **
@@ -19,15 +18,9 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "privlibhashish.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 
+#include "privlibhashish.h"
 
 int hi_cmp_str(const uint8_t *key1, const uint8_t *key2)
 {
@@ -73,8 +66,5 @@ int hi_cmp_uint16_t(const uint8_t *key1, const uint8_t *key2)
 
 	return *a - *b;
 }
-
-
-
 
 /* vim:set ts=4 sw=4 tw=78 noet: */

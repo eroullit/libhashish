@@ -1,6 +1,4 @@
 /*
-** $Id$
-**
 ** Copyright (C) 2006 - Hagen Paul Pfeifer <hagen@jauu.net>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -20,15 +18,6 @@
 
 #include "privlibhashish.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "list.h"
-
 #include "threads.h"
 
 /**
@@ -40,7 +29,6 @@
  * @arg keylen the len of the key in bytes
  * @return SUCCESS if found or FAILURE when not found
  */
-
 static int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 {
 	int ret;
@@ -52,23 +40,18 @@ static int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 	case COLL_ENG_LIST_MTF_HASH:
 		lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 		ret = lhi_lookup_list(hi_handle, key, keylen);
-		break;
+		lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
+		return ret;
 	case COLL_ENG_ARRAY:
 	case COLL_ENG_ARRAY_HASH:
 	case COLL_ENG_ARRAY_DYN:
 	case COLL_ENG_ARRAY_DYN_HASH:
 		return FAILURE;
-		break;
 	case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
 		return FAILURE;
-	default:
-		return HI_ERR_INTERNAL;
 	}
-
-	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
-	return ret;
+	return HI_ERR_INTERNAL;
 }
-
 
 /**
  * hi_get return for a given key the correspond data entry

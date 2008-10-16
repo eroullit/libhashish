@@ -20,15 +20,10 @@
 
 #include "privlibhashish.h"
 
-#define _GNU_SOURCE
-#define _XOPEN_SOURCE 600
-#include <stdio.h>
+//#define _GNU_SOURCE
+//#define _XOPEN_SOURCE 600
 #include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdarg.h>
 
 #include "list.h"
 

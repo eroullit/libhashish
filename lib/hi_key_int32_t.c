@@ -1,6 +1,4 @@
 /*
-** $Id$
-**
 ** Copyright (C) 2008 - Hagen Paul Pfeifer <hagen@jauu.net>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -19,16 +17,6 @@
 */
 
 #include "privlibhashish.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "list.h"
-#include "threads.h"
 
 
 /**

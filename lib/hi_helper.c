@@ -1,6 +1,4 @@
 /*
-** $Id$
-**
 ** Copyright (C) 2008 - Hagen Paul Pfeifer <hagen@jauu.net>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -19,10 +17,6 @@
 */
 
 #include "privlibhashish.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
 
 double hi_table_load_factor(hi_handle_t *hi_hndl)
 {

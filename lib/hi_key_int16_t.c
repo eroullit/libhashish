@@ -20,17 +20,6 @@
 
 #include "privlibhashish.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "list.h"
-#include "threads.h"
-
-
 /**
  * This is the default initialize function for datatype int16_t. It takes
  * HI_HASH_DEFAULT as the default hash function, set the compare function for
