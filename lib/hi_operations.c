@@ -49,6 +49,8 @@ static int hi_lookup(hi_handle_t *hi_handle, const void *key, uint32_t keylen)
 		return FAILURE;
 	case COLL_ENG_RBTREE: /* rbtree insert handles dupkey case */
 		return FAILURE;
+	case __COLL_ENG_MAX: /* avoid 'warning: enumeration value '__COLL_ENG_MAX' not handled in switch' */
+		break;
 	}
 	return HI_ERR_INTERNAL;
 }
