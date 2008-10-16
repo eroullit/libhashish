@@ -228,7 +228,7 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
-	int32_t bucket, i;
+	uint32_t bucket, i;
 
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 
