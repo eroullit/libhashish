@@ -276,22 +276,22 @@ int hi_remove_str(hi_handle_t *, const char *, void **);
 int hi_init_int16_t(hi_handle_t **, const uint32_t);
 int hi_insert_int16_t(hi_handle_t *, const int16_t, const void *);
 int hi_get_int16_t(hi_handle_t *, const int16_t, void **);
-int hi_remove_int16_y(hi_handle_t *, const int16_t, void **);
+int hi_remove_int16_t(hi_handle_t *, const int16_t, void **);
 
 int hi_init_int32_t(hi_handle_t **, const uint32_t);
 int hi_insert_int32_t(hi_handle_t *, const int32_t, const void *);
 int hi_get_int32_t(hi_handle_t *, const int32_t, void **);
-int hi_remove_int32_y(hi_handle_t *, const int32_t, void **);
+int hi_remove_int32_t(hi_handle_t *, const int32_t, void **);
 
 int hi_init_uint16_t(hi_handle_t **, const uint32_t);
 int hi_insert_uint16_t(hi_handle_t *, const uint16_t, const void *);
 int hi_get_uint16_t(hi_handle_t *, const uint16_t, void **);
-int hi_remove_uint16_y(hi_handle_t *, const uint16_t, void **);
+int hi_remove_uint16_t(hi_handle_t *, const uint16_t, void **);
 
 int hi_init_uint32_t(hi_handle_t **, const uint32_t);
 int hi_insert_uint32_t(hi_handle_t *, const uint32_t, const void *);
 int hi_get_uint32_t(hi_handle_t *, const uint32_t, void **);
-int hi_remove_uint32_y(hi_handle_t *, const uint32_t, void **);
+int hi_remove_uint32_t(hi_handle_t *, const uint32_t, void **);
 
 
 
