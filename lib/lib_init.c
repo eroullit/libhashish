@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "list.h"
 #include "threads.h"
 
 const struct hashfunc_map_t lhi_hashfunc_map[] = {
@@ -202,14 +201,14 @@ static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 	 * the pointers to the list-heads.
 	 */
 	ret = XMALLOC((void **) &hi_hndl->eng_list.bucket_table,
-			hi_hndl->table_size * sizeof(struct lhi_list_head));
+			hi_hndl->table_size * sizeof(void *));
 	if (ret != 0) {
 		return HI_ERR_SYSTEM;
 	}
 
 	/* initialize bucket list */
 	for (i = 0; i < hi_hndl->table_size; i++) {
-		lhi_init_list_head(&(hi_hndl->eng_list.bucket_table[i]));
+		hi_hndl->eng_list.bucket_table[i] = NULL;
 		hi_hndl->bucket_size[i] = 0;
 	}
 
@@ -399,7 +398,7 @@ int hi_rehash(hi_handle_t *hi_hndl, uint32_t new_table_size)
 	/* Allocate memory fot accounting the number of
 	 * elements within every bucket in the table.  */
 	ret = XMALLOC((void **) &hi_handle->bucket_size,
-			hi_handle->table_size * sizeof(hi_handle->bucket_size));
+			hi_handle->table_size * sizeof(*hi_handle->bucket_size));
 	if (ret != 0) {
 		return HI_ERR_SYSTEM;
 	}

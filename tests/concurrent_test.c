@@ -1,6 +1,4 @@
 /*
-** $Id$
-**
 ** Copyright (C) 2006 - Hagen Paul Pfeifer <hagen@jauu.net>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -30,7 +28,6 @@
 #include <pthread.h>
 
 #include "libhashish.h"
-#include "list.h"
 #include "tests.h"
 
 

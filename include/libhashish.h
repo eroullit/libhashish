@@ -114,28 +114,22 @@ struct __hi_rb_tree {
 	pthread_rwlock_t *rwlock;
 };
 
-struct lhi_list_head
-{
-	struct lhi_list_head *	next;
-	struct lhi_list_head *	prev;
-};
 
  typedef struct __hi_bucket_obj {
      uint32_t                 key_len; /* key length in bytes */
      const void              *key;
      const void              *data;
-     struct lhi_list_head    *hi_handle;
-     struct lhi_list_head     list;
+     struct __hi_bucket_obj  *next; /* next bucket, or NULL if last */
  } hi_bucket_obj_t;
 
 
  typedef struct __hi_bucket_hl_obj {
      uint32_t                 key_len; /* key length in bytes */
-     const void              *key;
-     uint32_t                 key_hash;
+     const void               *key;
      const void               *data;
-     struct lhi_list_head    *hi_handle;
-     struct lhi_list_head     list;
+     struct __hi_bucket_hl_obj *next; /* next bucket, or NULL if last */
+     /* everything above must be same as __hi_bucket_obj */
+     uint32_t                 key_hash;
  } hi_bucket_hl_obj_t;
 
  /* CHAINING_ARRAY elements */
@@ -167,8 +161,9 @@ typedef struct __hi_handle {
 
 	/* collision engine specific data */
 	union {
-		struct {
-			struct lhi_list_head *bucket_table;
+		union {
+			hi_bucket_obj_t **bucket_table;
+			hi_bucket_hl_obj_t **bucket_table_hl;
 		} eng_list;
 		struct {
 			hi_bucket_a_obj_t **bucket_array;

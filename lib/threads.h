@@ -26,6 +26,8 @@
 #include "libhashish.h"
 
 #ifdef THREADSAFE
+#include <stdlib.h>
+
 #define lhi_pthread_mutex_lock(a)	pthread_mutex_lock((a))
 #define lhi_pthread_mutex_unlock(a)	pthread_mutex_unlock((a))
 
