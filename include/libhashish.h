@@ -109,8 +109,6 @@ struct hi_init_set {
 };
 
 #define	DEFAULT_REHASHING_THRESHOLD (0.7f)
-
-struct rb_root;
 struct __hi_rb_tree {
 	struct { void *rb_node; } root;
 	pthread_rwlock_t *rwlock;
@@ -160,8 +158,6 @@ typedef struct __hi_handle {
 	uint32_t (*hash_func)(const uint8_t*, uint32_t); /* < the primary hash function */
 	uint32_t (*hash2_func)(const uint8_t*, uint32_t); /* < *_HASH collision engines requires a second hash function */
 	int (*key_cmp)(const uint8_t *, const uint8_t *); /* < the key compare function e.g. strcmp() */
-	struct my_stuff * (*rb_search)(struct rb_root *, void *); /* < red black trees requires an addtional search function */
-
 	/* statistic data */
 
 	/* the current number elements in the particular bucket */
@@ -186,7 +182,6 @@ typedef struct __hi_handle {
 
 	/* thread locking stuff */
 	pthread_mutex_t *mutex_lock;
-
 } hi_handle_t;
 
 /* hashfunc.c */
