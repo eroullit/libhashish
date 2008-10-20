@@ -1,7 +1,5 @@
 #! /bin/bash
 #
-# $Id$
-#
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -96,6 +94,7 @@ usage()
     --enable-eye-candy             utilize GD library to enable hash distribution map image
     --enable-thread-locking        default behaviour is a not thread clean behaviour (no mutex locks)
     --enable-memory-check          enable glibc buildin malloc() memory checks
+    --disable-rbtree               disable red-black tree backend support
     --with-features=huge           enable eye candy at the moment
     --compiler=/PATH/TO/COMPILER   use specific compiler as the primary compiler
 EOF
@@ -134,6 +133,9 @@ parse_args()
 
 			--enable-memory-check | -enable-memory-check)
 			memorycheck="yes"
+			;;
+			--disable-rbtree | -disable-rbtree)
+			no_rbtree="yes"
 			;;
 
 			--enable-eye-candy | --eye-candy=yes)
@@ -282,6 +284,9 @@ create_make_rules()
 	fi
 	echo "CFLAGS += \$(PERFFLAGS)" >> Make.Rules
 
+	if [ "$no_rbtree" = yes ] ; then
+		echo "CFLAGS += -DLHI_DISABLE_RBTREE" >> Make.Rules
+	fi
 	# check for executables
 	echo -n "checking for rm... "
 	_rm=$(which rm)

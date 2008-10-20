@@ -140,12 +140,42 @@ int LHI_NO_EXPORT lhi_remove_list(hi_handle_t *, const void *, uint32_t , void *
 int LHI_NO_EXPORT lhi_list_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struct lhi_bucket_array *);
 
 /* private rbtree manipulation functions */
+#ifndef LHI_DISABLE_RBTREE
 int LHI_NO_EXPORT lhi_insert_rbtree(hi_handle_t *, const void *, uint32_t , const void *);
 int LHI_NO_EXPORT lhi_get_rbtree(const hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_remove_rbtree(hi_handle_t *, const void *, uint32_t, void **);
 int LHI_NO_EXPORT lhi_fini_rbtree(hi_handle_t *);
 int LHI_NO_EXPORT lhi_rbtree_bucket_to_array(const hi_handle_t *hi_handle, size_t, struct lhi_bucket_array *);
-
+#else
+static inline int lhi_insert_rbtree(hi_handle_t __attribute__((unused)) *h,
+		const void __attribute__((unused))*k,
+		uint32_t __attribute__((unused)) l,
+		const void __attribute__((unused)) *d)
+{
+	return HI_ERR_INTERNAL;
+}
+static inline int lhi_get_rbtree(const hi_handle_t __attribute__((unused)) *h,
+		const void __attribute__((unused)) *k,
+		uint32_t __attribute__((unused)) l,
+		void __attribute__((unused)) **d)
+{
+	return HI_ERR_INTERNAL;
+}
+static inline int lhi_remove_rbtree(hi_handle_t __attribute__((unused)) *h,
+		const void __attribute__((unused)) *k,
+		uint32_t __attribute__((unused)) l,
+		void __attribute__((unused)) **d)
+{
+	return HI_ERR_INTERNAL;
+}
+static inline int lhi_fini_rbtree(hi_handle_t __attribute__((unused)) *h) { return HI_ERR_INTERNAL;}
+static inline int lhi_rbtree_bucket_to_array(const hi_handle_t __attribute__((unused)) *hi_handle,
+		size_t __attribute__((unused)) l,
+		struct lhi_bucket_array __attribute__((unused)) *a)
+{
+	return HI_ERR_INTERNAL;
+}
+#endif
 #ifdef __cplusplus
 }
 #endif

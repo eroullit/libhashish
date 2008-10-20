@@ -20,6 +20,7 @@
   linux/lib/rbtree.c
 */
 
+#ifndef LHI_DISABLE_RBTREE
 #include "privlibhashish.h"
 
 #include <stdio.h>
@@ -530,4 +531,4 @@ int lhi_fini_rbtree(hi_handle_t *hi_handle)
 	hi_handle->eng_rbtree.trees = NULL;
 	return SUCCESS;
 }
-
+#endif /* LHI_DISABLE_RBTREE */
