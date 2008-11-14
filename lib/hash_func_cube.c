@@ -1,5 +1,7 @@
 #include "libhashish.h"
 
+#include <string.h>
+
 /* Cube Hash by DJB (and Students?)
  * URL: http://cubehash.cr.yp.to/software.html
  */
