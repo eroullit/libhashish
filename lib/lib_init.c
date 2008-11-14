@@ -39,7 +39,8 @@ const struct hashfunc_map_t lhi_hashfunc_map[] = {
 	{HI_HASH_KORZENDORFER1, "korzendorfer1", lhi_hash_korzendorfer1},
 	{HI_HASH_KORZENDORFER2, "korzendorfer2", lhi_hash_korzendorfer2},
 	{HI_HASH_SHA1, "sha1", lhi_hash_sha1},
-	{HI_HASH_MURMUR, "murmur", lhi_hash_murmur}
+	{HI_HASH_MURMUR, "murmur", lhi_hash_murmur},
+	{HI_HASH_CUBE, "cube", lhi_hash_cube}
 };
 
 

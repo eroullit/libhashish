@@ -110,12 +110,27 @@ static int Hash(int hashbitlen, const BitSequence *data,
   return Final(&state,hashval);
 }
 
+#define	CUBE_BLOCK_SIZE 28
+
 
 uint32_t lhi_hash_cube(const uint8_t *data, uint32_t len)
 {
 	uint32_t ret;
+	uint8_t hash[CUBE_BLOCK_SIZE];
 
-	Hash(32, data, len * 8, &ret);
+	/**
+	 * Block sizes for SHA-3:
+	 *
+	 *	28  - SHA3_224
+	 *	32  - SHA3_256
+	 *	48  - SHA3_384
+	 *	64  - SHA3_512
+	 *	128 - SHA3_1024
+	 */
+	Hash(CUBE_BLOCK_SIZE * 8, data, len * 8, hash);
+
+	/* truncate hash - consider the 32 higher order bits */
+	memcpy(&ret, hash, sizeof(ret));
 
 	return ret;
 }
