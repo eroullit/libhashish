@@ -4,7 +4,7 @@ endif
 
 CIN      := $(wildcard *.c)
 OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -I.. -I../../include -Wall -W
+INCLUDEDIR += -I.. -I../../include
 LIBFLAGS := -lm -L../../lib -L../../localhash -lhashish_s -llocalhash
 
 export
@@ -13,8 +13,8 @@ export
 
 all: benchtool
 
-benchtool: $(OBJ)
-	$(CC) $(CFLAGS) benchtool.o $(LIBFLAGS) -o $@
+benchtool: benchtool.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) -o $@
 
 clean:
 	@echo "### cleaning"; \

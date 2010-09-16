@@ -6,7 +6,7 @@ endif
 
 CIN      := $(wildcard *.c)
 OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -I.. -I../../include -Wall -W
+INCLUDEDIR += -I.. -I../../include
 LIBFLAGS := -lm -L../../lib -L../../localhash -lhashish_s -llocalhash
 
 # maybe not a nifty way to check for libgd support but, ... ;-)
@@ -20,11 +20,11 @@ export
 
 all: bloom_distribution false_positiv_probability_table
 
-false_positiv_probability_table: $(OBJ)
-	$(CC) $(CFLAGS) false_positiv_probability_table.o $(LIBFLAGS) -o $@
+false_positiv_probability_table: false_positiv_probability_table.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) -o $@
 
-bloom_distribution: $(OBJ)
-	$(CC) $(CFLAGS) bloom_distribution.o $(LIBFLAGS) $(LIBCANDYFLAGS) -o $@
+bloom_distribution: bloom_distribution.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) $(LIBCANDYFLAGS) -o $@
 
 analysis: false_positiv_probability_table
 	./false_positiv_probability_table > false_positiv_probability_table.data

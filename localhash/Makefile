@@ -6,7 +6,7 @@ endif
 CIN      := $(wildcard *.c)
 
 OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -I../include
+INCLUDEDIR += -I../include
 OUT_SLIB := $(addsuffix .a,$(PACKAGE_NAME))
 
 LDFLAGS  = --warn-common
@@ -16,6 +16,8 @@ LIBHASHSTATIC = liblocalhash.a
 
 all: $(LIBHASHSTATIC) $(CIN)
 
+%.o: %.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< -c -o $@
 
 $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
 	@echo "### build static archiv"

@@ -6,8 +6,7 @@ endif
 
 CIN      := $(wildcard *.c)
 
-OBJ      := unit_test.o memory_leak_inspector.o concurrent_test.o bloom_filter_test.o #$(CIN:%.c=%.o)
-CFLAGS   += -I../include
+INCLUDEDIR += -I../include
 LIBFLAGS := -lm 
 LIBFLAGS += -L../lib -L../localhash -lhashish_s -llocalhash
 GRAPHFALGS :=
@@ -27,23 +26,23 @@ concurrent_test bloom_filter_test
 all: unit_test memory_leak_inspector iterator_test concurrent_test bloom_filter_test # string_distribution concurrent_test
 
 
-unit_test: $(OBJ)
-	$(CC) $(CFLAGS) unit_test.o $(LIBFLAGS) -o $@
+unit_test: unit_test.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) -o $@
 
-bloom_filter_test: $(OBJ)
-	$(CC) $(CFLAGS) bloom_filter_test.o $(LIBFLAGS) -o $@
+bloom_filter_test: bloom_filter_test.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) -o $@
 
-concurrent_test: $(OBJ)
-	$(CC) $(CFLAGS) concurrent_test.o $(LIBFLAGS) $(THREADFLAGSX) -o $@
+concurrent_test: concurrent_test.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
 iterator_test: iterator_test.c
-	$(CC) $(CFLAGS) iterator_test.c $(LIBFLAGS) $(THREADFLAGSX) -o $@
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
-string_distribution: $(OBJ)
-	$(CC) $(CFLAGS) string_distribution.o $(LIBFLAGS) $(GRAPHFALGS) -o $@
+string_distribution: string_distribution.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
-memory_leak_inspector: $(OBJ)
-	$(CC) $(CFLAGS) memory_leak_inspector.o $(LIBFLAGS) -o $@
+memory_leak_inspector: memory_leak_inspector.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< $(LIBFLAGS) $(THREADFLAGSX) -o $@
 
 test: 
 	@echo $(shell ./unit_test 1>/dev/null 2>&1; \
