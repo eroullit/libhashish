@@ -53,7 +53,6 @@ show: Make.Rules
 	@echo "MINOR_REL:    $(MINOR_REL)"
 	@echo
 	@echo "AR:           $(AR)"
-	@echo "LD:           $(LD)"
 	@echo "RANLIB:       $(RANLIB)"
 	@echo "MKDIR:        $(MKDIR)"
 	@echo "INSTALL:      $(INSTALL)"
@@ -67,7 +66,7 @@ show: Make.Rules
 	@echo "libdir:       $(libdir)"
 	@echo "TOPDIR:       $(TOPDIR)"
 	@echo "includedir:   $(includedir)"
-													  
+
 cscope:
 	cscope -b -q -R -Iinclude -slib -stest
 																 
@@ -103,4 +102,3 @@ releasebz2:
 		--exclude .svn  --exclude '.#*' \
 		$(DISTNAME)-$(MAJOR_REL).$(MINOR_REL)/*
 
--include Make.Rules

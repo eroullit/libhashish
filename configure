@@ -306,15 +306,6 @@ create_make_rules()
 	echo "$_ar"
 	echo "AR=$_ar" >> Make.Rules
 
-	echo -n "checking for ld... "
-	_ld=$(which ld)
-	if [ $? -ne 0 ] ; then
-		echo "can't find ld(1)!"
-		exit 1
-	fi
-	echo "$_ld"
-	echo "LD=$_ld" >> Make.Rules
-
 	echo -n "checking for ranlib... "
 	_ranlib=$(which ranlib)
 	if [ $? -ne 0 ] ; then # don't found ranlib

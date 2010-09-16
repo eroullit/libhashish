@@ -3,14 +3,15 @@ ifeq ($(shell [ ! -r ../Make.Rules ] && echo 1),)
     include ../Make.Rules
 endif
 
+INCLUDEDIR := -I../include
 CIN      := $(wildcard *.c)
 
 OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -I../include
 OUT_SLIB := $(addsuffix .a,$(PACKAGE_NAME))
 OUT_DLIB := $(addsuffix .so,$(PACKAGE_NAME))
 
-LDFLAGS  = --warn-common
+LDFLAGS  := -Wl,--warn-common -Wl,--as-needed
+
 
 LIBNAME=$(PACKAGE_NAME)
 VERSION=.$(MAJOR_REL)
@@ -27,11 +28,14 @@ LIBHASHFULL = $(LIBHASHNAME)$(MODIFICATION)
 # static library name
 LIBHASHSTATIC = $(LIBNAME).a
 
+%.o: %.c
+	$(CC) $(INCLUDEDIR) $(CFLAGS) $< -c -o $@
+
 all: $(LIBHASH) $(LIBHASHSTATIC) $(CIN)
 
 $(LIBHASH): $(OBJ) ../Make.Rules
 	@echo "### build dynamic library (libhashish.so)"
-	$(LD) $(LDFLAGS) --as-needed -soname=$(LIBHASHNAME) -lpthread -x -shared -o $@ $(OBJ)
+	$(CC) -shared -fPIC $(LDFLAGS) -Wl,-soname=$(LIBHASHNAME) -lpthread -o $@ $(OBJ)
 
 $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
 	@echo "### build static archiv (libhashish.a)"
