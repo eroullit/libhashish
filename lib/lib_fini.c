@@ -45,6 +45,7 @@ int lhi_fini_internal(hi_handle_t *hi_handle)
 		case COLL_ENG_ARRAY_HASH:
 		case COLL_ENG_ARRAY_DYN:
 		case COLL_ENG_ARRAY_DYN_HASH:
+			ret = lhi_fini_array(hi_handle);
 			break;
 
 		case COLL_ENG_RBTREE:
