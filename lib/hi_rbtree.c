@@ -38,19 +38,30 @@
 struct lhi_rb_entry {
 	struct rb_node node;
 	uint32_t keylen;
-	const void *key;
+	void       *key;
 	const void *data;
 };
 
 
 static struct lhi_rb_entry* lhi_rb_entry_new(const void *k, const void *d, uint32_t keylen)
 {
+	void * dupkey;
 	struct lhi_rb_entry *node_new = malloc(sizeof(*node_new));
 	if (!node_new)
 		return NULL;
 
+	dupkey = malloc(keylen);
+
+	if(!dupkey)
+	{
+		free(node_new);
+		return NULL;
+	}
+
+	memcpy(dupkey, k, keylen);
+
 	node_new->keylen = keylen;
-	node_new->key = k;
+	node_new->key = dupkey;
 	node_new->data = d;
 
 	return node_new;
@@ -440,6 +451,7 @@ int lhi_remove_rbtree(hi_handle_t *hi_handle,
 		if (diff == 0) {
 			*res = (void *) lhi_entry->data;
 			rb_erase(parent, root);
+			free(lhi_entry->key);
 			free(lhi_entry);
 			--hi_handle->bucket_size[tree];
 			lhi_pthread_rwlock_unlock(hi_handle->eng.eng_rbtree.trees[tree].rwlock);

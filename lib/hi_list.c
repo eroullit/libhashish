@@ -17,6 +17,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "threads.h"
 #include "privlibhashish.h"
@@ -148,6 +149,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, const void *key,
 					hi_handle->eng.eng_list.bucket_table[bucket] = p->next;
 				else
 					p->next = b_obj->next;
+				free(b_obj->key);
 				free(b_obj);
 				goto out_found;
 			}
@@ -170,6 +172,7 @@ int lhi_remove_list(hi_handle_t *hi_handle, const void *key,
 					hi_handle->eng.eng_list.bucket_table_hl[bucket] = p->next;
 				else
 					p->next = b_obj->next;
+				free(b_obj->key);
 				free(b_obj);
 				goto out_found;
 			}
@@ -311,6 +314,7 @@ int lhi_get_list(const hi_handle_t *hi_handle, const void *key,
 int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
+	void * dupkey;
 	hi_bucket_hl_obj_t *obj;
 	int ret = HI_ERR_SYSTEM;
 	uint32_t bucket;
@@ -322,7 +326,17 @@ int lhi_insert_list(hi_handle_t *hi_handle, const void *key,
 	if (ret != 0)
 		goto out;
 
-	obj->key = key;
+	ret = XMALLOC((void **) &dupkey, keylen);
+
+	if (ret != 0)
+	{
+		free(obj);
+		goto out;
+	}
+
+	memcpy(dupkey, key, keylen);
+
+	obj->key = dupkey;
 	obj->key_len = keylen;
 	obj->data = data;
 
@@ -359,6 +373,7 @@ int lhi_fini_list(hi_handle_t *hi_handle)
 		while (b_obj) {
 			hi_bucket_obj_t *v = b_obj;
 			b_obj = v->next;
+			free(v->key);
 			free(v);
 		}
 	}

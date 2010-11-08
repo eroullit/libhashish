@@ -19,6 +19,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "privlibhashish.h"
 
@@ -152,6 +153,7 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 							hi_handle->eng.eng_array.bucket_array[bucket][i].key);
 				if (diff == 0) {
 					*data = (void *) hi_handle->eng.eng_array.bucket_array[bucket][i].data;
+					free(hi_handle->eng.eng_array.bucket_array[bucket][i].key);
 
 					/* and mark this entry as free */
 					hi_handle->eng.eng_array.bucket_array[bucket][i].allocation =
@@ -228,7 +230,9 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 		uint32_t keylen, const void *data)
 {
+	int ret;
 	uint32_t bucket, i;
+	void * dupkey;
 
 	bucket = hi_handle->hash_func(key, keylen) % hi_handle->table_size;
 
@@ -276,7 +280,14 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 		if (hi_handle->eng.eng_array.bucket_array[bucket][i].allocation == BA_NOT_ALLOCATED) {
 
 			/* add key/data add next free slot */
-			hi_handle->eng.eng_array.bucket_array[bucket][i].key = key;
+			ret = XMALLOC(&dupkey, keylen);
+
+			if (ret != 0)
+				return HI_ERR_SYSTEM;
+
+			memcpy(dupkey, key, keylen);
+
+			hi_handle->eng.eng_array.bucket_array[bucket][i].key = dupkey;
 			hi_handle->eng.eng_array.bucket_array[bucket][i].key_len = keylen;
 			hi_handle->eng.eng_array.bucket_array[bucket][i].data = data;
 			hi_handle->eng.eng_array.bucket_array[bucket][i].allocation = BA_ALLOCATED;
@@ -296,10 +307,15 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 
 int lhi_fini_array(hi_handle_t *hi_handle)
 {
-	uint32_t i;
+	uint32_t i, a;
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 	for (i = 0; i < hi_handle->table_size; i++) {
+		for (a = 0; a < hi_handle->eng.eng_array.bucket_array_slot_max[i]; a++) {
+			if (hi_handle->eng.eng_array.bucket_array[i][a].allocation == BA_ALLOCATED)
+				free(hi_handle->eng.eng_array.bucket_array[i][a].key);
+		}
+
 		free(hi_handle->eng.eng_array.bucket_array[i]);
 	}
 	free(hi_handle->eng.eng_array.bucket_array);

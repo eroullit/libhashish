@@ -119,7 +119,7 @@ struct __hi_rb_tree {
 
  typedef struct __hi_bucket_obj {
      uint32_t                 key_len; /* key length in bytes */
-     const void              *key;
+     void                    *key;
      const void              *data;
      struct __hi_bucket_obj  *next; /* next bucket, or NULL if last */
  } hi_bucket_obj_t;
@@ -127,7 +127,7 @@ struct __hi_rb_tree {
 
  typedef struct __hi_bucket_hl_obj {
      uint32_t                 key_len; /* key length in bytes */
-     const void               *key;
+     void                     *key;
      const void               *data;
      struct __hi_bucket_hl_obj *next; /* next bucket, or NULL if last */
      /* everything above must be same as __hi_bucket_obj */
@@ -137,7 +137,7 @@ struct __hi_rb_tree {
  /* CHAINING_ARRAY elements */
  typedef struct __hi_bucket_a_obj {
      uint32_t                 key_len; /* key length in bytes */
-     const void              *key;
+     void                    *key;
      uint32_t                 key_hash;
      const void              *data;
 	 int					  allocation; /* BA_NOT_ALLOCATED or BA_ALLOCATED */
@@ -284,8 +284,8 @@ int hi_remove_uint16_t(hi_handle_t *, const uint16_t, void **);
 
 int hi_init_uint32_t(hi_handle_t **, const uint32_t);
 int hi_insert_uint32_t(hi_handle_t *, const uint32_t, const void *);
-int hi_get_uint32_t(hi_handle_t *, const uint32_t, void **);
-int hi_remove_uint32_t(hi_handle_t *, const uint32_t, void **);
+int hi_get_uint32_t(hi_handle_t *, const uint32_t , void **);
+int hi_remove_uint32_t(hi_handle_t *, const uint32_t , void **);
 
 
 

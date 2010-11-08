@@ -158,19 +158,19 @@ static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(hi_hndl->no_objects == 0);
 
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl, (void *) "key", sizeof("key"), "DATA");
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 1);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key2", sizeof("key2"), "DATAX");
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 2);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key3", sizeof("key3"), "DATAX");
 	assert(ret == 0);
 
 	assert(hi_hndl->no_objects == 3);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
-	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key", sizeof("key"), &data_ret);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
@@ -178,7 +178,7 @@ static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(hi_hndl->no_objects == 2);
 	data_ret = NULL;
 
-	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key2", sizeof("key2"), &data_ret);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
@@ -186,7 +186,7 @@ static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(hi_hndl->no_objects == 1);
 	data_ret = NULL;
 
-	ret = hi_remove(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key3", sizeof("key3"), &data_ret);
 	if (ret != 0)
 		print_error(ret);
 	assert(ret == 0);
@@ -194,7 +194,7 @@ static void check_remove(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(hi_hndl->no_objects == 0);
 
 	/* must fail */
-	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key", sizeof("key"), &data_ret);
 	assert(ret == HI_ERR_NOKEY);
 
 	ret = hi_fini(hi_hndl);
@@ -240,39 +240,39 @@ static void check_get_remove(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(ret == 0);
 
 	assert(hi_hndl->no_objects == 0);
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "DATA");
+	ret = hi_insert(hi_hndl, (void *) "key", sizeof("key"), "DATA");
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 1);
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key2", sizeof("key2"), "DATAX");
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 2);
-	ret = hi_insert(hi_hndl, (void *) "key3", strlen("key3"), "DATAX");
+	ret = hi_insert(hi_hndl, (void *) "key3", sizeof("key3"), "DATAX");
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 3);
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
-	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	ret = hi_get(hi_hndl, (void *) "key", sizeof("key"), &data_ret);
 	if (ret != 0)
 		print_error(ret);
 	check_data(data_ret, "DATA");
 	assert(hi_hndl->no_objects == 3);
 
-	ret = hi_get(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
+	ret = hi_get(hi_hndl, (void *) "key3", sizeof("key3"), &data_ret);
 	if (ret != 0)
 		print_error(ret);
 	check_data(data_ret, "DATAX");
 	assert(hi_hndl->no_objects == 3);
 	data_ret = NULL;
 
-	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key", sizeof("key"), &data_ret);
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 2);
 	check_data(data_ret, "DATA");
 	data_ret = NULL;
-	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key2", sizeof("key2"), &data_ret);
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 1);
-	ret = hi_remove(hi_hndl, (void *) "key3", strlen("key3"), &data_ret);
+	ret = hi_remove(hi_hndl, (void *) "key3", sizeof("key3"), &data_ret);
 	assert(ret == 0);
 	assert(hi_hndl->no_objects == 0);
 	check_data(data_ret, "DATAX");
@@ -321,23 +321,23 @@ static void check_insert(enum coll_eng engine, enum hash_alg hash_alg)
 	assert(ret == 0);
 
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
+	ret = hi_insert(hi_hndl, (void *) "key", sizeof("key"), "XX");
 	assert(ret == 0);
 
 	/* same key -> must fail */
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "XX");
+	ret = hi_insert(hi_hndl, (void *) "key", sizeof("key"), "XX");
 	assert(ret == HI_ERR_DUPKEY);
 
 
 	/* key already in data structure -> must return 0 (SUCCESS) */
-	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	ret = hi_get(hi_hndl, (void *) "key", sizeof("key"), &data_ptr);
 	assert(ret == 0);
 	//assert(data_ptr == NULL);
 
-	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	ret = hi_remove(hi_hndl, (void *) "key", sizeof("key"), &data_ptr);
 	assert(ret == 0);
 
-	ret = hi_get(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	ret = hi_get(hi_hndl, (void *) "key", sizeof("key"), &data_ptr);
 	assert(ret == HI_ERR_NOKEY);
 
 	ret = hi_fini(hi_hndl);
@@ -384,13 +384,13 @@ static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 		print_error(ret);
 	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key", strlen("key"), "data");
+	ret = hi_insert(hi_hndl, (void *) "key", sizeof("key"), "data");
 	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key1", strlen("key1"), "data1");
+	ret = hi_insert(hi_hndl, (void *) "key1", sizeof("key1"), "data1");
 	assert(ret == 0);
 
-	ret = hi_insert(hi_hndl, (void *) "key2", strlen("key2"), "data2");
+	ret = hi_insert(hi_hndl, (void *) "key2", sizeof("key2"), "data2");
 	assert(ret == 0);
 
 	ret = hi_iterator_create(hi_hndl, &iterator);
@@ -427,11 +427,11 @@ static void check_iterator(enum coll_eng engine, enum hash_alg hash_alg)
 	}
 	hi_iterator_fini(iterator);
 
-	ret = hi_remove(hi_hndl, (void *) "key", strlen("key"), &data_ptr);
+	ret = hi_remove(hi_hndl, (void *) "key", sizeof("key"), &data_ptr);
 	assert(ret == 0);
-	ret = hi_remove(hi_hndl, (void *) "key1", strlen("key1"), &data_ptr);
+	ret = hi_remove(hi_hndl, (void *) "key1", sizeof("key1"), &data_ptr);
 	assert(ret == 0);
-	ret = hi_remove(hi_hndl, (void *) "key2", strlen("key2"), &data_ptr);
+	ret = hi_remove(hi_hndl, (void *) "key2", sizeof("key2"), &data_ptr);
 	assert(ret == 0);
 
 	ret = hi_fini(hi_hndl);
@@ -496,7 +496,8 @@ static void check_str_wrapper(void)
 {
 	int ret;
 	hi_handle_t *hi_handle;
-	const char *key = "23";
+	char key[32];
+	uint16_t i;
 	const char *data = "data element";
 	void *data_ptr;
 
@@ -505,11 +506,16 @@ static void check_str_wrapper(void)
 	ret = hi_init_str(&hi_handle, 23);
 	assert(ret == 0);
 
-	ret = hi_insert_str(hi_handle, key, data);
-	assert(ret == 0);
+	for (i = 0; i < 23; i++)
+	{
+		sprintf(key, "%u", i);
 
-	ret = hi_get_str(hi_handle, key, &data_ptr);
-	assert(ret == 0);
+		ret = hi_insert_str(hi_handle, key, data);
+		assert(ret == 0);
+
+		ret = hi_get_str(hi_handle, key, &data_ptr);
+		assert(ret == 0);
+	}
 
 	ret = hi_fini(hi_handle);
 	assert(ret == 0);
@@ -521,7 +527,7 @@ static void check_int16_wrapper(void)
 {
 	int ret;
 	hi_handle_t *hi_handle;
-	int16_t key = 23;
+	int16_t key;
 	int data = 666, *val;
 	void *data_ptr;
 
@@ -530,13 +536,16 @@ static void check_int16_wrapper(void)
 	ret = hi_init_int16_t(&hi_handle, 23);
 	assert(ret == 0);
 
-	ret = hi_insert_int16_t(hi_handle, key, &data);
-	assert(ret == 0);
+	for (key = 0; key < 23; key++)
+	{
+		ret = hi_insert_int16_t(hi_handle, key, &data);
+		assert(ret == 0);
 
-	ret = hi_get_int16_t(hi_handle, key, &data_ptr);
-	assert(ret == 0);
-	val = data_ptr;
-	assert(*val == data);
+		ret = hi_get_int16_t(hi_handle, key, &data_ptr);
+		assert(ret == 0);
+		val = data_ptr;
+		assert(*val == data);
+	}
 
 	ret = hi_fini(hi_handle);
 	assert(ret == 0);
@@ -548,7 +557,7 @@ static void check_uint16_wrapper(void)
 {
 	int ret;
 	hi_handle_t *hi_handle;
-	uint16_t key = 23;
+	uint16_t key;
 	int data = 666, *val;
 	void *data_ptr;
 
@@ -557,13 +566,16 @@ static void check_uint16_wrapper(void)
 	ret = hi_init_uint16_t(&hi_handle, 23);
 	assert(ret == 0);
 
-	ret = hi_insert_uint16_t(hi_handle, key, &data);
-	assert(ret == 0);
+	for (key = 0; key < 23; key++)
+	{
+		ret = hi_insert_uint16_t(hi_handle, key, &data);
+		assert(ret == 0);
 
-	ret = hi_get_uint16_t(hi_handle, key, &data_ptr);
-	assert(ret == 0);
-	val = data_ptr;
-	assert(*val == data);
+		ret = hi_get_uint16_t(hi_handle, key, &data_ptr);
+		assert(ret == 0);
+		val = data_ptr;
+		assert(*val == data);
+	}
 
 	ret = hi_fini(hi_handle);
 	assert(ret == 0);
@@ -585,13 +597,16 @@ static void check_int32_wrapper(void)
 	ret = hi_init_int32_t(&hi_handle, 23);
 	assert(ret == 0);
 
-	ret = hi_insert_int32_t(hi_handle, key, &data);
-	assert(ret == 0);
+	for (key = 0; key < 23; key++)
+	{
+		ret = hi_insert_int32_t(hi_handle, key, &data);
+		assert(ret == 0);
 
-	ret = hi_get_int32_t(hi_handle, key, &data_ptr);
-	assert(ret == 0);
-	val = data_ptr;
-	assert(*val == data);
+		ret = hi_get_int32_t(hi_handle, key, &data_ptr);
+		assert(ret == 0);
+		val = data_ptr;
+		assert(*val == data);
+	}
 
 	ret = hi_fini(hi_handle);
 	assert(ret == 0);
@@ -612,13 +627,16 @@ static void check_uint32_wrapper(void)
 	ret = hi_init_uint32_t(&hi_handle, 23);
 	assert(ret == 0);
 
-	ret = hi_insert_uint32_t(hi_handle, key, &data);
-	assert(ret == 0);
+	for (key = 0; key < 23; key++)
+	{
+		ret = hi_insert_uint32_t(hi_handle, key, &data);
+		assert(ret == 0);
 
-	ret = hi_get_uint32_t(hi_handle, key, &data_ptr);
-	assert(ret == 0);
-	val = data_ptr;
-	assert(*val == data);
+		ret = hi_get_uint32_t(hi_handle, key, &data_ptr);
+		assert(ret == 0);
+		val = data_ptr;
+		assert(*val == data);
+	}
 
 	ret = hi_fini(hi_handle);
 	assert(ret == 0);

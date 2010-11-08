@@ -27,6 +27,7 @@
 
 #include <pthread.h>
 
+#include "../config.h"
 #include "libhashish.h"
 #include "tests.h"
 

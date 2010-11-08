@@ -42,20 +42,21 @@ int hi_init_str(hi_handle_t **hi_hndl, const uint32_t table_size)
 	return hi_create(hi_hndl, &hi_set);
 }
 
+/* The ending \0 of string is also a part of the key and should not be forgotten */
 int hi_insert_str(hi_handle_t *hi_hndl, const char *key, const void *data)
 {
-	return hi_insert(hi_hndl, (uint8_t *) key, strlen(key), (void *)data);
+	return hi_insert(hi_hndl, (uint8_t *) key, strlen(key) + 1, (void *)data);
 }
 
 int hi_get_str(hi_handle_t *hi_hndl, const char *key, void **data)
 {
-	return hi_get(hi_hndl, (void *)key, strlen(key), data);
+	return hi_get(hi_hndl, (void *)key, strlen(key) + 1, data);
 
 }
 
 int hi_remove_str(hi_handle_t *hi_hndl, const char *key, void **data)
 {
-	return hi_remove(hi_hndl, (void *)key, strlen(key), data);
+	return hi_remove(hi_hndl, (void *)key, strlen(key) + 1, data);
 }
 
 /* vim:set ts=4 sw=4 sts=4 tw=78 ff=unix noet: */
