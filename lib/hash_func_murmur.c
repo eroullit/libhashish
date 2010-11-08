@@ -32,7 +32,7 @@ static inline uint32_t murmur_fini(uint32_t h)
 
 static uint32_t murmur_hash_unaligned(const unsigned char *data, uint32_t len, uint32_t h)
 {
-	unsigned int align = (unsigned)data & 3;
+	uintptr_t align = (uintptr_t)data & 3;
 	uint32_t t = 0, d = 0;
 	unsigned int sl, sr = 0;
 
@@ -104,7 +104,7 @@ static uint32_t murmur_hash2(const void * key, uint32_t len, uint32_t seed)
 	const unsigned char * data = (const unsigned char *)key;
 	uint32_t h = seed ^ len;
 
-	if ((((unsigned)data) & 3) && (len >= 4))
+	if ((((uintptr_t)data) & 3) && (len >= 4))
 		return murmur_hash_unaligned(data, len, h);
 
 	while (len >= 4) {

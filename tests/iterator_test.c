@@ -176,10 +176,11 @@ static void check_iterator(enum coll_eng engine, struct key_value_pair *k, unsig
 
 static void seed_prng(void)
 {
+	int rc;
 	volatile unsigned int seed;
 	int fd = open("/dev/urandom", O_RDONLY);
 	if (fd >= 0) {
-		read(fd, (void *)  &seed, sizeof(seed));
+		rc = read(fd, (void *)  &seed, sizeof(seed));
 		close(fd);
 	}
 	srand(seed);

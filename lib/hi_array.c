@@ -46,7 +46,7 @@ int lhi_get_array(const hi_handle_t *hi_handle, const void *key,
 		case COLL_ENG_ARRAY:
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			for (i = 0; i <
-					hi_handle->eng_array.bucket_array_slot_max[bucket]; i++) {
+					hi_handle->eng.eng_array.bucket_array_slot_max[bucket]; i++) {
 
 				int diff;
 
@@ -57,23 +57,23 @@ int lhi_get_array(const hi_handle_t *hi_handle, const void *key,
 				 * the beginning and afterwards many elements are removed.
 				 * This leads to an sparsely populated array  --HGN */
 				if (already_checked >=
-						hi_handle->eng_array.bucket_array_slot_size[bucket]) {
+						hi_handle->eng.eng_array.bucket_array_slot_size[bucket]) {
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return HI_ERR_NOKEY;
 				}
 
 				/* look if this particular element is an valid one
 				 * (or placeholder) */
-				if (hi_handle->eng_array.bucket_array[bucket][i].allocation ==
+				if (hi_handle->eng.eng_array.bucket_array[bucket][i].allocation ==
 						BA_NOT_ALLOCATED) {
 					continue;
 				}
 
 				/* now do the trivial key compare */
 				diff = hi_handle->key_cmp(key,
-							hi_handle->eng_array.bucket_array[bucket][i].key);
+							hi_handle->eng.eng_array.bucket_array[bucket][i].key);
 				if (diff == 0) {
-					*data = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
+					*data = (void *) hi_handle->eng.eng_array.bucket_array[bucket][i].data;
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return SUCCESS;
 				}
@@ -124,7 +124,7 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 		case COLL_ENG_ARRAY:
 			lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 			for (i = 0; i <
-					hi_handle->eng_array.bucket_array_slot_max[bucket]; i++) {
+					hi_handle->eng.eng_array.bucket_array_slot_max[bucket]; i++) {
 
 				int diff;
 
@@ -135,28 +135,28 @@ int lhi_remove_array(hi_handle_t *hi_handle, const void *key,
 				 * the beginning and afterwards many elements are removed.
 				 * This leads to an sparsely populated array  --HGN */
 				if (already_checked >=
-						hi_handle->eng_array.bucket_array_slot_size[bucket]) {
+						hi_handle->eng.eng_array.bucket_array_slot_size[bucket]) {
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 					return HI_ERR_NOKEY;
 				}
 
 				/* look if this particular element is an valid one
 				 * (or placeholder) */
-				if (hi_handle->eng_array.bucket_array[bucket][i].allocation ==
+				if (hi_handle->eng.eng_array.bucket_array[bucket][i].allocation ==
 						BA_NOT_ALLOCATED) {
 					continue;
 				}
 
 				/* now do the trivial key compare */
 				diff = hi_handle->key_cmp(key,
-							hi_handle->eng_array.bucket_array[bucket][i].key);
+							hi_handle->eng.eng_array.bucket_array[bucket][i].key);
 				if (diff == 0) {
-					*data = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
+					*data = (void *) hi_handle->eng.eng_array.bucket_array[bucket][i].data;
 
 					/* and mark this entry as free */
-					hi_handle->eng_array.bucket_array[bucket][i].allocation =
+					hi_handle->eng.eng_array.bucket_array[bucket][i].allocation =
 						BA_NOT_ALLOCATED;
-					hi_handle->eng_array.bucket_array_slot_size[bucket]--;
+					hi_handle->eng.eng_array.bucket_array_slot_size[bucket]--;
 					hi_handle->no_objects--;
 
 					lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
@@ -193,7 +193,7 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 	int ret = HI_ERR_NODATA;
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
-	len = hi_handle->eng_array.bucket_array_slot_size[bucket];
+	len = hi_handle->eng.eng_array.bucket_array_slot_size[bucket];
 	if (len == 0)
 		goto out;
 
@@ -205,13 +205,13 @@ int lhi_array_bucket_to_array(const hi_handle_t *hi_handle, size_t bucket, struc
 	for (i = 0; i < len ; i++) {
 		/* the array CAN contain spare data buckets, skip it if
 		 * we found such bucket */
-		if (hi_handle->eng_array.bucket_array[bucket][i].allocation ==
+		if (hi_handle->eng.eng_array.bucket_array[bucket][i].allocation ==
 				BA_NOT_ALLOCATED)
 			continue;
 
-		a->data[j] = (void *) hi_handle->eng_array.bucket_array[bucket][i].data;
-		a->keys[j] = (void *) hi_handle->eng_array.bucket_array[bucket][i].key;
-		a->keys_length[i] = hi_handle->eng_array.bucket_array[bucket][i].key_len;
+		a->data[j] = (void *) hi_handle->eng.eng_array.bucket_array[bucket][i].data;
+		a->keys[j] = (void *) hi_handle->eng.eng_array.bucket_array[bucket][i].key;
+		a->keys_length[i] = hi_handle->eng.eng_array.bucket_array[bucket][i].key_len;
 		j++;
 	}
  out:
@@ -245,43 +245,43 @@ int lhi_insert_array(hi_handle_t *hi_handle, const void *key,
 
 	/* check if the free place is exhausted. If this is
 	 * true we must increase the array by a defined factor */
-	if (hi_handle->eng_array.bucket_array_slot_size[bucket] >=
-			hi_handle->eng_array.bucket_array_slot_max[bucket]) {
+	if (hi_handle->eng.eng_array.bucket_array_slot_size[bucket] >=
+			hi_handle->eng.eng_array.bucket_array_slot_max[bucket]) {
 
 		uint32_t old_bucket_size;
 
-		old_bucket_size = hi_handle->eng_array.bucket_array_slot_max[bucket];
+		old_bucket_size = hi_handle->eng.eng_array.bucket_array_slot_max[bucket];
 
 		/* double bucket size */
-		hi_handle->eng_array.bucket_array_slot_max[bucket] =
-			hi_handle->eng_array.bucket_array_slot_max[bucket] << 1;
+		hi_handle->eng.eng_array.bucket_array_slot_max[bucket] =
+			hi_handle->eng.eng_array.bucket_array_slot_max[bucket] << 1;
 
-		hi_handle->eng_array.bucket_array[bucket] = realloc(hi_handle->eng_array.bucket_array[bucket],
-				sizeof(hi_bucket_a_obj_t) * hi_handle->eng_array.bucket_array_slot_max[bucket]);
-		if (hi_handle->eng_array.bucket_array[bucket] == NULL) {
+		hi_handle->eng.eng_array.bucket_array[bucket] = realloc(hi_handle->eng.eng_array.bucket_array[bucket],
+				sizeof(hi_bucket_a_obj_t) * hi_handle->eng.eng_array.bucket_array_slot_max[bucket]);
+		if (hi_handle->eng.eng_array.bucket_array[bucket] == NULL) {
 			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 			return HI_ERR_SYSTEM;
 		}
 
 		/* set up the newly allocated data structures */
 		for (i = old_bucket_size; i <
-				hi_handle->eng_array.bucket_array_slot_max[bucket]; ++i) {
-			hi_handle->eng_array.bucket_array[bucket][i].allocation = BA_NOT_ALLOCATED;
+				hi_handle->eng.eng_array.bucket_array_slot_max[bucket]; ++i) {
+			hi_handle->eng.eng_array.bucket_array[bucket][i].allocation = BA_NOT_ALLOCATED;
 		}
 	}
 
 	/* check for the first free elements (BA_NOT_ALLOCATED)
 	 * and insert the new one */
-	for (i = 0; i < hi_handle->eng_array.bucket_array_slot_max[bucket]; ++i) {
-		if (hi_handle->eng_array.bucket_array[bucket][i].allocation == BA_NOT_ALLOCATED) {
+	for (i = 0; i < hi_handle->eng.eng_array.bucket_array_slot_max[bucket]; ++i) {
+		if (hi_handle->eng.eng_array.bucket_array[bucket][i].allocation == BA_NOT_ALLOCATED) {
 
 			/* add key/data add next free slot */
-			hi_handle->eng_array.bucket_array[bucket][i].key = key;
-			hi_handle->eng_array.bucket_array[bucket][i].key_len = keylen;
-			hi_handle->eng_array.bucket_array[bucket][i].data = data;
-			hi_handle->eng_array.bucket_array[bucket][i].allocation = BA_ALLOCATED;
+			hi_handle->eng.eng_array.bucket_array[bucket][i].key = key;
+			hi_handle->eng.eng_array.bucket_array[bucket][i].key_len = keylen;
+			hi_handle->eng.eng_array.bucket_array[bucket][i].data = data;
+			hi_handle->eng.eng_array.bucket_array[bucket][i].allocation = BA_ALLOCATED;
 
-			hi_handle->eng_array.bucket_array_slot_size[bucket]++;
+			hi_handle->eng.eng_array.bucket_array_slot_size[bucket]++;
 			hi_handle->no_objects++;
 
 			lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
@@ -300,11 +300,11 @@ int lhi_fini_array(hi_handle_t *hi_handle)
 
 	lhi_pthread_mutex_lock(hi_handle->mutex_lock);
 	for (i = 0; i < hi_handle->table_size; i++) {
-		free(hi_handle->eng_array.bucket_array[i]);
+		free(hi_handle->eng.eng_array.bucket_array[i]);
 	}
-	free(hi_handle->eng_array.bucket_array);
-	free(hi_handle->eng_array.bucket_array_slot_size);
-	free(hi_handle->eng_array.bucket_array_slot_max);
+	free(hi_handle->eng.eng_array.bucket_array);
+	free(hi_handle->eng.eng_array.bucket_array_slot_size);
+	free(hi_handle->eng.eng_array.bucket_array_slot_max);
 	lhi_pthread_mutex_unlock(hi_handle->mutex_lock);
 
 	return SUCCESS;

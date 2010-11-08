@@ -21,6 +21,7 @@
 #ifndef _TESTS_H
 #define	_TESTS_H
 
+#include <stdlib.h>
 #include <pthread.h>
 
 /* xfuncs.c */

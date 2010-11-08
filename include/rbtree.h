@@ -59,7 +59,11 @@ static inline void rb_set_color(struct rb_node *rb, int color)
 		(type *)( (char *)__mptr - ((size_t) &((type *)0)->member));})
 
 #define RB_ROOT (struct rb_root) { NULL, }
-#define rb_entry(ptr, type, member) container_of(ptr, type, member)
+#define rb_entry(entry, ptr, type, member)				\
+{        							\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+	entry = (type *)( (char *)__mptr - ((size_t) &((type *)0)->member));\
+}
 
 #define RB_EMPTY_ROOT(root) ((root)->rb_node == NULL)
 #define RB_EMPTY_NODE(node) (rb_parent(node) == node)

@@ -202,7 +202,7 @@ static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 	/* This is the intrinsic table which contains
 	 * the pointers to the list-heads.
 	 */
-	ret = XMALLOC((void **) &hi_hndl->eng_list.bucket_table,
+	ret = XMALLOC((void **) &hi_hndl->eng.eng_list.bucket_table,
 			hi_hndl->table_size * sizeof(void *));
 	if (ret != 0) {
 		return HI_ERR_SYSTEM;
@@ -210,7 +210,7 @@ static int lhi_create_eng_list(hi_handle_t *hi_hndl)
 
 	/* initialize bucket list */
 	for (i = 0; i < hi_hndl->table_size; i++) {
-		hi_hndl->eng_list.bucket_table[i] = NULL;
+		hi_hndl->eng.eng_list.bucket_table[i] = NULL;
 		hi_hndl->bucket_size[i] = 0;
 	}
 
@@ -222,24 +222,24 @@ static int lhi_create_eng_rbtree(hi_handle_t *hi_hndl)
 {
 	uint32_t i;
 
-	hi_hndl->eng_rbtree.trees = calloc(sizeof(struct __hi_rb_tree), hi_hndl->table_size);
-	if (!hi_hndl->eng_rbtree.trees)
+	hi_hndl->eng.eng_rbtree.trees = calloc(sizeof(struct __hi_rb_tree), hi_hndl->table_size);
+	if (!hi_hndl->eng.eng_rbtree.trees)
 		return HI_ERR_SYSTEM;
 
 	lhi_pthread_mutex_lock(hi_hndl->mutex_lock);
 
 	for (i = 0; i < hi_hndl->table_size; i++) {
-		hi_hndl->eng_rbtree.trees[i].root.rb_node = NULL;
-		hi_hndl->eng_rbtree.trees[i].rwlock = NULL;
+		hi_hndl->eng.eng_rbtree.trees[i].root.rb_node = NULL;
+		hi_hndl->eng.eng_rbtree.trees[i].rwlock = NULL;
 		hi_hndl->bucket_size[i] = 0;
-		if (lhi_pthread_rwlock_init(&hi_hndl->eng_rbtree.trees[i].rwlock, NULL))
+		if (lhi_pthread_rwlock_init(&hi_hndl->eng.eng_rbtree.trees[i].rwlock, NULL))
 			goto out_err;
 	}
 	lhi_pthread_mutex_unlock(hi_hndl->mutex_lock);
 	return SUCCESS;
  out_err:
 	while (i--)
-		lhi_pthread_rwlock_destroy(hi_hndl->eng_rbtree.trees[i].rwlock);
+		lhi_pthread_rwlock_destroy(hi_hndl->eng.eng_rbtree.trees[i].rwlock);
 	return HI_ERR_SYSTEM;
 }
 
@@ -249,20 +249,20 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 	int ret; uint32_t i, j;
 
 	/* the number of elements in this bucket */
-	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_size,
+	ret = XMALLOC((void **) &hi_hndl->eng.eng_array.bucket_array_slot_size,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
 
 	/* the maximum number of elements for this bucket (realloc necessary
 	 * if the space is insufficient */
-	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array_slot_max,
+	ret = XMALLOC((void **) &hi_hndl->eng.eng_array.bucket_array_slot_max,
 			sizeof(unsigned int) * hi_hndl->table_size);
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
 
 	/* the pointer for the several buckets */
-	ret = XMALLOC((void **) &hi_hndl->eng_array.bucket_array,
+	ret = XMALLOC((void **) &hi_hndl->eng.eng_array.bucket_array,
 			(sizeof(hi_bucket_a_obj_t *) * hi_hndl->table_size));
 	if (ret != 0)
 		return HI_ERR_SYSTEM;
@@ -270,7 +270,7 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 	/* last but not least: the buckets */
 	for (i = 0; i < hi_hndl->table_size; i++) {
 		/* align array on 16 byte boundaries */
-		ret = xalloc_align((void **) &hi_hndl->eng_array.bucket_array[i],
+		ret = xalloc_align((void **) &hi_hndl->eng.eng_array.bucket_array[i],
 				LHI_DEFAULT_MEMORY_ALIGN,
 				(sizeof(hi_bucket_a_obj_t) * hi_hndl->coll_eng_array_size));
 		if (ret != 0)
@@ -284,11 +284,11 @@ static int lhi_create_eng_array(hi_handle_t *hi_hndl)
 		 * as BA_NOT_ALLOCATED (or BA_ALLOCATED on the other hand)  --HGN */
 
 		for (j = 0; j < hi_hndl->coll_eng_array_size; ++j)
-			hi_hndl->eng_array.bucket_array[i][j].allocation = BA_NOT_ALLOCATED;
+			hi_hndl->eng.eng_array.bucket_array[i][j].allocation = BA_NOT_ALLOCATED;
 
 		/* some status bookkeeping */
-		hi_hndl->eng_array.bucket_array_slot_size[i] = 0;
-		hi_hndl->eng_array.bucket_array_slot_max[i]  = hi_hndl->coll_eng_array_size;
+		hi_hndl->eng.eng_array.bucket_array_slot_size[i] = 0;
+		hi_hndl->eng.eng_array.bucket_array_slot_max[i]  = hi_hndl->coll_eng_array_size;
 	}
 
 	return SUCCESS;

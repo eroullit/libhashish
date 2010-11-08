@@ -175,7 +175,7 @@ typedef struct __hi_handle {
 		struct {
 			struct __hi_rb_tree *trees;
 		} eng_rbtree;
-	};
+	} eng;
 
 	/* thread locking stuff */
 	pthread_mutex_t *mutex_lock;

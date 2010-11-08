@@ -87,8 +87,8 @@
 extern int __hi_error(int, const char *, unsigned int, const char *, \
 	const char *, ...);
 
-#define hi_error(E, FMT,ARG...) \
-	__hi_error(E, __FILE__, __LINE__, __FUNCTION__, FMT, ##ARG)
+#define hi_error(E, FMT, ...) \
+	__hi_error(E, __FILE__, __LINE__, __FUNCTION__, FMT, __VA_ARGS__)
 
 #define hi_errno(E) hi_error(E, NULL)
 
