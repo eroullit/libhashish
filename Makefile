@@ -21,7 +21,7 @@ test:
 	cd tests && $(MAKE) test
 
 distclean: clean
-	rm -rf Make.Rules config.h config.log
+	rm -f Make.Rules config.h config.log lib/libhashish.pc
 
 install: Make.Rules
 	@for dir in $(SUBDIRS); do \
