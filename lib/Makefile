@@ -61,7 +61,7 @@ distclean:
 install:
 	$(MKDIR) -p $(DESTDIR)$(libdir)/
 	$(INSTALL) -m 0644 $(OUT_SLIB) $(DESTDIR)$(libdir)
-	$(INSTALL) -m 0644 $(OUT_DLIB) $(DESTDIR)$(libdir)
+	$(INSTALL) -m 0644 $(OUT_DLIB) $(DESTDIR)$(libdir)/$(OUT_DLIB).$(MAJOR_REL)
 	$(LDCONFIG)
 	( cd $(LIBDIR) ; ln -sf $(DESTDIR)$(libdir)/$(LIBHASHNAME) $(DESTDIR)$(libdir)/$(LIBHASH) )
 
