@@ -338,6 +338,21 @@ create_make_rules()
 }
 
 
+create_pc()
+{
+  echo "prefix=$prefix"                       > lib/libhashish.pc
+  echo 'exec_prefix=${prefix}'                >> lib/libhashish.pc
+  echo 'libdir=${exec_prefix}/lib'            >> lib/libhashish.pc
+  echo 'includedir=${prefix}/include'         >> lib/libhashish.pc
+  echo ''                                     >> lib/libhashish.pc
+  echo 'Name: libhashish'                     >> lib/libhashish.pc
+  echo 'Description: powerful and generic hash library for C and C++' >> lib/libhashish.pc
+  echo "Version: ${MAJOR_REL}.${MINOR_REL}"   >> lib/libhashish.pc
+  echo 'Libs: -L${libdir} -lhashish'          >> lib/libhashish.pc
+  echo 'Cflags: -I${includedir}'              >> lib/libhashish.pc
+
+}
+
 
 check_for_alloca()
 {
@@ -579,6 +594,7 @@ parse_args $*
 print_config_header
 # this checks for programms and compiler
 create_make_rules
+create_pc
 
 check_for_alloca
 check_for_rdtscll
