@@ -10,7 +10,7 @@ OBJ      := $(CIN:%.c=%.o)
 OUT_SLIB := $(addsuffix .a,$(PACKAGE_NAME))
 OUT_DLIB := $(addsuffix .so,$(PACKAGE_NAME))
 
-LDFLAGS  := -Wl,--warn-common -Wl,--as-needed
+LDFLAGS  := -Wl,--warn-common
 
 
 LIBNAME=$(PACKAGE_NAME)
@@ -38,7 +38,7 @@ all: $(LIBHASH) $(LIBHASHSTATIC) $(CIN)
 
 $(LIBHASH): $(OBJ) ../Make.Rules
 	@echo "### build dynamic library (libhashish.so)"
-	$(CC) -shared -fPIC $(LDFLAGS) -Wl,-soname=$(LIBHASHNAME) -lpthread -o $@ $(OBJ)
+	$(CC) -shared -fPIC $(LDFLAGS) -Wl,-soname=$(LIBHASHNAME) -lm -lpthread -o $@ $(OBJ)
 
 $(LIBHASHSTATIC): $(OBJ) ../Make.Rules
 	@echo "### build static archiv (libhashish.a)"
