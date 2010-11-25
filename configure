@@ -28,7 +28,7 @@ prefix=/usr
 
 # version
 MAJOR_REL=1
-MINOR_REL=0
+MINOR_REL=1
 
 PACKAGE_NAME="libhashish"
 
