@@ -2,6 +2,8 @@ SET(LIB_NAME "hashish")
 PROJECT(lib${LIB_NAME} C)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+FIND_LIBRARY(M_LIB m REQUIRED)
+
 EXECUTE_PROCESS(COMMAND ${CMAKE_SOURCE_DIR}/configure --enable-memory-check --enable-thread-locking --enable-debug --config=${CMAKE_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(lib)
