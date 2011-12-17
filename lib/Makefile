@@ -28,9 +28,6 @@ LIBHASHFULL = $(LIBHASHNAME)$(MODIFICATION)
 # static library name
 LIBHASHSTATIC = $(LIBNAME).a
 
-# pkgconfig name
-LIBHASHPC = $(LIBNAME).pc
-
 %.o: %.c
 	$(CC) $(INCLUDEDIR) $(CFLAGS) $< -c -o $@
 
@@ -63,10 +60,8 @@ distclean:
  
 install:
 	$(MKDIR) -p $(DESTDIR)$(libdir)/
-	$(MKDIR) -p $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL) -m 0644 $(OUT_SLIB) $(DESTDIR)$(libdir)
 	$(INSTALL) -m 0644 $(OUT_DLIB) $(DESTDIR)$(libdir)/$(OUT_DLIB).$(MAJOR_REL)
-	$(INSTALL) -m 0644 $(LIBHASHPC) $(DESTDIR)$(libdir)/pkgconfig
 	$(LDCONFIG)
 	( cd $(LIBDIR) ; ln -sf $(LIBHASHNAME) $(DESTDIR)$(libdir)/$(LIBHASH) )
 
