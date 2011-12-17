@@ -5,7 +5,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 FIND_LIBRARY(M_LIB m REQUIRED)
 FIND_PACKAGE(Threads)
 
-EXECUTE_PROCESS(COMMAND ${CMAKE_SOURCE_DIR}/configure --enable-memory-check --enable-thread-locking --enable-debug --config=${CMAKE_SOURCE_DIR})
+IF(CMAKE_HAVE_PTHREAD_CREATE)
+       SET(ENABLE_THREAD_OPTS "--enable-thread-locking")
+ENDIF(CMAKE_HAVE_PTHREAD_CREATE)
+
+EXECUTE_PROCESS(COMMAND ${CMAKE_SOURCE_DIR}/configure --enable-memory-check ${ENABLE_THREAD_OPTS} --enable-debug --config=${CMAKE_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(localhash)
