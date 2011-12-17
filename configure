@@ -581,6 +581,7 @@ print_config()
 
 
 parse_args $*
+config_path=${config_path}/config.h
 print_config_header
 # this checks for programms and compiler
 create_make_rules
