@@ -2,6 +2,10 @@ SET(LIB_NAME "hashish")
 PROJECT(lib${LIB_NAME} C)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+# Activate this when you want to build a shared lib out the the lib/ directory
+# Bear in mind that no profiling will be available on 64-bit arch when on
+SET(BUILD_SHARED_LIBS ON)
+
 ENABLE_TESTING()
 
 FIND_LIBRARY(M_LIB m REQUIRED)
