@@ -2,7 +2,7 @@ FILE(GLOB LIBHASHISH_HDRS ${CMAKE_SOURCE_DIR}/include/*.h)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
-ADD_LIBRARY(hashish 	cmp_funcs.c
+ADD_LIBRARY(${LIB_NAME} cmp_funcs.c
 			hash_func.c
 			hash_func_cube.c
 			hash_func_goulburn.c
@@ -29,7 +29,7 @@ ADD_LIBRARY(hashish 	cmp_funcs.c
 			lib_init.c
 			xutils.c)
 
-TARGET_LINK_LIBRARIES(hashish ${LIBS})
+TARGET_LINK_LIBRARIES(${LIB_NAME} ${LIBS})
 
-INSTALL(TARGETS hashish LIBRARY DESTINATION /usr/lib)
+INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION /usr/lib)
 INSTALL(FILES ${LIBHASHISH_HDRS} DESTINATION /usr/local/include/${PROJECT_NAME})
