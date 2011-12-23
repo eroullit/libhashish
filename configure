@@ -572,10 +572,8 @@ EOF
 print_config()
 {
 	echo 
-	echo -e "Environment seems fine! ;)\n\nConfigure picked following defaults, options and paths:"
-	echo -e "Please validate this values"
-	echo
-	make show
+	echo -e "Environment seems fine! ;)\n\n"
+	echo -e "Check Make.rules file to see if all is valid"
 	echo
 }
 
