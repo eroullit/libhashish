@@ -6,10 +6,16 @@ FIND_LIBRARY(M_LIB m REQUIRED)
 FIND_PACKAGE(Threads)
 
 IF(CMAKE_HAVE_PTHREAD_CREATE)
-       SET(ENABLE_THREAD_OPTS "--enable-thread-locking")
+	SET(LIBHASHISH_OPTS "${LIBHASHISH_OPTS} --enable-thread-locking")
+	MESSAGE("-- Enabled thread locking")
 ENDIF(CMAKE_HAVE_PTHREAD_CREATE)
 
-EXECUTE_PROCESS(COMMAND ${CMAKE_SOURCE_DIR}/configure --enable-memory-check ${ENABLE_THREAD_OPTS} --enable-debug --config=${CMAKE_SOURCE_DIR})
+IF(CMAKE_BUILD_TYPE STREQUAL debug)
+	SET(LIBHASHISH_OPTS "${LIBHASHISH_OPTS} --enable-memory-check --enable-debug")
+	MESSAGE("-- Enabled debug build")
+ENDIF(CMAKE_BUILD_TYPE STREQUAL debug)
+
+EXECUTE_PROCESS(COMMAND ${CMAKE_SOURCE_DIR}/configure ${LIBHASHISH_OPTS} --config=${CMAKE_SOURCE_DIR})
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(localhash)
